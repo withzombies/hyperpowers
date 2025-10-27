@@ -19,10 +19,10 @@ Transform rough ideas into fully-formed designs through structured questioning a
 |-------|---------------|------------|--------|
 | **1. Understanding** | Ask questions (one at a time) | AskUserQuestion for choices, agents for research | Purpose, constraints, criteria |
 | **2. Exploration** | Propose 2-3 approaches | AskUserQuestion for approach selection, agents for patterns | Architecture options with trade-offs |
-| **3. Design Presentation** | Present in 200-300 word sections | Open-ended questions | Complete design with validation |
-| **4. Break into Subtasks** | Break design into 4-8 hour subtasks | Conceptual breakdown | Subtask descriptions drafted |
-| **5. Create bd Issues** | Create epic/features/tasks in bd | bd CLI commands | All issues created and linked |
-| **6. Refine and Validate** | Review and improve all issues | sre-task-refinement skill | Plan approved or revision needed |
+| **3. Create bd Structure** | Create epic + skeleton phase tasks | bd CLI commands | Epic and placeholder tasks in bd |
+| **4. Design Presentation** | Present sections, update bd tasks | Open-ended questions, bd update | bd tasks with validated designs |
+| **5. Refine Subtask Granularity** | Break large tasks into subtasks if needed | bd CLI commands | All tasks properly sized (4-8 hours) |
+| **6. Validate and Refine** | Review and improve all issues | sre-task-refinement skill | Plan approved or revision needed |
 | **7. Enhance bd Tasks** | Expand tasks with detailed implementation steps | writing-plans skill | Enhanced bd issues |
 
 ## The Process
@@ -33,10 +33,10 @@ Use TodoWrite to create todos for each phase:
 
 - Phase 1: Understanding (MUST invoke AskUserQuestion 3+ times, gather purpose/constraints/criteria)
 - Phase 2: Exploration (2-3 approaches proposed and evaluated)
-- Phase 3: Design Presentation (design validated in sections)
-- Phase 4: Break into Subtasks (subtasks conceptually defined)
-- Phase 5: Create bd Issues (all issues created and linked in bd)
-- Phase 6: Refine and Validate (plan reviewed and approved by sre-task-refinement)
+- Phase 3: Create bd Structure (epic + skeleton phase tasks created in bd)
+- Phase 4: Design Presentation (present sections, update bd tasks incrementally)
+- Phase 5: Refine Subtask Granularity (break large tasks into 4-8 hour subtasks)
+- Phase 6: Validate and Refine (plan reviewed and approved by sre-task-refinement)
 - Phase 7: Enhance bd Tasks (tasks expanded with detailed implementation steps)
 
 Mark each phase as in_progress when working on it, completed when finished.
@@ -184,46 +184,21 @@ Options:
 - If no codebase pattern → Present internet research findings
 - If research yields nothing → Ask user for direction
 
-### Phase 3: Design Presentation
+### Phase 3: Create bd Structure
+
+**Goal:** Create epic and skeleton phase tasks in bd to reduce context usage. Design will be added incrementally in Phase 4.
 
 - Mark Phase 3 as in_progress in TodoWrite
-- Present in 200-300 word sections
-- Cover: Architecture, components, data flow, error handling, testing
-- **Use agents if you need to verify technical details during presentation**
-- Ask after each section: "Does this look right so far?" (open-ended)
-- Use open-ended questions here to allow freeform feedback
-- Mark Phase 3 as completed when all sections validated
-
-### Phase 4: Break into Subtasks
-
-After the design has been validated, we need to break it into 4-8 hour subtasks.
-
-- Mark Phase 4 as in_progress in TodoWrite
-- Break design into discrete subtasks (4-8 hours each)
-- For each subtask, draft:
-  - **Goal**: 1-2 sentences describing what this delivers
-  - **Effort Estimate**: 4-8 hours (if >8 hours, break down further)
-  - **Success Criteria**: 3+ specific, testable criteria
-  - **Implementation Checklist**: Specific files, functions, tests
-  - **Key Considerations**: Error handling, edge cases, dependencies
-  - **Anti-patterns**: Specific things to avoid for this subtask
-- If a phase would be >16 hours, plan to break it into child subtasks
-- Mark Phase 4 as completed when all subtasks drafted
-
-### Phase 5: Create bd Issues
-
-Now create all the issues in `bd`. Start with the epic or feature, then add the phases/subtasks and link them appropriately.
-
-- Mark Phase 5 as in_progress in TodoWrite
-
-### Workflow
 
 #### 1. Initialize bd (if not already done)
 ```bash
 bd init --prefix bd
 ```
 
-#### 2. Create Parent Epic for Feature
+#### 2. Create Parent Epic with Minimal, Stable Content
+
+**CRITICAL:** Keep epic lightweight. DO NOT include detailed design here.
+
 ```bash
 bd create "Feature: [Feature Name]" \
   --type epic \
@@ -231,188 +206,210 @@ bd create "Feature: [Feature Name]" \
   --design "## Goal
 [1-2 sentences: what business problem does this solve?]
 
+## Chosen Approach
+[High-level summary of approach selected in Phase 2]
+
 ## Success Criteria
 - [ ] All phases complete
 - [ ] Integration tests passing
 - [ ] Documentation updated
-- [ ] Pre-commit hooks pass
-
-## Phases
-Will be created as child issues with parent-child dependencies."
+- [ ] Pre-commit hooks pass"
 ```
 
 Note the epic issue ID returned (e.g., `bd-1`).
 
-#### 3. Create Phase Issues
+#### 3. Create Skeleton Phase Tasks
 
-**IMPORTANT**: If a phase is estimated >16 hours, break it into 4-8 hour subtasks instead of one large phase.
-
-For each phase (3-5 phases), create an issue:
+Based on anticipated major phases (typically 3-5), create placeholder tasks:
 
 ```bash
-bd create "Phase N: [Descriptive Name]" \
+bd create "Phase 1: [Descriptive Name]" \
   --type feature \
   --priority [0-4] \
   --design "## Goal
 [One sentence: what specific deliverable this phase produces]
 
-## Effort Estimate
-[4-8 hours for subtasks, up to 16 hours for phases]
-If >16 hours, STOP and break into subtasks (see 'Breaking Down Large Phases' below)
-
-## Success Criteria (must be testable/verifiable)
-- [ ] All functions/modules listed below are fully implemented (no stubs, no TODOs)
-- [ ] Tests written and passing: [list specific test names]
-- [ ] Pre-commit hooks pass (cargo fmt, cargo clippy, cargo test)
-- [ ] No pattern matches for: TODO, FIXME, unimplemented!, todo!()
-- [ ] [Specific behavioral criteria - e.g., 'ES handler processes 1000 events/sec']
-- [ ] [Integration criteria - e.g., 'Works with existing notify-based scanner']
-
-## Implementation Approach
-
-### 1. Study Existing Code
-[Point to 2-3 similar implementations in the codebase to learn from]
-
-Use the web to search how other products implement the feature requested
-
-### 2. Write Tests First (TDD)
-[Specific test cases to write before implementation]
-
-### 3. Implementation Checklist (be exhaustive)
-- [ ] File path:line - function_name() - [exactly what it must do, not just 'implement']
-- [ ] File path:line - struct_name - [what fields, what traits]
-- [ ] Test file:line - test_name() - [what scenario it tests]
-- [ ] Documentation: [what docs need updating]
-
-### 4. Key Considerations
-- **Error Handling**: [Specific error cases - use proper error handling patterns for your language]
-- **Edge Cases**: [Empty input, large input, concurrent access, etc.]
-- **Code Quality**: [Follow language best practices and safety guidelines from CLAUDE.md]
-- **Dependencies**: [Prefer dependency injection over global state]
-
-## Anti-patterns to Avoid (Project-Specific)
-- ❌ No stub implementations (empty functions, language-specific stub markers, placeholder returns)
-- ❌ No TODOs/FIXMEs without bd issue numbers
-- ❌ No unsafe error handling patterns in production code
-- ❌ No skipped/ignored tests without issue numbers
-- ❌ No panic/crash patterns in production code
-- ❌ Use safe array/collection access patterns (bounds checking)
-- ❌ No 'we'll do this later' - either do it or don't include it
-- ❌ [Phase-specific anti-patterns]
-- Don't assume backwards compatibility is desired.
-
-## Rollback Plan
-- If this phase fails: [how to revert without breaking main]
-
-## Commit Message Template
-feat(module): Brief description of phase N
-
-- Bullet point of what was added/changed
-- Why this change was needed
-
-Implements phase N of [feature name] (closes [issue-id])
-
-## Before Moving to Next Phase
-- [ ] All tests passing
-- [ ] Code formatted ([format-command])
-- [ ] Linter passes ([lint-command])
-- [ ] Pre-commit hooks pass (.git/hooks/pre-commit)
-- [ ] Code committed"
+## Design
+[Will be expanded in Phase 4]"
 ```
 
-#### 4. Breaking Down Large Phases
+Repeat for each anticipated phase. Note each task ID (e.g., `bd-2`, `bd-3`, etc.).
 
-If a phase is estimated >16 hours, create subtasks instead:
-
-```bash
-# Example: Phase 2 is 50 hours - break into 7 subtasks
-bd create "Scanner 1: Vehicle Identifiers" --type task --priority 1 \
-  --design "[6-8 hour task design - see Phase issue template above]"
-# Returns bd-6
-
-bd create "Scanner 2: Medical Device IDs" --type task --priority 1 \
-  --design "[4-6 hour task design - see Phase issue template above]"
-# Returns bd-7
-
-# ... create all subtasks ...
-
-# Link subtasks to parent phase with parent-child relationship
-# Remember: bd dep add <CHILD> <PARENT> --type parent-child
-bd dep add bd-6 bd-3 --type parent-child  # Subtask bd-6 is child of Phase bd-3
-bd dep add bd-7 bd-3 --type parent-child  # Subtask bd-7 is child of Phase bd-3
-# ... link all subtasks ...
-
-# Optionally add sequential dependencies between subtasks if needed
-# Remember: bd dep add <LATER> <EARLIER> (later depends on earlier)
-bd dep add bd-7 bd-6  # bd-7 depends on bd-6 (do bd-6 FIRST, then bd-7)
-                         # Result: bd ready will show bd-6, not bd-7
-```
-
-#### 5. Link Dependencies Between Phases
-
-**CRITICAL: Argument Order for `bd dep add`**
-
-The syntax is: `bd dep add [issue-id] [depends-on-id]` meaning "issue-id DEPENDS ON depends-on-id"
-
-**For blocking dependencies (default):**
-- First arg = The dependent (blocked task - starts later)
-- Second arg = The dependency (blocker - must complete first)
-- Mental model: "LATER depends on EARLIER" or "LATER is blocked by EARLIER"
-
-**For parent-child relationships:**
-- First arg = The child (contained item)
-- Second arg = The parent (container)
-- Mental model: "CHILD belongs to PARENT"
+#### 4. Link Tasks to Epic
 
 ```bash
-# Link phases to epic using parent-child (for hierarchy visualization)
-# Syntax: bd dep add [child-id] [parent-id] --type parent-child
-bd dep add bd-2 bd-1 --type parent-child  # Phase bd-2 is child of Epic bd-1
-bd dep add bd-3 bd-1 --type parent-child  # Phase bd-3 is child of Epic bd-1
-bd dep add bd-4 bd-1 --type parent-child  # Phase bd-4 is child of Epic bd-1
-bd dep add bd-5 bd-1 --type parent-child  # Phase bd-5 is child of Epic bd-1
+# Link phases to epic using parent-child
+bd dep add bd-2 bd-1 --type parent-child  # Phase 1 is child of Epic
+bd dep add bd-3 bd-1 --type parent-child  # Phase 2 is child of Epic
+bd dep add bd-4 bd-1 --type parent-child  # Phase 3 is child of Epic
+# ... etc for all phases
 
 # Add blocking dependencies for sequential phases
-# Remember: bd dep add <LATER> <EARLIER> (later depends on earlier)
-# "bd-3 depends on bd-2" means Phase 2 (bd-3) can't start until Phase 1 (bd-2) finishes
-
-bd dep add bd-3 bd-2  # Phase 2 (bd-3) depends on Phase 1 (bd-2) → Do bd-2 first
-bd dep add bd-4 bd-3  # Phase 3 (bd-4) depends on Phase 2 (bd-3) → Do bd-3 first
-bd dep add bd-5 bd-4  # Phase 4 (bd-5) depends on Phase 3 (bd-4) → Do bd-4 first
-
-# WRONG EXAMPLES (common mistakes):
-# ❌ bd dep add bd-2 bd-3  # This would make Phase 1 depend on Phase 2! (backwards)
-# ❌ bd dep add bd-4 bd-5  # This would make Phase 3 depend on Phase 4! (backwards)
-
-# Verification: After adding dependencies, run:
-# bd ready  # Should show only bd-2 (Phase 1), not later phases
-
-# NOTE: parent-child relationships don't create blocking semantics.
-# This means epics will show in `bd ready` even though they're not workable.
-# When using `bd ready`, filter out epics and focus on actual tasks/phases.
+bd dep add bd-3 bd-2  # Phase 2 depends on Phase 1
+bd dep add bd-4 bd-3  # Phase 3 depends on Phase 2
+# ... etc
 ```
 
-#### 6. View Dependency Tree
+#### 5. Verify Structure
+
 ```bash
-bd dep tree bd-1  # View tree for parent epic
+bd dep tree bd-1  # View tree for epic
+bd ready          # Should show only bd-2 (first phase)
 ```
 
-#### 7. Find Ready Work
+- Mark Phase 3 as completed when bd structure is created
+
+**Next:** Phase 4 will expand these skeleton tasks with actual design content.
+
+### Phase 4: Design Presentation
+
+**Goal:** Present design incrementally and store validated sections in bd tasks. This keeps context usage low.
+
+- Mark Phase 4 as in_progress in TodoWrite
+
+#### Design Presentation Protocol
+
+For each phase task created in Phase 3:
+
+1. **Present design section (200-300 words)**
+   - Cover relevant aspects: Architecture, components, data flow, error handling, testing
+   - **Use agents if you need to verify technical details**
+   - Keep it in one message so user can see complete section
+
+2. **Ask for validation (open-ended)**
+   - "Does this look right so far?"
+   - Allow freeform feedback
+   - If changes needed, revise and re-present
+
+3. **Update bd task with validated design**
+
+   Once section is validated, update the corresponding bd task:
+
+   ```bash
+   bd update bd-2 --design "## Goal
+   [What this phase delivers]
+
+   ## Design
+
+   ### Architecture
+   [Validated architecture content]
+
+   ### Components
+   [Validated components content]
+
+   ### Implementation Approach
+
+   #### 1. Study Existing Code
+   [Point to 2-3 similar implementations in codebase]
+
+   #### 2. Write Tests First (TDD)
+   [Specific test cases to write]
+
+   #### 3. Implementation Checklist
+   - [ ] File path:line - function_name() - [exactly what it must do]
+   - [ ] Test file:line - test_name() - [what scenario it tests]
+
+   #### 4. Key Considerations
+   - **Error Handling**: [Specific error cases]
+   - **Edge Cases**: [Empty input, large input, etc.]
+   - **Dependencies**: [What this depends on]
+
+   ## Success Criteria
+   - [ ] All functions/modules fully implemented
+   - [ ] Tests written and passing
+   - [ ] Pre-commit hooks pass
+   - [ ] [Specific behavioral criteria]
+
+   ## Anti-patterns to Avoid
+   - ❌ No stub implementations
+   - ❌ No TODOs without bd issue numbers
+   - ❌ [Phase-specific anti-patterns]"
+   ```
+
+4. **Move to next phase task**
+   - Repeat for each task created in Phase 3
+   - Each task gets its own design section
+
+- Mark Phase 4 as completed when all phase tasks have validated designs
+
+**Benefits:**
+- Context freed after each section is stored in bd
+- bd tasks contain complete design details
+- Can resume after interruption by reading from bd
+
+### Phase 5: Refine Subtask Granularity
+
+**Goal:** Check if any phase tasks are too large (>16 hours) and break them into subtasks.
+
+- Mark Phase 5 as in_progress in TodoWrite
+
+#### Review Task Sizes
+
+For each phase task created in Phase 3 and expanded in Phase 4:
+
+1. **Estimate effort based on design**
+   - Review the implementation checklist
+   - Count files, functions, tests to implement
+   - Estimate: 4-8 hours ideal, up to 16 hours acceptable
+
+2. **If task is >16 hours, break it down**
+
+   Create subtasks:
+
+   ```bash
+   # Example: Phase 2 is estimated at 50 hours - break into subtasks
+   bd create "Subtask 1: Vehicle Identifiers" --type task --priority 1 \
+     --design "## Goal
+   [What this specific subtask delivers - 1 sentence]
+
+   ## Design
+   [Copy relevant portion from parent task's design]
+
+   ## Implementation Checklist
+   - [ ] file:line - function() - [what it does]
+   - [ ] test:line - test_name() - [what it tests]
+
+   ## Success Criteria
+   - [ ] Functions implemented
+   - [ ] Tests passing
+   - [ ] Pre-commit hooks pass
+
+   ## Effort Estimate
+   6-8 hours"
+   # Returns bd-6
+
+   bd create "Subtask 2: Medical Device IDs" --type task --priority 1 \
+     --design "[Similar structure, 4-6 hours]"
+   # Returns bd-7
+
+   # Link subtasks to parent phase
+   bd dep add bd-6 bd-3 --type parent-child  # Subtask is child of Phase
+   bd dep add bd-7 bd-3 --type parent-child
+
+   # Add sequential dependencies if needed
+   bd dep add bd-7 bd-6  # bd-7 depends on bd-6 (do bd-6 first)
+   ```
+
+3. **Keep small tasks as-is**
+   - If task is ≤16 hours, no changes needed
+   - It will be implemented as a single unit
+
+#### Verify Final Structure
+
 ```bash
-bd ready  # Shows tasks with no blocking dependencies
+bd dep tree bd-1  # View complete tree
+bd ready          # Should show first workable task
 
-# NOTE: bd ready may show epics even though they're not workable items.
-# Epics are containers - work on their child phases/tasks instead.
-# Focus on tasks with type 'task' or 'feature', not 'epic'.
+# NOTE: Epics may appear in `bd ready` but are not workable.
+# Focus on tasks with type 'task' or 'feature'.
 ```
 
-**After creating all issues:**
-- Run `bd dep tree [epic-id]` to verify structure
-- Run `bd ready` to confirm dependency chain is correct
-- Mark Phase 5 as completed in TodoWrite
+- Mark Phase 5 as completed when all tasks are properly sized
+
+**Result:** All tasks are 4-16 hours, ready for implementation.
 
 
-### Phase 6: Refine and Validate
+### Phase 6: Validate and Refine
 
 Now have the plan reviewed by an SRE perspective to catch issues before implementation.
 
@@ -481,7 +478,7 @@ finishing-a-development-branch (closes epic, creates PR)
 ### When to Use Open-Ended Questions
 
 **Use open-ended questions for:**
-- Phase 3: Design validation ("Does this look right so far?")
+- Phase 4: Design validation ("Does this look right so far?")
 - When you need detailed feedback or explanation
 - When partner should describe their own requirements
 - When structured options would limit creative input
@@ -526,9 +523,9 @@ digraph revisit_phases {
 ```
 
 **You can and should go backward when:**
-- Partner reveals new constraint during Phase 2 or 3 → Return to Phase 1
+- Partner reveals new constraint during Phase 2, 3, or 4 → Return to Phase 1
 - Validation shows fundamental gap in requirements → Return to Phase 1
-- Partner questions approach during Phase 3 → Return to Phase 2
+- Partner questions approach during Phase 4 (Design) → Return to Phase 2
 - Something doesn't make sense → Go back and clarify
 - Agent research reveals constraint you didn't know → Reassess phase
 
