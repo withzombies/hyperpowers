@@ -65,7 +65,8 @@ git diff main...HEAD -- src/auth/jwt.ts
    - Run verification commands from success criteria
    - Check that each criterion is actually met
    - Don't assume - verify with evidence
-   - **IMPORTANT:** Use test-runner agent (Task tool with subagent_type=test-runner) for running tests
+   - **IMPORTANT:** Use test-runner agent for running tests
+     - Dispatch test-runner agent with command: "Run: cargo test"
      - Keeps verbose test output in agent context
      - Returns only summary + failures
      - Prevents context pollution
@@ -241,10 +242,8 @@ bd show bd-3 | grep -A 20 "Success Criteria"
 2. **Run each verification:**
 
 **For test commands (use test-runner agent):**
-```
-Task tool with subagent_type=test-runner, command="cargo test"
-Task tool with subagent_type=test-runner, command="cargo clippy"
-```
+- Dispatch test-runner agent with: "Run: cargo test"
+- Dispatch test-runner agent with: "Run: cargo clippy"
 
 **For search/analysis commands (use Bash/Grep):**
 ```bash

@@ -89,7 +89,8 @@ bd show bd-3
 4. **Run verifications as specified**:
    - Tests should pass as you go
    - Follow exact verification commands from task
-   - **IMPORTANT:** Use test-runner agent (Task tool with subagent_type=test-runner) for running tests
+   - **IMPORTANT:** Use test-runner agent for running tests
+     - Dispatch test-runner agent with command: "Run: cargo test"
      - Keeps verbose test output in agent context
      - Returns only summary + failures
      - Prevents context pollution

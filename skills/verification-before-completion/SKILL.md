@@ -33,14 +33,14 @@ BEFORE claiming any status or expressing satisfaction:
 3. READ: Full output, check exit code, count failures
 4. VERIFY: Does output confirm the claim?
    - If NO: State actual status with evidence
-   - If YES: State claim WITH evidence
+   - IF YES: State claim WITH evidence
 5. ONLY THEN: Make the claim
 
 Skip any step = lying, not verifying
 ```
 
 **Using the test-runner agent:**
-- `Task tool` with `subagent_type=test-runner`
+- Dispatch test-runner agent with the command: "Run: cargo test"
 - Agent runs command, captures all output in its context
 - Returns concise report: summary stats + failure details only
 - Prevents context pollution from verbose test/hook output
