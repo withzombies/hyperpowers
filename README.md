@@ -12,12 +12,13 @@ Reusable workflows for common development tasks:
 
 - **brainstorming** - Interactive design refinement using Socratic method
 - **test-driven-development** - Write tests first, ensure they fail, then implement
-- **writing-plans** - Create detailed implementation plans with bite-sized tasks
-- **executing-plans** - Execute plans in batches with review checkpoints
+- **writing-plans** - Create detailed implementation plans (single task or multiple tasks)
+- **executing-plans** - Execute tasks continuously with optional per-task review
+- **dispatching-parallel-agents** - Investigate independent failures concurrently
 - **review-implementation** - Verify implementation matches requirements
 - **verification-before-completion** - Always verify before claiming success
 - **finishing-a-development-branch** - Complete workflow for PR creation and cleanup
-- **sre-task-refinement** - Ensure all corner cases and requirements are understood
+- **sre-task-refinement** - Ensure all corner cases and requirements are understood (uses Opus 4.1)
 - **testing-anti-patterns** - Prevent common testing mistakes
 - **writing-skills** - TDD for process documentation itself
 
@@ -37,6 +38,7 @@ Domain-specific agents for complex tasks:
 - **code-reviewer** - Review implementations against plans and coding standards
 - **codebase-investigator** - Understand current codebase state and patterns
 - **internet-researcher** - Research APIs, libraries, and current best practices
+- **test-runner** - Run tests/pre-commit hooks/commits without context pollution (uses Haiku)
 
 ### Hooks
 
@@ -44,6 +46,35 @@ Automatic behaviors that enhance your workflow:
 
 - Session start hooks to establish context
 - Integration with development workflows
+
+## Key Benefits
+
+### Context Efficiency with test-runner Agent
+
+The **test-runner** agent solves a common problem: running tests, pre-commit hooks, or git commits can generate massive amounts of output that pollutes your context window with successful test results, formatting changes, and debug prints.
+
+**How it works:**
+- Agent runs commands in its own separate context
+- Captures all output (test results, hook output, etc.)
+- Returns **only**: summary statistics + complete failure details
+- Filters out: passing test output, "Reformatted X files" spam, verbose formatting diffs
+
+**Example:**
+```bash
+# Without agent: Your context gets 500 lines of passing test output
+pytest tests/  # 47 tests pass, prints everything
+
+# With test-runner agent: Your context gets clean summary
+Task("Run tests", "Run pytest tests/")
+# Agent returns: "✓ 47 tests passed, 0 failed. Exit code 0."
+```
+
+**Benefits:**
+- Keeps your context clean and focused
+- Still provides complete failure details when tests fail
+- Works with all test frameworks (pytest, cargo, npm, go)
+- Handles pre-commit hooks without formatting spam
+- Provides verification evidence for verification-before-completion skill
 
 ## Installation
 
@@ -77,15 +108,19 @@ Claude: I'm using the brainstorming skill to refine your authentication requirem
 
 Claude: Now I'm using the writing-plans skill to create a detailed implementation plan.
 
-[Creates detailed plan with specific tasks]
+[Creates detailed plan with specific tasks in bd]
 
-Claude: I'm using the executing-plans skill to implement in batches.
+Claude: I'm using the executing-plans skill to implement the tasks.
 
-[Implements with review checkpoints between batches]
+[Works through ready tasks continuously, using bd ready to find next task]
 
-Claude: I'm using the verification-before-completion skill to verify everything works.
+Claude: I'm using the test-runner agent to verify all tests pass.
 
-[Runs tests, confirms all passing]
+[Agent runs tests, reports: "✓ 47 tests passed, 0 failed"]
+
+Claude: I'm using the review-implementation skill to verify everything works.
+
+[Reviews implementation against requirements]
 
 Claude: I'm using the finishing-a-development-branch skill to wrap up.
 
