@@ -1,0 +1,13 @@
+{
+  "name": "withzombies-superpowers",
+  "description": "Ryan's riff on obra/superpowers: strong guidance for Claude Code as a software development assistant",
+  "version": "3.2.2",
+  "author": {
+    "name": "Ryan Stortz",
+    "email": "ryan@withzombies.com"
+  },
+  "homepage": "https://github.com/withzombies/superpowers",
+  "repository": "https://github.com/withzombies/superpowers",
+  "license": "MIT",
+  "keywords": ["skills", "tdd", "debugging", "collaboration", "best-practices", "workflows"]
+}
