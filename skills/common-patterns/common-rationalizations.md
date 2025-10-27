@@ -42,6 +42,7 @@ These rationalizations appear across multiple contexts. When you catch yourself 
 | "Partner knows what they want" | Questions reveal hidden constraints. Always ask. |
 | "Whole design at once for efficiency" | Incremental validation catches problems early. |
 | "Checklist is just suggestion" | Create TodoWrite todos. Track properly. |
+| "Subtask can reference parent for details" | NO. Subtasks must be complete. NO placeholders, NO "see parent". |
 
 ## Quality Shortcuts
 
