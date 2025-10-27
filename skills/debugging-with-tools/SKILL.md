@@ -1,0 +1,564 @@
+---
+name: debugging-with-tools
+description: Use when encountering any bug, test failure, or unexpected behavior - systematic debugging using debuggers, internet research, and agents to find root cause before proposing fixes; never fix symptoms without understanding the problem
+---
+
+# Debugging With Tools
+
+## Overview
+
+Random fixes waste time and create new bugs. The fastest path to a working solution is systematic investigation using the right tools.
+
+**Core principle:** ALWAYS use tools to understand root cause BEFORE attempting fixes. Symptom fixes are failure.
+
+**Violating the letter of this process is violating the spirit of debugging.**
+
+## When to Use
+
+Use for ANY technical issue:
+- Test failures
+- Bugs in production or development
+- Unexpected behavior
+- Build failures
+- Integration issues
+- Performance problems
+
+**Use this ESPECIALLY when:**
+- "Just one quick fix" seems obvious
+- Under time pressure (emergencies make guessing tempting)
+- Error message is unclear or cryptic
+- You don't fully understand the issue
+- Previous fix didn't work
+
+## The Four Phases
+
+You MUST complete each phase before proceeding to the next.
+
+### Phase 1: Tool-Assisted Investigation
+
+**BEFORE attempting ANY fix, use tools to gather evidence:**
+
+#### 1. Read Error Messages Completely
+
+**Don't skip past errors:**
+- Read entire error message, not just first line
+- Read complete stack trace, all frames
+- Note line numbers, file paths, error codes
+- Stack traces show the exact execution path
+
+#### 2. Search the Internet FIRST
+
+**When error message is unclear or unfamiliar:**
+
+**Dispatch internet-researcher agent with:**
+- "Search for this error: [exact error message]"
+- "Find Stack Overflow discussions about: [error]"
+- "Search for GitHub issues related to: [library name] + [error]"
+- "Check if this is a known bug in: [dependency] version [X]"
+
+**What to look for in results:**
+- Exact match to your error
+- Similar symptoms
+- Known bugs in your dependency versions
+- Official documentation explaining the error
+- Workarounds or fixes that worked for others
+
+**Example delegation:**
+```
+Error: "dyld: Symbol not found: _OBJC_CLASS_$_WKWebView"
+
+Dispatch internet-researcher with:
+"Search for 'dyld Symbol not found _OBJC_CLASS_$_WKWebView'
+- Check Stack Overflow solutions
+- Look for iOS/macOS framework linking issues
+- Find Xcode project configuration fixes"
+```
+
+#### 3. Use Debugger to Inspect State
+
+**Before adding print statements, use actual debugger:**
+
+**For compiled languages (Rust, Swift, C++):**
+```bash
+# Set breakpoint at error location
+lldb target/debug/myapp
+(lldb) breakpoint set --file main.rs --line 42
+(lldb) run
+
+# When breakpoint hits:
+(lldb) frame variable          # Inspect all local variables
+(lldb) print my_variable       # Inspect specific variable
+(lldb) bt                      # Show stack trace
+(lldb) up                      # Move up stack frame
+(lldb) frame variable          # Inspect caller's variables
+```
+
+**For interpreted languages (JavaScript, Python):**
+```javascript
+// Browser DevTools
+debugger; // Add this line where you want to break
+
+// When debugger pauses:
+// - Inspect variables in Scope panel
+// - Step through execution (F10, F11)
+// - Examine call stack
+// - Watch expressions
+```
+
+**For Node.js:**
+```bash
+node inspect myapp.js
+# Or use Chrome DevTools
+node --inspect-brk myapp.js
+# Open chrome://inspect
+```
+
+**Debugger advantages over print statements:**
+- Inspect ALL variables, not just ones you printed
+- Navigate up/down call stack
+- See variable history
+- No code changes needed
+- Don't need to rerun to see different variable
+
+#### 4. Find Working Examples
+
+**Dispatch codebase-investigator to find patterns:**
+
+```
+"Find similar code that handles [feature] successfully"
+"Locate working examples of [pattern] in this codebase"
+"Show me how [similar component] implements [behavior]"
+```
+
+**What investigator should find:**
+- Similar working code in same codebase
+- How other parts handle similar situations
+- Existing patterns you should follow
+- Dependencies/imports/config the working code uses
+
+**Example:**
+```
+Problem: WebSocket connection failing
+
+Dispatch codebase-investigator:
+"Find existing WebSocket connections that work
+- What configuration do they use?
+- How do they handle connection errors?
+- What libraries/versions do they use?"
+```
+
+#### 5. Reproduce Consistently
+
+**Can you trigger it reliably?**
+- What are the exact steps?
+- Does it happen every time?
+- What conditions must be present?
+
+**If not reproducible:**
+- Add more logging
+- Check for race conditions
+- Look for environmental differences
+- DON'T guess at fixes
+
+#### 6. Check Recent Changes
+
+**What changed that could cause this?**
+```bash
+# See recent commits
+git log --oneline -20
+
+# See what changed in relevant files
+git log -p -- path/to/file.rs
+
+# Compare working branch to broken
+git diff working-branch...current-branch
+```
+
+**Also check:**
+- New dependencies added
+- Config file changes
+- Environment variable changes
+- System updates
+
+### Phase 2: Root Cause Analysis
+
+**Synthesize evidence from tools to understand the problem:**
+
+#### 1. Trace Backward Through Call Stack
+
+**When error is deep in execution:**
+
+Use debugger or stack trace to trace backward:
+- Where does invalid data originate?
+- What called this with bad value?
+- Keep tracing up until you find the source
+- Fix at source, not at symptom
+
+**Example stack trace analysis:**
+```
+Error in: database.execute()
+  called by: UserRepository.save()
+  called by: UserService.createUser()
+  called by: API handler
+  called with: email = ""  ← FOUND IT
+
+Root cause: API handler not validating empty email
+Symptom: Database complaining about empty string
+Fix location: Add validation at API handler, not database layer
+```
+
+#### 2. Compare Working vs. Broken
+
+**Use codebase-investigator results:**
+- What's different between working and broken?
+- List every difference, however small
+- Don't assume "that can't matter"
+- Check configuration, imports, versions
+
+#### 3. Review Internet Research
+
+**From internet-researcher findings:**
+- Do solutions match your situation exactly?
+- What root causes do others identify?
+- Are there multiple explanations for this error?
+- Is this a known bug in your version?
+
+#### 4. Form Single Hypothesis
+
+**State clearly:**
+- "I think X is the root cause because Y"
+- Write it down
+- Be specific, not vague
+
+**Example:**
+- ❌ "Something wrong with networking"
+- ✅ "WebSocket fails because WKWebView framework not linked in Xcode project, based on symbol error and Stack Overflow matches"
+
+### Phase 3: Hypothesis Testing
+
+**Scientific method with minimal changes:**
+
+#### 1. Test Minimally
+
+**Make the SMALLEST possible change to test hypothesis:**
+- One variable at a time
+- Don't fix multiple things at once
+- Use debugger to verify intermediate state
+
+**Example:**
+```
+Hypothesis: Missing framework link
+
+Minimal test:
+1. Add framework to Xcode "Link Binary with Libraries"
+2. Clean build
+3. Run in debugger
+4. Check if symbol error gone
+
+Don't also:
+- Update other dependencies
+- Change code
+- Modify configuration
+```
+
+#### 2. Verify with Debugger
+
+**Use debugger to confirm fix:**
+- Set breakpoint before problem area
+- Step through to verify behavior changed
+- Inspect variables to confirm values correct
+- Check that error doesn't occur
+
+#### 3. Run Tests via test-runner Agent
+
+**Don't pollute context with test output:**
+
+Dispatch test-runner agent:
+- "Run: cargo test"
+- "Run: npm test"
+- "Run: pytest"
+
+Agent returns:
+- ✓ Summary: X passed, Y failed
+- Complete failure details if any
+- Exit code for verification
+
+#### 4. Decision Point
+
+**Did it work?**
+- YES → Proceed to Phase 4 (Implementation)
+- NO → Form NEW hypothesis, return to Phase 2
+- DON'T add more fixes on top
+
+**If you don't understand:**
+- Say "I don't understand X"
+- Don't pretend to know
+- Dispatch internet-researcher for more research
+- Ask human partner for help
+
+### Phase 4: Proper Implementation
+
+**After confirming hypothesis, implement properly:**
+
+#### 1. Create Failing Test Case
+
+**REQUIRED: Write test that reproduces the bug:**
+```typescript
+// RED - This test should fail before fix
+test('rejects empty email', () => {
+  expect(() => createUser({ email: '' }))
+    .toThrow('Email cannot be empty');
+});
+```
+
+**Run test via test-runner agent to confirm it fails:**
+- Dispatch test-runner: "Run: npm test -- rejects-empty-email"
+- Verify test fails with expected error
+- This proves test actually tests the bug
+
+**REQUIRED SUB-SKILL:** Use hyperpowers:test-driven-development for proper test writing
+
+#### 2. Implement Minimal Fix
+
+**Fix the root cause identified:**
+- ONE change at a time
+- Address source, not symptom
+- No "while I'm here" improvements
+- No bundled refactoring
+
+#### 3. Verify Fix via test-runner Agent
+
+**Run tests without polluting context:**
+
+Dispatch test-runner agent:
+- "Run full test suite: cargo test"
+- Agent reports: summary + failures only
+- Verify new test passes
+- Verify no other tests broken
+
+#### 4. Update bd Issue
+
+**Track the work:**
+```bash
+# Update with findings
+bd edit bd-123 --design "
+Root cause: Missing WKWebView framework link
+Solution: Added framework to Xcode project
+Test: Added test_webview_loads
+
+References:
+- Stack Overflow: [URL]
+- Apple docs: [URL]
+"
+
+# Close issue
+bd status bd-123 --status closed
+```
+
+#### 5. If Fix Doesn't Work
+
+**STOP and count:**
+- How many fixes have you tried?
+- If < 3: Return to Phase 1 with new information
+- **If ≥ 3: STOP and question the architecture**
+
+**Pattern indicating architectural problem:**
+- Each fix reveals new coupling/shared state
+- Fixes require "massive refactoring"
+- Each fix creates new symptoms elsewhere
+
+**STOP and discuss with human partner:**
+- Is this pattern fundamentally sound?
+- Should we refactor architecture vs. fixing symptoms?
+- Are we "sticking with it through sheer inertia"?
+
+This is NOT a failed hypothesis - this is wrong architecture.
+
+## Tool Usage Summary
+
+| Phase | Tools to Use | Purpose |
+|-------|-------------|---------|
+| **Investigation** | internet-researcher | Search error messages, find solutions |
+| | Debugger (lldb/gdb/DevTools) | Inspect state, step through code |
+| | codebase-investigator | Find working examples |
+| **Analysis** | Stack trace / debugger | Trace backward to root cause |
+| | Git history | Find what changed |
+| **Testing** | Debugger | Verify hypothesis |
+| | test-runner agent | Run tests without context pollution |
+| **Implementation** | test-driven-development | Write proper failing test |
+| | test-runner agent | Verify fix, check regressions |
+
+## Red Flags - STOP and Follow Process
+
+If you catch yourself thinking:
+- "Quick fix for now, investigate later"
+- "Just try changing X and see if it works"
+- "Skip the debugger, print statements are faster"
+- "Skip the test, I'll manually verify"
+- "Don't need to search, I know the answer"
+- "It's probably X, let me fix that"
+- "Add multiple changes, run tests"
+- Proposing solutions before using debugger
+- Proposing solutions before internet research
+- **"One more fix attempt" (when already tried 2+)**
+
+**ALL of these mean: STOP. Return to Phase 1.**
+
+## Common Rationalizations - STOP
+
+| Excuse | Reality |
+|--------|---------|
+| "Issue is simple, don't need debugger" | Debugger would show you're wrong in 30 seconds. |
+| "Print statements are faster than debugger" | Debugger shows ALL variables, not just ones you printed. |
+| "Error is obvious, don't need to search" | 5 minutes of research could save you hours. |
+| "No similar code exists" | Dispatch codebase-investigator to verify. |
+| "Emergency, no time for process" | Systematic debugging is FASTER than guess-and-check. |
+| "Just try this first, then investigate" | First fix sets the pattern. Do it right from start. |
+| "I'll write test after confirming fix works" | Untested fixes don't stick. Test proves it. |
+| "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question design. |
+
+## Integration with Other Skills
+
+**This skill requires:**
+- **test-driven-development** - REQUIRED for creating failing test (Phase 4, Step 1)
+- **verification-before-completion** - REQUIRED before claiming success
+
+**This skill uses:**
+- **internet-researcher agent** - Search errors, find solutions (Phase 1)
+- **codebase-investigator agent** - Find working patterns (Phase 1)
+- **test-runner agent** - Run tests without context pollution (Phase 3, Phase 4)
+
+**Complementary skills:**
+- **root-cause-tracing** - Deep stack trace analysis (when needed)
+- **defense-in-depth** - Add validation at multiple layers after fixing
+
+## Debugger Quick Reference
+
+### lldb (Rust, Swift, C++)
+
+```bash
+# Start debugging
+lldb target/debug/myapp
+
+# Set breakpoints
+(lldb) breakpoint set --file main.rs --line 42
+(lldb) breakpoint set --name my_function
+
+# Run
+(lldb) run
+(lldb) run arg1 arg2
+
+# When paused:
+(lldb) frame variable              # Show all locals
+(lldb) print my_var                # Print specific variable
+(lldb) bt                          # Backtrace (stack)
+(lldb) up / down                   # Navigate stack
+(lldb) continue                    # Resume
+(lldb) step / next                 # Step into / over
+(lldb) finish                      # Run until return
+```
+
+### Browser DevTools (JavaScript)
+
+```javascript
+// In code:
+debugger; // Execution pauses here
+
+// In DevTools:
+// - Sources tab → Add breakpoint by clicking line number
+// - When paused:
+//   - Scope panel: See all variables
+//   - Watch: Add expressions to watch
+//   - Call stack: Navigate callers
+//   - Step over (F10), Step into (F11)
+```
+
+### gdb (C, C++, Go)
+
+```bash
+# Start debugging
+gdb ./myapp
+
+# Set breakpoints
+(gdb) break main.c:42
+(gdb) break myfunction
+
+# Run
+(gdb) run
+
+# When paused:
+(gdb) print myvar
+(gdb) info locals
+(gdb) backtrace
+(gdb) up / down
+(gdb) continue
+(gdb) step / next
+```
+
+## Example: Complete Debugging Session
+
+**Problem:** Test fails with "Symbol not found: _OBJC_CLASS_$_WKWebView"
+
+**Phase 1: Investigation**
+
+1. **Read error**: Symbol not found, linking issue
+2. **Internet research**:
+   ```
+   Dispatch internet-researcher:
+   "Search for 'dyld Symbol not found _OBJC_CLASS_$_WKWebView'
+   Focus on: Xcode linking, framework configuration, iOS deployment"
+
+   Results: Need to link WebKit framework in Xcode project
+   ```
+
+3. **Debugger**: Not needed, linking happens before runtime
+
+4. **Codebase investigation**:
+   ```
+   Dispatch codebase-investigator:
+   "Find other code using WKWebView - how is WebKit linked?"
+
+   Results: Main app target has WebKit in frameworks, test target doesn't
+   ```
+
+**Phase 2: Analysis**
+
+Root cause: Test target doesn't link WebKit framework
+Evidence: Main target works, test target fails, Stack Overflow confirms
+
+**Phase 3: Testing**
+
+Hypothesis: Adding WebKit to test target will fix it
+
+Minimal test:
+1. Add WebKit.framework to test target
+2. Clean build
+3. Run tests
+
+```
+Dispatch test-runner: "Run: swift test"
+Result: ✓ All tests pass
+```
+
+**Phase 4: Implementation**
+
+1. Test already exists (the failing test)
+2. Fix: Framework linked
+3. Verification: Tests pass
+4. Update bd:
+   ```bash
+   bd status bd-123 --status closed
+   ```
+
+**Time:** 15 minutes systematic vs. 2+ hours guessing
+
+## Remember
+
+- **Tools make debugging faster**, not slower
+- **Internet-researcher** can find solutions in seconds
+- **Debugger** shows you everything print statements don't
+- **Codebase-investigator** finds patterns you'd miss
+- **test-runner agent** keeps context clean
+- **Evidence before fixes**, always
+
+95% faster to investigate systematically than to guess-and-check.

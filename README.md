@@ -10,16 +10,26 @@ Hyperpowers is a Claude Code plugin that provides structured workflows, best pra
 
 Reusable workflows for common development tasks:
 
+**Feature Development:**
 - **brainstorming** - Interactive design refinement using Socratic method
-- **test-driven-development** - Write tests first, ensure they fail, then implement
 - **writing-plans** - Create detailed implementation plans (single task or multiple tasks)
 - **executing-plans** - Execute tasks continuously with optional per-task review
-- **dispatching-parallel-agents** - Investigate independent failures concurrently
 - **review-implementation** - Verify implementation matches requirements
-- **verification-before-completion** - Always verify before claiming success
 - **finishing-a-development-branch** - Complete workflow for PR creation and cleanup
 - **sre-task-refinement** - Ensure all corner cases and requirements are understood (uses Opus 4.1)
+
+**Bug Fixing & Debugging:**
+- **debugging-with-tools** - Systematic investigation using debuggers, internet research, and agents
+- **root-cause-tracing** - Trace backward through call stack to find original trigger
+- **fixing-bugs** - Complete workflow from bug discovery to closure with bd tracking
+
+**Quality & Testing:**
+- **test-driven-development** - Write tests first, ensure they fail, then implement
 - **testing-anti-patterns** - Prevent common testing mistakes
+- **verification-before-completion** - Always verify before claiming success
+
+**Collaboration & Process:**
+- **dispatching-parallel-agents** - Investigate independent failures concurrently
 - **writing-skills** - TDD for process documentation itself
 
 ### Slash Commands

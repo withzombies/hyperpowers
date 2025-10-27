@@ -109,6 +109,24 @@ Required for most implementation work:
 
 The `test-driven-development` skill enforces this rigorously.
 
+### Bug Fixing & Debugging
+
+Complete workflow for fixing bugs systematically:
+
+1. **Create bd Bug Issue** - Track the bug with reproduction steps
+2. **Debugging with Tools** - Use debuggers, internet-researcher, codebase-investigator to find root cause
+3. **Write Failing Test** (RED phase) - Reproduce the bug in a test
+4. **Implement Fix** (GREEN phase) - Minimal fix addressing root cause
+5. **Verify** - Run full test suite via test-runner agent, check for regressions
+6. **Close bd Issue** - Document fix and close
+
+**Key Skills:**
+- `debugging-with-tools` - Systematic investigation using debuggers, internet research, and agents
+- `root-cause-tracing` - Trace backward through call stack to find original trigger
+- `fixing-bugs` - Complete workflow from bug discovery to closure
+
+**Critical:** Always use debugger and internet-researcher BEFORE attempting fixes. Never fix symptoms.
+
 ### Verification Pattern
 
 Before claiming any work is complete:
@@ -180,17 +198,17 @@ From RECOMMENDATIONS.md:
 
 **Currently covered:**
 - ✅ Greenfield feature development (idea → design → implementation → PR)
+- ✅ Bug fixing and debugging workflows (systematic investigation, root cause tracing)
 - ✅ Quality culture (TDD, verification, SRE review)
 - ✅ Clean bd integration
 
 **Missing (see RECOMMENDATIONS.md for details):**
-- ❌ Bug fixing and debugging workflows
 - ❌ Refactoring workflows
 - ❌ Incident response
 - ❌ Code review response (receiving reviews)
 - ❌ Merge conflict resolution
 
-Priority: Add debugging and bug-fixing skills first, as most software work is maintenance.
+Priority: Continue adding maintenance workflows (refactoring, incident response).
 
 ## File Naming Conventions
 
