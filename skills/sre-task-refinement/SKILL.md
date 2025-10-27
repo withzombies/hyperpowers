@@ -1,7 +1,7 @@
 ---
 name: sre-task-refinement
 description: Use when you have to refine subtasks into actionable plans ensuring that all corner cases are handled and we understand all the requirements.
-model: opus
+model: sonnet
 ---
 
 # Task Refinement
