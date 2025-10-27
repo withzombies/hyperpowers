@@ -15,6 +15,24 @@ Read tasks from bd, execute ready tasks continuously, update bd status as you go
 
 **Context:** This runs after writing-plans has enhanced bd tasks with detailed implementation steps.
 
+## Review Granularity
+
+**You can review at two levels:**
+
+1. **Final review** (default) - Use review-implementation skill after all tasks complete
+   - Reviews entire implementation against epic
+   - Best for catching integration issues
+   - Faster overall execution
+
+2. **Per-task review** - Use code-reviewer agent after each task completes
+   - Reviews each task immediately after implementation
+   - Catches issues early before they cascade
+   - Slower but more thorough
+
+**User specifies:** "Review each task as we go" or "Review at the end"
+
+If user doesn't specify, use final review (default).
+
 ## The Process
 
 ### Step 1: Load and Review Plan from bd
@@ -83,12 +101,17 @@ Completes bd-3: Task Name
 "
 ```
 
-7. **Move to next task**:
+7. **Optional: Per-task review** (if user requested):
+   - Use code-reviewer agent to review this task's implementation
+   - Agent checks: implementation matches bd task, no anti-patterns, tests passing
+   - Fix any issues found before proceeding
+
+8. **Move to next task**:
 ```bash
 bd ready  # Get next ready task
 ```
 
-Continue with next ready task immediately. No pausing for feedback between tasks.
+Continue with next ready task immediately.
 
 ### Step 3: Review Implementation Against Spec
 
@@ -156,4 +179,6 @@ If a task is blocked, `bd ready` won't show it until its dependencies are closed
 - Reference bd task IDs in commits
 - Work through ready tasks continuously using `bd ready`
 - Stop when blocked, don't guess
-- After all tasks complete: use review-implementation skill
+- Review: per-task (code-reviewer agent) or final (review-implementation skill)
+  - Per-task if user requested: "Review each task as we go"
+  - Final review (default): use review-implementation skill after all tasks complete

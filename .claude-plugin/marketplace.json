@@ -9,7 +9,7 @@
     {
       "name": "withzombies-hyper",
       "description": "Ryan's riff on obra/superpowers: strong guidance for Claude Code as a software development assistant",
-      "version": "1.0.5",
+      "version": "1.0.7",
       "source": "./",
       "author": {
         "name": "Ryan",
