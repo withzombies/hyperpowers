@@ -31,7 +31,7 @@ Transform rough ideas into fully-formed designs through structured questioning a
 
 Use TodoWrite to create todos for each phase:
 
-- Phase 1: Understanding (purpose, constraints, criteria gathered)
+- Phase 1: Understanding (MUST invoke AskUserQuestion 3+ times, gather purpose/constraints/criteria)
 - Phase 2: Exploration (2-3 approaches proposed and evaluated)
 - Phase 3: Design Presentation (design validated in sections)
 - Phase 4: Break into Subtasks (subtasks conceptually defined)
@@ -99,6 +99,8 @@ Action: Dispatch internet-researcher with: "Find current best practices for file
 
 ### Phase 1: Understanding
 
+**CRITICAL: You CANNOT skip this phase. Questions reveal hidden constraints even with detailed requests.**
+
 **Before asking questions:**
 
 1. **Investigate current state** - DON'T do this yourself:
@@ -107,13 +109,34 @@ Action: Dispatch internet-researcher with: "Find current best practices for file
    - Ask investigator to identify constraints from current codebase
    - Review investigator's findings before proceeding
 
-2. **Then gather requirements:**
+2. **Then gather requirements - MANDATORY:**
    - Mark Phase 1 as in_progress in TodoWrite
+   - **YOU MUST invoke AskUserQuestion tool at least 3 times**
+   - DO NOT output text claiming you asked questions
+   - DO NOT proceed without actual tool invocations
    - Ask ONE question at a time to refine the idea
    - **Use AskUserQuestion tool** when you have multiple choice options
    - **Use agents** when you need to verify technical information
    - Gather: Purpose, constraints, success criteria
-   - Mark Phase 1 as completed when understanding is clear
+
+**If you catch yourself thinking:**
+- "The user's request is detailed enough"
+- "I have context from codebase-investigator"
+- "I can infer what they want"
+- "This is straightforward, don't need questions"
+
+**STOP. You are rationalizing. USE THE AskUserQuestion TOOL.**
+
+**Phase 1 Completion Checklist:**
+- [ ] AskUserQuestion tool invoked at least 3 times
+- [ ] Purpose clearly understood
+- [ ] Constraints identified
+- [ ] Success criteria gathered
+- [ ] Mark Phase 1 as completed in TodoWrite
+
+**Verification:** Look at your message history. Do you see `<invoke name="AskUserQuestion">`?
+- If YES → Continue to Phase 2
+- If NO → You skipped Phase 1. Go back and ask questions now.
 
 **Example using AskUserQuestion:**
 ```
@@ -519,6 +542,7 @@ These are violations of the skill requirements:
 |--------|---------|
 | "Idea is simple, can skip exploring alternatives" | Always propose 2-3 approaches. Comparison reveals issues. |
 | "Partner knows what they want, can skip questions" | Questions reveal hidden constraints. Always ask. |
+| "Request is detailed, don't need AskUserQuestion" | MUST invoke tool 3+ times. Output text is not asking. |
 | "I'll present whole design at once for efficiency" | Incremental validation catches problems early. |
 | "Checklist is just a suggestion" | Create TodoWrite todos. Track progress properly. |
 | "Design doc structure doesn't matter" | sre-task-refinement expects structured issues. Follow the structure. |
