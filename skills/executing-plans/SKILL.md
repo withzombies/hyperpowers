@@ -1,15 +1,15 @@
 ---
 name: executing-plans
-description: Use after writing-plans enhances bd issues to execute implementation in controlled batches with review checkpoints - reads tasks from bd, executes in batches, updates bd status, reports for review between batches
+description: Use to execute bd tasks continuously - reads tasks from bd, executes ready tasks one by one, updates bd status as you go, calls review-implementation when complete
 ---
 
 # Executing Plans
 
 ## Overview
 
-Read tasks from bd, execute in batches, update bd status as you go, report for review between batches.
+Read tasks from bd, execute ready tasks continuously, update bd status as you go.
 
-**Core principle:** Batch execution with checkpoints for architect review. All state lives in bd.
+**Core principle:** Continuous execution through ready tasks. All state lives in bd.
 
 **Announce at start:** "I'm using the executing-plans skill to implement these bd tasks."
 
@@ -46,10 +46,9 @@ bd dep tree bd-1
 
 5. **If no concerns:** Create TodoWrite with task IDs and proceed
 
-### Step 2: Execute Batch
-**Default: First 3 ready tasks from `bd ready`**
+### Step 2: Execute Tasks Continuously
 
-For each task in the batch:
+For each ready task from `bd ready`:
 
 1. **Start task** - Mark as in_progress in both TodoWrite and bd:
 ```bash
@@ -84,24 +83,14 @@ Completes bd-3: Task Name
 "
 ```
 
-### Step 3: Report
-When batch complete:
-- Show what was implemented (which bd tasks)
-- Show verification output (test results)
-- Show bd status:
+7. **Move to next task**:
 ```bash
-bd list --status closed  # Completed tasks
-bd ready                 # What's next
+bd ready  # Get next ready task
 ```
-- Say: "Batch complete. Ready for feedback."
 
-### Step 4: Continue
-Based on feedback:
-- Apply changes if needed
-- Execute next batch
-- Repeat until complete
+Continue with next ready task immediately. No pausing for feedback between tasks.
 
-### Step 5: Review Implementation Against Spec
+### Step 3: Review Implementation Against Spec
 
 After all tasks complete and verified:
 - Announce: "I'm using the review-implementation skill to verify the implementation matches the spec."
@@ -165,5 +154,6 @@ If a task is blocked, `bd ready` won't show it until its dependencies are closed
 - Follow detailed implementation steps in bd task design
 - Don't skip verifications
 - Reference bd task IDs in commits
-- Between batches: report status with `bd list --status closed` and `bd ready`
+- Work through ready tasks continuously using `bd ready`
 - Stop when blocked, don't guess
+- After all tasks complete: use review-implementation skill
