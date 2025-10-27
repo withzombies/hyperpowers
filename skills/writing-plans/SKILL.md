@@ -19,6 +19,8 @@ Assume they are a junior developer who knows almost nothing about our toolset or
 
 **Output:** Enhanced bd issues with detailed implementation steps
 
+**CRITICAL:** NEVER read `.beads/issues.jsonl` directly. ALWAYS use `bd show`, `bd list`, and `bd edit` commands to interact with tasks. The bd CLI provides the correct interface.
+
 ## Flexible Scope
 
 **You can enhance:**

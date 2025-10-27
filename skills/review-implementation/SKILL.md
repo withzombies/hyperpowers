@@ -15,6 +15,8 @@ Review completed implementation against bd epic specification to catch gaps befo
 
 **Context:** This runs after executing-plans completes all tasks but before finishing-a-development-branch.
 
+**CRITICAL:** NEVER read `.beads/issues.jsonl` directly. ALWAYS use `bd show`, `bd list`, and `bd dep tree` commands to read task specifications. The bd CLI provides the correct interface.
+
 ## The Process
 
 ### Step 1: Load Epic Specification from bd

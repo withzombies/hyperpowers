@@ -15,6 +15,8 @@ Close bd epic, verify tests, present integration options, execute choice, clean 
 
 **Context:** Called after review-implementation approves the implementation (which runs after executing-plans).
 
+**CRITICAL:** NEVER read `.beads/issues.jsonl` directly. ALWAYS use `bd show`, `bd list`, and `bd status` commands to interact with tasks. The bd CLI provides the correct interface.
+
 ## The Process
 
 ### Step 1: Close bd Epic

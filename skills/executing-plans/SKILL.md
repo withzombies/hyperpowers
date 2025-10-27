@@ -15,6 +15,8 @@ Read tasks from bd, execute ready tasks continuously, update bd status as you go
 
 **Context:** This runs after writing-plans has enhanced bd tasks with detailed implementation steps.
 
+**CRITICAL:** NEVER read `.beads/issues.jsonl` directly. ALWAYS use `bd show`, `bd ready`, `bd list`, and `bd status` commands to interact with tasks. The bd CLI provides the correct interface.
+
 ## Review Granularity
 
 **You can review at two levels:**
