@@ -1,6 +1,6 @@
 ---
 name: writing-plans
-description: Use after sre-task-refinement approves bd issues to expand high-level implementation checklists into detailed step-by-step instructions - enhances bd tasks directly with exact file paths, complete code examples, and verification commands for engineers with zero codebase context
+description: Use to expand bd task implementation checklists into detailed step-by-step instructions - enhances bd tasks with exact file paths, complete code examples, and verification commands for engineers with zero codebase context. Can work on single tasks or multiple tasks.
 ---
 
 # Writing Plans
@@ -11,31 +11,36 @@ Enhance bd tasks with comprehensive implementation details assuming the engineer
 
 Assume they are a junior developer who knows almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
-**Announce at start:** "I'm using the writing-plans skill to expand the bd tasks with detailed implementation steps."
+**Announce at start:** "I'm using the writing-plans skill to expand bd task(s) with detailed implementation steps."
 
-**Context:** This runs after sre-task-refinement has approved the bd issues.
+**Context:** This can run after sre-task-refinement approves bd issues, or anytime you want to expand tasks with more detail.
 
-**Input:** Approved bd epic with tasks/phases
+**Input:** One or more bd task IDs (e.g., bd-2, or bd-2 through bd-5)
 
 **Output:** Enhanced bd issues with detailed implementation steps
 
+## Flexible Scope
+
+**You can enhance:**
+- **Single task:** "Expand bd-2 with implementation steps"
+- **Multiple tasks:** "Expand bd-2 through bd-5"
+- **Entire epic:** "Expand all tasks in bd-1"
+
+**No artificial limits.** Work on as many or as few tasks as makes sense for the situation.
+
 ## Before Starting
 
-**REQUIRED: Verify bd epic and codebase state**
+**REQUIRED: Identify scope and verify codebase state**
 
-### 1. Find and Validate Epic
+### 1. Identify Tasks to Expand
 
-**Read the epic from bd:**
+**User specifies scope in one of these ways:**
+- Explicit task list: "Expand bd-2, bd-3, bd-5"
+- Range: "Expand bd-2 through bd-8"
+- Epic: "Expand all tasks in bd-1"
+- Single: "Expand bd-2"
 
-```bash
-# If epic ID known (e.g., from sre-task-refinement output)
-bd show bd-1
-
-# Or search for open epics
-bd list --type epic --status open
-```
-
-**Get all tasks in epic:**
+**If user says "expand all tasks in bd-1":**
 
 ```bash
 # View complete dependency tree
@@ -44,17 +49,9 @@ bd dep tree bd-1
 # This shows all child tasks/phases
 ```
 
-**Count the tasks.**
+Make note of all task IDs to expand.
 
-**If epic has >8 tasks/phases:** STOP. Refuse to proceed.
-
-Tell the user:
-"This epic has [N] tasks, which exceeds the 8-task limit for implementation plans. Please rerun this skill with a scope of no more than 8 tasks. You can:
-1. Select the first 8 tasks for this implementation plan
-2. Create multiple implementation plans (one per 8-task batch)
-3. Simplify the epic to fit within 8 tasks"
-
-**If already implementing tasks 9+:** The user should provide the previous implementation plan as context when scoping the next batch.
+**If user provides range or explicit list:** Use those task IDs directly.
 
 ### 2. Codebase Verification
 
@@ -116,7 +113,7 @@ These detailed steps will be added to each bd task's design.
 
 **Step 0: Create TodoWrite tracker**
 
-After verifying scope (≤8 tasks), create a TodoWrite todo list with one item per bd task:
+After identifying scope, create a TodoWrite todo list with one item per bd task you'll expand:
 
 ```markdown
 - [ ] bd-2: [Task Title]
@@ -126,6 +123,8 @@ After verifying scope (≤8 tasks), create a TodoWrite todo list with one item p
 ```
 
 Mark each task as in_progress when working on it, completed when user approves expansion.
+
+**For single-task expansions:** Still use TodoWrite with one item for consistency.
 
 **Workflow for EACH task:**
 
@@ -400,18 +399,17 @@ These are violations of the skill requirements:
 | "I'll batch all tasks then validate at end" | Early mistake cascades to all later tasks. Validate incrementally. |
 | "I'll just ask for approval, user can see the plan" | Output complete task expansion in message BEFORE AskUserQuestion. User must see it. |
 | "Plan looks complete enough to ask" | Show ALL step groups with ALL steps and code. Then ask. |
-| "This epic has 12 tasks but they're small" | Limit is 8 tasks. No exceptions. Refuse and redirect. |
-| "I can combine tasks to fit in 8" | That's the user's decision, not yours. Refuse and explain options. |
+| "Too many tasks, should suggest splitting" | No artificial limits. Work on as many tasks as user specifies. |
+| "Single task is too small for this skill" | Single task expansion is valid. Use the skill. |
 
 **All of these mean: STOP. Follow the requirements exactly.**
 
 ## Requirements Checklist
 
 **Before starting:**
-- [ ] Find epic in bd (`bd show bd-1`)
-- [ ] Get all tasks (`bd dep tree bd-1`)
-- [ ] Count tasks - refuse if >8
-- [ ] Create TodoWrite with all task IDs
+- [ ] Identify scope from user (single task, range, epic, or explicit list)
+- [ ] If epic: Get all tasks (`bd dep tree bd-1`)
+- [ ] Create TodoWrite with all task IDs to expand
 
 **For each task:**
 - [ ] Mark task as in_progress in TodoWrite
