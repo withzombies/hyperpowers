@@ -89,6 +89,10 @@ bd show bd-3
 4. **Run verifications as specified**:
    - Tests should pass as you go
    - Follow exact verification commands from task
+   - **IMPORTANT:** Use test-runner agent (Task tool with subagent_type=test-runner) for running tests
+     - Keeps verbose test output in agent context
+     - Returns only summary + failures
+     - Prevents context pollution
 
 5. **Complete task** - Mark as completed in both TodoWrite and bd:
 ```bash

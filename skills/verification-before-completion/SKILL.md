@@ -28,6 +28,8 @@ BEFORE claiming any status or expressing satisfaction:
 
 1. IDENTIFY: What command proves this claim?
 2. RUN: Execute the FULL command (fresh, complete)
+   - For tests/pre-commit/commits: Use test-runner agent to avoid context pollution
+   - Agent captures verbose output, returns only summary + failures
 3. READ: Full output, check exit code, count failures
 4. VERIFY: Does output confirm the claim?
    - If NO: State actual status with evidence
@@ -36,6 +38,12 @@ BEFORE claiming any status or expressing satisfaction:
 
 Skip any step = lying, not verifying
 ```
+
+**Using the test-runner agent:**
+- `Task tool` with `subagent_type=test-runner`
+- Agent runs command, captures all output in its context
+- Returns concise report: summary stats + failure details only
+- Prevents context pollution from verbose test/hook output
 
 ## Common Failures
 

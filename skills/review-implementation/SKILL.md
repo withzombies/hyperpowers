@@ -65,6 +65,10 @@ git diff main...HEAD -- src/auth/jwt.ts
    - Run verification commands from success criteria
    - Check that each criterion is actually met
    - Don't assume - verify with evidence
+   - **IMPORTANT:** Use test-runner agent (Task tool with subagent_type=test-runner) for running tests
+     - Keeps verbose test output in agent context
+     - Returns only summary + failures
+     - Prevents context pollution
 
 3. **Check anti-patterns weren't violated:**
    - Search for prohibited patterns (unwrap/expect, TODO without issue #, etc.)
@@ -235,15 +239,17 @@ bd show bd-3 | grep -A 20 "Success Criteria"
 ```
 
 2. **Run each verification:**
-```bash
-# Example criteria: "All tests passing"
-cargo test
 
+**For test commands (use test-runner agent):**
+```
+Task tool with subagent_type=test-runner, command="cargo test"
+Task tool with subagent_type=test-runner, command="cargo clippy"
+```
+
+**For search/analysis commands (use Bash/Grep):**
+```bash
 # Example criteria: "No unwrap in production code"
 rg "\.unwrap\(\)" src/
-
-# Example criteria: "Clippy clean"
-cargo clippy
 ```
 
 3. **Record results:**
