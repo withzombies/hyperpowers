@@ -117,58 +117,56 @@ async createUser(req: Request): Promise<Response> {
 
 **When stack trace isn't clear enough:**
 
-### Set Breakpoint at Symptom
-```bash
-lldb target/debug/myapp
-(lldb) breakpoint set --file validator.rs --line 42
-(lldb) run
+**IMPORTANT:** Claude cannot run interactive debuggers. Instead, Claude should guide the user through debugger usage or add instrumentation.
+
+### Option 1: Guide User Through Debugger
+
+**Claude provides commands for user to run:**
+
+```
+"Let's use lldb to trace backward through the call stack.
+
+Please run these commands:
+  lldb target/debug/myapp
+  (lldb) breakpoint set --file validator.rs --line 42
+  (lldb) run
+
+When breakpoint hits:
+  (lldb) frame variable email     # Check the value here
+  (lldb) bt                       # See full call stack
+  (lldb) up                       # Move to caller
+  (lldb) frame variable request   # Check values in caller
+  (lldb) up                       # Move up again
+  (lldb) frame variable           # Check where empty string created
+
+Please share:
+  1. Value of 'email' at validator.rs:42
+  2. Value of 'request.email' in user_service.rs
+  3. Value of 'req.body.email' in api_handler.rs
+  4. Where does empty string appear first?"
 ```
 
-### When Breakpoint Hits
-```bash
-# Inspect the bad value
+**User shares debugger output:**
+```
 (lldb) frame variable email
 (string) email = ""
 
-# Look at call stack
-(lldb) bt
-* frame #0: validator.rs:42 validateEmail
-  frame #1: user_service.rs:18 create
-  frame #2: api_handler.rs:67 createUser
-  frame #3: server.rs:123 handleRequest
-```
-
-### Navigate Up Stack
-```bash
-# Move to caller
 (lldb) up
 frame #1: user_service.rs:18 create
+(lldb) frame variable request.email
+(string) request.email = ""
 
-# Inspect variables in caller
-(lldb) frame variable request
-(UserRequest) request = {
-  name = "John"
-  email = ""  ← Still empty
-}
-
-# Move up again
 (lldb) up
 frame #2: api_handler.rs:67 createUser
-
-# Found where empty string was created
-(lldb) frame variable req.body
-(Body) req.body = {
-  name = "John"
-  email = nil  ← Was nil here!
-}
-
-(lldb) frame variable userRequest
-(UserRequest) userRequest = {
-  email = ""  ← Converted to empty string HERE
-}
+(lldb) frame variable req.body.email
+(option) req.body.email = nil
+(lldb) frame variable userRequest.email
+(string) userRequest.email = ""  ← Created here!
 ```
 
-**Root cause confirmed with debugger:** API handler converts nil to empty string.
+**Root cause identified:** API handler converts nil to empty string at line 67.
+
+### Option 2: Add Instrumentation (Claude CAN do this)
 
 ## Adding Instrumentation When Needed
 
@@ -362,15 +360,17 @@ Use root-cause-tracing when:
 
 ## Quick Reference
 
-| Step | Action | Tool |
-|------|--------|------|
-| 1. Symptom | Read error, find location | Error message |
-| 2. Immediate cause | What code threw error? | Stack trace |
-| 3. Trace up | What called this? | Stack trace / debugger |
-| 4. Keep tracing | What called that? | Debugger (`up` command) |
-| 5. Find source | Where did bad value originate? | Debugger / logging |
-| 6. Fix source | Address root cause | Code change |
-| 7. Add defense | Validate at each layer | Multiple checks |
+| Step | Action | Tool | Who Uses It |
+|------|--------|------|-------------|
+| 1. Symptom | Read error, find location | Error message | Claude |
+| 2. Immediate cause | What code threw error? | Stack trace | Claude |
+| 3. Trace up | What called this? | Stack trace | Claude |
+| 4. Keep tracing | What called that? | Debugger OR instrumentation | User (Claude guides) OR Claude (adds logging) |
+| 5. Find source | Where did bad value originate? | Debugger OR instrumentation | User (Claude guides) OR Claude (adds logging) |
+| 6. Fix source | Address root cause | Code change | Claude |
+| 7. Add defense | Validate at each layer | Multiple checks | Claude |
+
+**Note:** Claude guides user through debugger OR adds instrumentation Claude can run.
 
 ## Remember
 

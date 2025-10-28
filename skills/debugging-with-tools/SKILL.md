@@ -76,49 +76,112 @@ Dispatch internet-researcher with:
 
 #### 3. Use Debugger to Inspect State
 
-**Before adding print statements, use actual debugger:**
+**Before adding print statements, recommend user runs debugger:**
+
+**IMPORTANT:** Claude cannot run interactive debuggers (lldb/gdb/DevTools) directly. Instead:
+1. Guide user to run debugger with specific commands
+2. OR add instrumentation that Claude CAN add (logging, assertions)
+3. Ask user to share debugger output
+
+**Recommend debugger to user:**
 
 **For compiled languages (Rust, Swift, C++):**
+```
+"Let's use lldb to inspect the state at the error location.
+
+Please run these commands:
+  lldb target/debug/myapp
+  (lldb) breakpoint set --file main.rs --line 42
+  (lldb) run
+
+When the breakpoint hits, run:
+  (lldb) frame variable          # Shows all local variables
+  (lldb) print my_variable       # Inspects specific variable
+  (lldb) bt                      # Shows stack trace
+  (lldb) up                      # Moves up stack frame
+
+Please share the output, especially the values of: [list variables]"
+```
+
+**For browser JavaScript:**
+```
+"Let's use browser DevTools to inspect the state.
+
+Please:
+1. Open DevTools (F12)
+2. Go to Sources tab
+3. Set breakpoint at file.js:line 42
+4. Refresh the page
+5. When debugger pauses, check these variables in the Scope panel:
+   - [variable names]
+6. Share the values you see"
+```
+
+**Alternative: Automated debugging tools Claude CAN use:**
+
+#### Option A: lldb Batch Mode (Claude can run this)
+
 ```bash
-# Set breakpoint at error location
-lldb target/debug/myapp
-(lldb) breakpoint set --file main.rs --line 42
-(lldb) run
+# Create lldb script
+cat > debug-script.lldb <<'EOF'
+breakpoint set --file main.rs --line 42
+run
+frame variable
+bt
+quit
+EOF
 
-# When breakpoint hits:
-(lldb) frame variable          # Inspect all local variables
-(lldb) print my_variable       # Inspect specific variable
-(lldb) bt                      # Show stack trace
-(lldb) up                      # Move up stack frame
-(lldb) frame variable          # Inspect caller's variables
+# Run non-interactively
+lldb -s debug-script.lldb target/debug/myapp 2>&1
 ```
 
-**For interpreted languages (JavaScript, Python):**
-```javascript
-// Browser DevTools
-debugger; // Add this line where you want to break
-
-// When debugger pauses:
-// - Inspect variables in Scope panel
-// - Step through execution (F10, F11)
-// - Examine call stack
-// - Watch expressions
-```
-
-**For Node.js:**
+**Or single command:**
 ```bash
-node inspect myapp.js
-# Or use Chrome DevTools
-node --inspect-brk myapp.js
-# Open chrome://inspect
+lldb -o "breakpoint set --file main.rs --line 42" \
+     -o "run" \
+     -o "frame variable" \
+     -o "bt" \
+     -o "quit" \
+     -- target/debug/myapp 2>&1
 ```
 
-**Debugger advantages over print statements:**
-- Inspect ALL variables, not just ones you printed
-- Navigate up/down call stack
-- See variable history
-- No code changes needed
-- Don't need to rerun to see different variable
+#### Option B: strace (Linux - system call tracing)
+
+```bash
+# Trace specific system calls
+strace -e trace=open,read,write cargo test 2>&1
+
+# Find which files are opened
+strace -e trace=open cargo test 2>&1 | grep "\.env"
+
+# See all syscalls with timestamps
+strace -tt cargo test 2>&1
+```
+
+#### Option C: Add instrumentation (simplest)
+
+```rust
+// Claude can add this logging directly
+fn process_request(request: &Request) {
+    eprintln!("DEBUG process_request:");
+    eprintln!("  request.email: {:?}", request.email);
+    eprintln!("  request.name: {:?}", request.name);
+    eprintln!("  is_empty: {}", request.email.is_empty());
+    eprintln!("  stack: {:?}", std::backtrace::Backtrace::capture());
+
+    // Existing code...
+}
+```
+
+**Run with instrumentation:**
+```bash
+cargo test 2>&1 | grep "DEBUG process_request" -A 10
+```
+
+**When to use each approach:**
+- **lldb batch**: Need to inspect variables at specific breakpoint
+- **strace**: File access, network, process issues
+- **Instrumentation**: Most flexible, Claude can add/remove easily
 
 #### 4. Find Working Examples
 
@@ -261,13 +324,41 @@ Don't also:
 - Modify configuration
 ```
 
-#### 2. Verify with Debugger
+#### 2. Verify with Testing
 
-**Use debugger to confirm fix:**
-- Set breakpoint before problem area
-- Step through to verify behavior changed
-- Inspect variables to confirm values correct
-- Check that error doesn't occur
+**Option A: Ask user to verify with debugger (if interactive verification needed):**
+```
+"To confirm this fix works, please run the debugger:
+  lldb target/debug/myapp
+  (lldb) breakpoint set --file file.rs --line 42
+  (lldb) run
+
+When it hits the breakpoint, verify:
+  - [Variable X] should now be [expected value]
+  - [Behavior Y] should happen
+
+Does the debugger show the fix working?"
+```
+
+**Option B: Add verification instrumentation (Claude can do this):**
+```rust
+fn fixed_function() {
+    eprintln!("DEBUG: Entering fixed_function");
+    eprintln!("  variable value: {:?}", variable);
+    assert!(!variable.is_empty(), "Fix: variable should not be empty");
+
+    // Fixed code...
+}
+```
+
+**Option C: Write a test (preferred - Claude can do this):**
+```rust
+#[test]
+fn test_fix_works() {
+    let result = fixed_function();
+    assert!(result.is_ok());
+}
+```
 
 #### 3. Run Tests via test-runner Agent
 
@@ -376,17 +467,25 @@ This is NOT a failed hypothesis - this is wrong architecture.
 
 ## Tool Usage Summary
 
-| Phase | Tools to Use | Purpose |
-|-------|-------------|---------|
-| **Investigation** | internet-researcher | Search error messages, find solutions |
-| | Debugger (lldb/gdb/DevTools) | Inspect state, step through code |
-| | codebase-investigator | Find working examples |
-| **Analysis** | Stack trace / debugger | Trace backward to root cause |
-| | Git history | Find what changed |
-| **Testing** | Debugger | Verify hypothesis |
-| | test-runner agent | Run tests without context pollution |
-| **Implementation** | test-driven-development | Write proper failing test |
-| | test-runner agent | Verify fix, check regressions |
+| Phase | Tools to Use | Purpose | Who Uses It |
+|-------|-------------|---------|-------------|
+| **Investigation** | internet-researcher | Search error messages, find solutions | Claude (agent) |
+| | lldb batch mode | Non-interactive variable inspection | Claude (bash) |
+| | strace/dtrace | System call tracing | Claude (bash) |
+| | Instrumentation (logging) | Add debug output | Claude (adds code) |
+| | Interactive debuggers | Step through execution | User (Claude guides) |
+| | codebase-investigator | Find working examples | Claude (agent) |
+| **Analysis** | Stack trace | Trace backward to root cause | Claude (reads) |
+| | Git history | Find what changed | Claude (bash) |
+| **Testing** | Test writing | Verify hypothesis with test | Claude (adds code) |
+| | test-runner agent | Run tests without context pollution | Claude (agent) |
+| **Implementation** | test-driven-development | Write proper failing test | Claude (skill) |
+| | test-runner agent | Verify fix, check regressions | Claude (agent) |
+
+**Key distinction:**
+- **Claude can use directly:** Agents, lldb batch mode, strace, instrumentation, tests, git, grep
+- **User must use:** Interactive debuggers (lldb/gdb/DevTools when stepping through)
+- **Prefer:** Automated tools (lldb batch, strace, instrumentation) over asking user
 
 ## Red Flags - STOP and Follow Process
 
@@ -433,6 +532,56 @@ If you catch yourself thinking:
 - **defense-in-depth** - Add validation at multiple layers after fixing
 
 ## Debugger Quick Reference
+
+### Automated Debugging (Claude CAN run these)
+
+#### lldb Batch Mode
+
+```bash
+# One-shot command to inspect variable at breakpoint
+lldb -o "breakpoint set --file main.rs --line 42" \
+     -o "run" \
+     -o "frame variable my_var" \
+     -o "quit" \
+     -- target/debug/myapp 2>&1
+
+# With script file for complex debugging
+cat > debug.lldb <<'EOF'
+breakpoint set --file main.rs --line 42
+run
+frame variable
+bt
+up
+frame variable
+quit
+EOF
+
+lldb -s debug.lldb target/debug/myapp 2>&1
+```
+
+#### strace (Linux - system call tracing)
+
+```bash
+# See which files program opens
+strace -e trace=open,openat cargo run 2>&1 | grep -v "ENOENT"
+
+# Find network activity
+strace -e trace=network cargo run 2>&1
+
+# All syscalls with time
+strace -tt cargo test some_test 2>&1
+```
+
+#### dtrace (macOS - dynamic tracing)
+
+```bash
+# Trace function calls
+sudo dtrace -n 'pid$target:myapp::entry { printf("%s", probefunc); }' -p <PID>
+```
+
+### Interactive Debugging (USER runs these, Claude guides)
+
+**These require interactive terminal - Claude provides commands, user runs them**
 
 ### lldb (Rust, Swift, C++)
 
@@ -556,9 +705,15 @@ Result: ✓ All tests pass
 
 - **Tools make debugging faster**, not slower
 - **Internet-researcher** can find solutions in seconds
-- **Debugger** shows you everything print statements don't
+- **Automated debugging works** - lldb batch mode, strace, instrumentation
 - **Codebase-investigator** finds patterns you'd miss
 - **test-runner agent** keeps context clean
 - **Evidence before fixes**, always
+
+**Prefer automated tools:**
+1. lldb batch mode - non-interactive variable inspection
+2. strace/dtrace - system call tracing
+3. Instrumentation - logging Claude can add
+4. Interactive debugger - only when automated tools insufficient
 
 95% faster to investigate systematically than to guess-and-check.
