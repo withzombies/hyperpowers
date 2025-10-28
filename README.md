@@ -94,13 +94,20 @@ Task("Run tests", "Run pytest tests/")
 
 ## Installation
 
-Install directly from the Claude Code plugin marketplace:
+Install from the Claude Code plugin marketplace:
 
-```bash
-claude-code plugins install withzombies-hyper/hyperpowers
+```
+/plugin marketplace add withzombies/hyperpowers-marketplace
+/plugin install hyperpowers@hyperpowers-marketplace
 ```
 
-That's it! The plugin will be automatically loaded in your next Claude Code session.
+Verify installation by running `/help` - you should see the hyperpowers slash commands listed.
+
+To update the plugin later:
+
+```
+/plugin update hyperpowers
+```
 
 ## Usage
 
