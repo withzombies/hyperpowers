@@ -22,7 +22,7 @@ Use when you discover a bug:
 - Regression from recent change
 - Production issue (for non-emergencies)
 
-**For production emergencies:** Use handling-incidents skill instead (when that exists)
+**For production emergencies:** This workflow is for thorough debugging and testing. For time-critical production issues, you may need to skip some steps (like full investigation before hotfix), but still track in bd and add regression tests afterward.
 
 ## The Complete Workflow
 
