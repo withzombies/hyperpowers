@@ -46,6 +46,59 @@ Use this skill when:
 
 **Rule:** If you need to change tests (not just add tests), you're rewriting, not refactoring.
 
+### Strangler Fig Pattern (Hybrid Approach)
+
+**When to use:**
+- Need to replace legacy system but can't tolerate downtime
+- Want incremental migration with continuous monitoring
+- Reduce risk of big-bang replacement
+- System too large to refactor in one go
+
+**How it works:**
+
+1. **Transform:** Create modernized components alongside legacy code
+2. **Coexist:** Both systems run in parallel (façade routes requests)
+3. **Eliminate:** Retire old functionality piece by piece
+
+**Example scenario:**
+```
+Legacy: Monolithic user service with 50K LOC
+Goal: Microservices architecture
+
+Step 1 (Transform):
+- Create new UserService microservice
+- Implement user creation endpoint
+- Tests pass in isolation
+
+Step 2 (Coexist):
+- Add routing layer (façade)
+- Route POST /users to new service
+- Route GET /users to legacy service (for now)
+- Monitor both, compare results
+
+Step 3 (Eliminate):
+- Once confident, migrate GET /users to new service
+- Remove user creation from legacy
+- Repeat for remaining endpoints
+```
+
+**Benefits:**
+- Incremental replacement reduces complexity and risk
+- Constant monitoring minimizes breakage
+- Legacy system continues operating during transition
+- Each migration step is independently valuable
+- Can pause/rollback at any point
+
+**Integration with refactoring:**
+- Use refactoring within each new component
+- Use Strangler Fig for replacing entire legacy systems
+- Combination: Refactor legacy → Strangler Fig to new architecture → Refactor new
+
+**When NOT to use:**
+- Simple refactoring will suffice (overhead not justified)
+- Need immediate complete replacement (regulatory, security)
+- No ability to run parallel systems (resource constraints)
+
 ## The Safe Refactoring Process
 
 ### Step 1: Verify Tests Pass
@@ -53,8 +106,8 @@ Use this skill when:
 **BEFORE any refactoring:**
 
 ```bash
-# Run full test suite via test-runner agent
-Dispatch test-runner agent: "Run: cargo test"
+# Run full test suite via hyperpowers:test-runner agent
+Dispatch hyperpowers:test-runner agent: "Run: cargo test"
 
 # Verify: ALL tests pass
 # If any fail: Fix them first, THEN refactor
@@ -161,8 +214,8 @@ fn validate_email(email: &str) -> Result<()> {
 **After EVERY small change:**
 
 ```bash
-# Run via test-runner agent
-Dispatch test-runner agent: "Run: cargo test"
+# Run via hyperpowers:test-runner agent
+Dispatch hyperpowers:test-runner agent: "Run: cargo test"
 
 # Verify: ALL tests still pass
 # Exit code: 0
@@ -219,10 +272,10 @@ Each step: change → test → commit
 
 ```bash
 # Run full test suite one more time
-Dispatch test-runner agent: "Run: cargo test"
+Dispatch hyperpowers:test-runner agent: "Run: cargo test"
 
 # Run linter
-Dispatch test-runner agent: "Run: cargo clippy"
+Dispatch hyperpowers:test-runner agent: "Run: cargo clippy"
 
 # Verify no warnings introduced
 ```
@@ -488,12 +541,12 @@ Change 10 files, extract 5 classes, rename everything, THEN test
 **This skill requires:**
 - **test-driven-development** - For writing tests before refactoring (if none exist)
 - **verification-before-completion** - For final verification
-- **test-runner agent** - For running tests without context pollution
+- **hyperpowers:test-runner agent** - For running tests without context pollution
 
 **This skill uses:**
 - bd for tracking refactoring work
 - Git for committing each small step
-- test-runner agent for verification
+- hyperpowers:test-runner agent for verification
 
 ## Red Flags - STOP
 
@@ -526,7 +579,7 @@ If you catch yourself thinking:
 
 ### Minutes 0-5: Verify Tests Pass
 ```bash
-Dispatch test-runner: "Run: cargo test"
+Dispatch hyperpowers:test-runner: "Run: cargo test"
 Result: ✓ 234 tests pass
 ```
 
@@ -542,7 +595,7 @@ bd status bd-456 --status in-progress
 // Extract validate_email()
 ```
 ```bash
-Dispatch test-runner: "Run: cargo test"
+Dispatch hyperpowers:test-runner: "Run: cargo test"
 Result: ✓ 234 tests pass
 git commit -m "refactor(bd-456): extract email validation"
 ```
@@ -552,7 +605,7 @@ git commit -m "refactor(bd-456): extract email validation"
 // Extract validate_name()
 ```
 ```bash
-Dispatch test-runner: "Run: cargo test"
+Dispatch hyperpowers:test-runner: "Run: cargo test"
 Result: ✓ 234 tests pass
 git commit -m "refactor(bd-456): extract name validation"
 ```
@@ -563,7 +616,7 @@ struct UserValidator { /* empty */ }
 impl UserValidator { /* empty */ }
 ```
 ```bash
-Dispatch test-runner: "Run: cargo test"
+Dispatch hyperpowers:test-runner: "Run: cargo test"
 Result: ✓ 234 tests pass
 git commit -m "refactor(bd-456): create UserValidator struct"
 ```
@@ -576,7 +629,7 @@ Each step: move one method, test, commit
 // Use UserValidator instead of inline validation
 ```
 ```bash
-Dispatch test-runner: "Run: cargo test"
+Dispatch hyperpowers:test-runner: "Run: cargo test"
 Result: ✓ 234 tests pass
 git commit -m "refactor(bd-456): use UserValidator in UserService"
 ```
@@ -586,10 +639,10 @@ Each service: one change, test, commit
 
 ### Minutes 55-60: Final verification and close
 ```bash
-Dispatch test-runner: "Run: cargo test"
+Dispatch hyperpowers:test-runner: "Run: cargo test"
 Result: ✓ 234 tests pass
 
-Dispatch test-runner: "Run: cargo clippy"
+Dispatch hyperpowers:test-runner: "Run: cargo clippy"
 Result: ✓ No warnings
 
 bd status bd-456 --status closed

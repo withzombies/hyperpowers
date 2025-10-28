@@ -296,7 +296,89 @@ bd list --status closed | grep "closed_at" | grep "2025-10-" | wc -l
 bd list --parent bd-1 --status closed | wc -l
 ```
 
-#### Work in Progress
+#### Cycle Time vs. Lead Time
+
+**Two distinct time measurements:**
+
+**Cycle Time:**
+- **Definition**: Time from "work started" to "work completed"
+- **Start**: When task moves to "in-progress" status
+- **End**: When task moves to "closed" status
+- **Measures**: How efficiently work flows through active development
+- **Use**: Identify process inefficiencies, improve development speed
+
+```bash
+# Calculate cycle time for completed task
+bd show bd-5 | grep "status.*in-progress" # Get start time
+bd show bd-5 | grep "status.*closed"      # Get end time
+# Difference = cycle time
+```
+
+**Lead Time:**
+- **Definition**: Time from "request created" to "delivered to customer"
+- **Start**: When task is created (enters backlog)
+- **End**: When task is deployed/delivered
+- **Measures**: Overall responsiveness to requests
+- **Use**: Set realistic expectations, measure total process duration
+
+```bash
+# Calculate lead time for completed task
+bd show bd-5 | grep "created_at"    # Get creation time
+bd show bd-5 | grep "deployed_at"   # Get deployment time (if tracked)
+# Difference = lead time
+```
+
+**Key Differences:**
+
+| Metric | Starts | Ends | Includes Waiting? | Measures |
+|--------|--------|------|-------------------|----------|
+| **Cycle Time** | In-progress | Closed | No | Development efficiency |
+| **Lead Time** | Created | Deployed | Yes | Total responsiveness |
+
+**Example:**
+```
+Task created: Monday 9am (enters backlog)
+↓ [waits 2 days]
+Task started: Wednesday 9am (moved to in-progress)
+↓ [active work]
+Task completed: Wednesday 5pm (moved to closed)
+↓ [waits for deployment]
+Task deployed: Thursday 2pm (delivered)
+
+Cycle Time: 8 hours (Wednesday 9am → 5pm)
+Lead Time: 3 days, 5 hours (Monday 9am → Thursday 2pm)
+```
+
+**Why both matter:**
+
+- **Short cycle time, long lead time**: Work is efficient once started, but tasks wait too long in backlog
+  - Fix: Reduce WIP, start fewer tasks, finish faster
+
+- **Long cycle time, short lead time**: Work starts immediately but takes forever to complete
+  - Fix: Split tasks smaller, remove blockers, improve focus
+
+- **Both long**: Overall process is slow
+  - Fix: Address both backlog management AND development efficiency
+
+**Tracking over time:**
+
+```bash
+# Average cycle time (manual calculation)
+# For each closed task: (closed_at - started_at)
+# Sum and divide by task count
+
+# Trend analysis
+# Week 1: Avg cycle time = 3 days
+# Week 2: Avg cycle time = 2 days  ✅ Improving
+# Week 3: Avg cycle time = 4 days  ❌ Getting worse
+```
+
+**Improvement targets:**
+
+- **Cycle time**: Reduce by splitting tasks, removing blockers, improving focus
+- **Lead time**: Reduce by prioritizing backlog, reducing WIP, faster deployment
+
+#### Work in Progress (WIP)
 
 ```bash
 # All in-progress tasks
@@ -305,6 +387,58 @@ bd list --status in-progress
 # Count
 bd list --status in-progress | grep "^bd-" | wc -l
 ```
+
+**WIP Limits:**
+
+Work in Progress limits prevent overcommitment and identify bottlenecks.
+
+**Setting WIP limits:**
+- **Personal WIP limit**: 1-2 tasks in-progress at a time
+- **Team WIP limit**: Depends on team size and workflow stages
+- **Rule of thumb**: WIP limit = (Team size ÷ 2) + 1
+
+**Example for individual developer:**
+```
+✅ Good: 1 task in-progress, 0-1 in code review
+❌ Bad: 5 tasks in-progress simultaneously
+```
+
+**Example for team of 6:**
+```
+Workflow stages and limits:
+- Backlog: Unlimited
+- Ready: 8 items max
+- In Progress: 4 items max  (team size ÷ 2 + 1)
+- Code Review: 3 items max
+- Testing: 2 items max
+- Done: Unlimited
+```
+
+**Why WIP limits matter:**
+
+1. **Focus:** Fewer tasks means deeper focus, faster completion
+2. **Flow:** Prevents bottlenecks from accumulating
+3. **Quality:** Less context switching, fewer mistakes
+4. **Visibility:** High WIP indicates blocked work or overcommitment
+
+**Monitoring WIP:**
+```bash
+# Check personal WIP
+bd list --status in-progress | grep "assignee:me" | wc -l
+
+# If > 2: Focus on finishing before starting new work
+```
+
+**Red flags:**
+- WIP consistently at or above limit (need more capacity or smaller tasks)
+- WIP growing week-over-week (work piling up, not finishing)
+- WIP high but velocity low (tasks blocked or too large)
+
+**Response to high WIP:**
+1. Finish existing tasks before starting new ones
+2. Identify and remove blockers
+3. Split large tasks
+4. Add capacity (if chronically high)
 
 #### Blocked vs Ready Work
 
@@ -465,16 +599,112 @@ bd edit bd-10 --design "
 
 ### Task Naming Conventions
 
+**Principles:**
+- **Actionable**: Start with action verbs (add, fix, update, remove, refactor, implement)
+- **Specific**: Include enough context to understand without opening
+- **Consistent**: Follow project-wide templates
+
+**Templates by Task Type:**
+
+#### User Stories
+
+**Template:**
+```
+As a [persona], I want [something] so that [reason]
+```
+
+**Examples:**
+```
+As a customer, I want one-click checkout so that I can purchase quickly
+As an admin, I want bulk user import so that I can onboard teams efficiently
+As a developer, I want API rate limiting so that I can prevent abuse
+```
+
+**When to use:** Features from user perspective
+
+#### Bug Reports
+
+**Template 1 (Capability-focused):**
+```
+[User type] can't [action they should be able to do]
+```
+
+**Examples:**
+```
+New users can't view home screen after signup
+Admin users can't export user data to CSV
+Guest users can't add items to cart
+```
+
+**Template 2 (Event-focused):**
+```
+When [action/event], [system feature] doesn't work
+```
+
+**Examples:**
+```
+When clicking Submit, payment form doesn't validate
+When uploading large files, progress bar freezes
+When session expires, user isn't redirected to login
+```
+
+**When to use:** Describing broken functionality
+
+#### Tasks (Implementation Work)
+
+**Template:**
+```
+[Verb] [object] [context]
+```
+
+**Examples:**
+```
+feat(auth): Implement JWT token generation
+fix(api): Handle empty email validation in user endpoint
+test: Add integration tests for payment flow
+refactor: Extract validation logic from UserService
+docs: Update API documentation for v2 endpoints
+```
+
+**When to use:** Technical implementation tasks
+
+#### Features (High-Level Capabilities)
+
+**Template:**
+```
+[Verb] [capability] for [user/system]
+```
+
+**Examples:**
+```
+Add dark mode toggle for Settings page
+Implement rate limiting for API endpoints
+Enable two-factor authentication for admin users
+Build export functionality for report data
+```
+
+**When to use:** Feature-level work (may become epic with multiple tasks)
+
+**Context Guidelines:**
+
+- **Which component**: "in login flow", "for user API", "in Settings page"
+- **Which user type**: "for admins", "for guests", "for authenticated users"
+- **Avoid jargon** in user stories (user perspective, not technical)
+- **Be specific** in technical tasks (exact API, file, function)
+
 **Good names:**
 - `feat(auth): Implement JWT token generation`
-- `fix(api): Handle empty email validation`
-- `test: Add integration tests for user API`
-- `refactor: Extract validation logic`
+- `fix(api): Handle empty email validation in user endpoint`
+- `As a customer, I want CSV export so that I can analyze my data`
+- `test: Add integration tests for payment flow`
+- `refactor: Extract validation logic from UserService`
 
 **Bad names:**
-- `fix stuff` (vague)
-- `implement feature` (which feature?)
-- `work on backend` (what work?)
+- `fix stuff` (vague - what stuff?)
+- `implement feature` (vague - which feature?)
+- `work on backend` (vague - what work?)
+- `Report` (noun, not action - should be "Generate Q4 Sales Report")
+- `API endpoint` (incomplete - "Add GET /users endpoint" better)
 
 ### Priority Guidelines
 
@@ -503,23 +733,126 @@ Use bd's priority system consistently:
 - Too granular to track
 - Combine with related tasks
 
-### Success Criteria Templates
+### Success Criteria: Acceptance Criteria vs. Definition of Done
 
-Every task should have clear success criteria:
+**Two distinct types of completion criteria:**
+
+#### Acceptance Criteria (Per-Task, Functional)
+
+**Definition:** Specific, measurable requirements unique to each task that define functional completeness from user/business perspective.
+
+**Scope:** Unique to each backlog item (bug, task, story)
+
+**Purpose:** "Does this feature work correctly?"
+
+**Owner:** Product owner/stakeholder defines, team validates
+
+**Format:** Checklist or scenarios
 
 ```markdown
-## Success Criteria
-- [ ] Specific, testable outcome
-- [ ] Another specific outcome
-- [ ] Tests pass
-- [ ] No new warnings
+## Acceptance Criteria
+- [ ] User can upload CSV files up to 10MB
+- [ ] System validates CSV format before processing
+- [ ] User sees progress bar during upload
+- [ ] User receives success message with row count
+- [ ] Invalid files show specific error messages
 ```
 
-**Not:**
+**Scenario format (Given/When/Then):**
+```markdown
+## Acceptance Criteria
+
+Scenario 1: Valid file upload
+Given a user is on the upload page
+When they select a valid CSV file
+Then the file uploads successfully
+And they see confirmation with row count
+
+Scenario 2: Invalid file format
+Given a user selects a non-CSV file
+When they try to upload
+Then they see error: "Only CSV files supported"
+```
+
+#### Definition of Done (Universal, Quality)
+
+**Definition:** Universal checklist that applies to ALL work items to ensure consistent quality and release-readiness.
+
+**Scope:** Applies to every single task (bugs, features, stories)
+
+**Purpose:** "Is this work complete to our quality standards?"
+
+**Owner:** Team defines and maintains (reviewed in retrospectives)
+
+**Example DoD:**
+```markdown
+## Definition of Done (applies to all tasks)
+- [ ] Code written and peer-reviewed
+- [ ] Unit tests written and passing (>80% coverage)
+- [ ] Integration tests passing
+- [ ] No linter warnings
+- [ ] Documentation updated (if public API)
+- [ ] Manual testing completed (if UI)
+- [ ] Deployed to staging environment
+- [ ] Product owner accepted
+- [ ] Commit references bd task ID
+```
+
+#### Key Differences
+
+| Aspect | Acceptance Criteria | Definition of Done |
+|--------|--------------------|--------------------|
+| **Scope** | Per-task (unique) | All tasks (universal) |
+| **Focus** | Functional requirements | Quality standards |
+| **Question** | "Does it work?" | "Is it done?" |
+| **Owner** | Product owner | Team |
+| **Changes** | Per task | Rarely (retrospectives) |
+| **Examples** | "User can export data" | "Tests pass, code reviewed" |
+
+#### How to Use Both
+
+**When creating a task:**
+
+1. **Define Acceptance Criteria** (task-specific functional requirements)
+2. **Reference Definition of Done** (don't duplicate it in task)
+
+```markdown
+bd create "Implement CSV file upload" --design "
+## Acceptance Criteria
+- [ ] User can upload CSV files up to 10MB
+- [ ] System validates CSV format
+- [ ] Progress bar shows during upload
+- [ ] Success message displays row count
+
+## Notes
+Must also meet team's Definition of Done (see project wiki)
+"
+```
+
+**Before closing a task:**
+
+1. ✅ Verify all Acceptance Criteria met (functional)
+2. ✅ Verify Definition of Done met (quality)
+3. Only then close task
+
+**Bad practice:**
 ```markdown
 ## Success Criteria
-- [ ] Code works
-- [ ] Tests pass
+- [ ] CSV upload works
+- [ ] Tests pass          ← This is DoD, not acceptance criteria
+- [ ] Code reviewed       ← This is DoD, not acceptance criteria
+- [ ] No linter warnings  ← This is DoD, not acceptance criteria
+```
+
+**Good practice:**
+```markdown
+## Acceptance Criteria (functional, task-specific)
+- [ ] CSV upload handles files up to 10MB
+- [ ] Validation rejects non-CSV formats
+- [ ] Progress bar updates during upload
+
+## Definition of Done (quality, universal - referenced, not duplicated)
+See team DoD checklist (applies to all tasks)
 ```
 
 ### Dependency Management

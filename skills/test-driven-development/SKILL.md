@@ -72,7 +72,9 @@ digraph tdd_cycle {
 
 Write one minimal test showing what should happen.
 
-<Good>
+**Good Examples:**
+
+**Rust:**
 ```rust
 #[cfg(test)]
 mod tests {
@@ -97,23 +99,63 @@ mod tests {
     }
 }
 ```
-Clear name, tests real behavior, one thing
-</Good>
 
-<Bad>
+**Swift:**
 ```swift
-func testRetry() {
-    var mockCalls = 0
-    let mock = { () -> String in
-        mockCalls += 1
-        return "success"
+func testRetriesFailedOperations3Times() async throws {
+    var attempts = 0
+    let operation = { () -> Result<String, Error> in
+        attempts += 1
+        if attempts < 3 {
+            return .failure(RetryError.failed)
+        }
+        return .success("success")
     }
-    _ = retryOperation(mock)
-    XCTAssertEqual(mockCalls, 1)
+
+    let result = try await retryOperation(operation)
+
+    XCTAssertEqual(result, "success")
+    XCTAssertEqual(attempts, 3)
 }
 ```
-Vague name, tests mock not behavior
-</Bad>
+
+**TypeScript:**
+```typescript
+describe('retryOperation', () => {
+  it('retries failed operations 3 times', async () => {
+    let attempts = 0;
+    const operation = () => {
+      attempts++;
+      if (attempts < 3) {
+        throw new Error('fail');
+      }
+      return 'success';
+    };
+
+    const result = await retryOperation(operation);
+
+    expect(result).toBe('success');
+    expect(attempts).toBe(3);
+  });
+});
+```
+
+**Why these are good:** Clear names, test real behavior, one thing per test.
+
+**Bad Example:**
+```typescript
+test('retry', () => {
+    let mockCalls = 0;
+    const mock = () => {
+        mockCalls++;
+        return 'success';
+    };
+    retryOperation(mock);
+    expect(mockCalls).toBe(1); // Tests mock, not behavior
+});
+```
+
+**Why this is bad:** Vague name, tests mock behavior not real retry logic.
 
 **Requirements:**
 - One behavior
@@ -125,11 +167,17 @@ Vague name, tests mock not behavior
 **MANDATORY. Never skip.**
 
 ```bash
-# For Rust
+# Rust
 cargo test tests::retries_failed_operations_3_times
 
-# For Swift
+# Swift
 swift test --filter RetryTests.testRetriesFailedOperations3Times
+
+# TypeScript (Jest)
+npm test -- --testNamePattern="retries failed operations"
+
+# TypeScript (Vitest)
+npm test -- -t "retries failed operations"
 ```
 
 Confirm:
@@ -145,7 +193,9 @@ Confirm:
 
 Write simplest code to pass the test.
 
-<Good>
+**Good Examples - Just enough to pass:**
+
+**Rust:**
 ```rust
 fn retry_operation<F, T, E>(mut operation: F) -> Result<T, E>
 where
@@ -164,22 +214,61 @@ where
     unreachable!()
 }
 ```
-Just enough to pass
-</Good>
 
-<Bad>
+**Swift:**
 ```swift
-func retryOperation<T>(
-    _ operation: () throws -> T,
-    maxRetries: Int = 3,
-    backoff: BackoffStrategy = .linear,
-    onRetry: ((Int) -> Void)? = nil
-) throws -> T {
-    // YAGNI - over-engineered
+func retryOperation<T>(_ operation: () async throws -> T) async throws -> T {
+    var lastError: Error?
+    for attempt in 0..<3 {
+        do {
+            return try await operation()
+        } catch {
+            lastError = error
+            if attempt == 2 {
+                throw error
+            }
+        }
+    }
+    throw lastError!
 }
 ```
-Over-engineered
-</Bad>
+
+**TypeScript:**
+```typescript
+async function retryOperation<T>(
+  operation: () => Promise<T>
+): Promise<T> {
+  let lastError: Error | undefined;
+  for (let i = 0; i < 3; i++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+      if (i === 2) {
+        throw error;
+      }
+    }
+  }
+  throw lastError;
+}
+```
+
+**Bad Example - Over-engineered (YAGNI):**
+```typescript
+async function retryOperation<T>(
+  operation: () => Promise<T>,
+  options: {
+    maxRetries?: number;
+    backoff?: 'linear' | 'exponential';
+    onRetry?: (attempt: number) => void;
+    shouldRetry?: (error: Error) => boolean;
+  } = {}
+): Promise<T> {
+  // Don't add features the test doesn't require!
+}
+```
+
+**Why this is bad:** Test only requires 3 retries. Don't add configurable retries, backoff strategies, callbacks, or error filtering until a test requires them.
 
 Don't add features, refactor other code, or "improve" beyond the test.
 
@@ -188,11 +277,14 @@ Don't add features, refactor other code, or "improve" beyond the test.
 **MANDATORY.**
 
 ```bash
-# For Rust
+# Rust
 cargo test tests::retries_failed_operations_3_times
 
-# For Swift  
+# Swift
 swift test --filter RetryTests.testRetriesFailedOperations3Times
+
+# TypeScript
+npm test -- --testNamePattern="retries failed operations"
 ```
 
 Confirm:
@@ -397,6 +489,60 @@ test tests::calculates_average_of_numbers ... ok
 test tests::returns_error_for_empty_list ... ok
 ```
 
+## Example: Feature Addition (TypeScript)
+
+**Feature:** Validate email format
+
+**RED**
+```typescript
+describe('validateEmail', () => {
+  it('accepts valid email addresses', () => {
+    expect(validateEmail('user@example.com')).toBe(true);
+  });
+
+  it('rejects email without @ symbol', () => {
+    expect(validateEmail('userexample.com')).toBe(false);
+  });
+
+  it('rejects empty string', () => {
+    expect(validateEmail('')).toBe(false);
+  });
+});
+```
+
+**Verify RED**
+```bash
+$ npm test -- validateEmail
+FAIL  src/validation.test.ts
+  ● Test suite failed to run
+    Cannot find module '../validation' from 'src/validation.test.ts'
+```
+
+**GREEN**
+```typescript
+export function validateEmail(email: string): boolean {
+  if (email.length === 0) {
+    return false;
+  }
+  return email.includes('@');
+}
+```
+
+**Verify GREEN**
+```bash
+$ npm test -- validateEmail
+PASS  src/validation.test.ts
+  validateEmail
+    ✓ accepts valid email addresses (2 ms)
+    ✓ rejects email without @ symbol (1 ms)
+    ✓ rejects empty string (1 ms)
+
+Tests: 3 passed, 3 total
+```
+
+**REFACTOR**
+Add more robust validation if additional tests require it.
+
 ## Verification Checklist
 
 Before marking work complete:
@@ -435,13 +581,24 @@ Never fix bugs without a test.
 - `cargo test test_name` runs specific test
 - Use `Result<T, E>` for error handling in tests
 - `assert!`, `assert_eq!`, `assert_ne!` for assertions
+- `#[should_panic]` for tests expecting panics
 
 ### Swift
 - Use `XCTest` framework
-- `swift test` runs all tests  
+- `swift test` runs all tests
 - `swift test --filter` for specific tests
 - `XCTAssert*` family for assertions
 - `async`/`await` for async tests
+- `XCTUnwrap` for safely unwrapping optionals in tests
+
+### TypeScript
+- Common frameworks: Jest, Vitest, Mocha
+- `npm test` runs all tests (configured in package.json)
+- `describe` groups related tests
+- `it` or `test` for individual test cases
+- `expect(...).toBe/toEqual/toThrow` for assertions
+- `async`/`await` for async tests
+- Mock with `jest.fn()` or `vi.fn()` (avoid unless necessary)
 
 ## Final Rule
 

@@ -47,7 +47,7 @@ Mark each phase as in_progress when working on it, completed when finished.
 
 ### When to Use codebase-investigator
 
-**Use @agent-codebase-investigator when you need to:**
+**Use hyperpowers:codebase-investigator agent when you need to:**
 - Understand how existing features are implemented
 - Find where specific functionality lives in the codebase
 - Identify existing patterns to follow
@@ -57,12 +57,12 @@ Mark each phase as in_progress when working on it, completed when finished.
 **Example delegation:**
 ```
 Question: "How is authentication currently implemented?"
-Action: Dispatch codebase-investigator with: "Find authentication implementation, including file locations, patterns used, and dependencies"
+Action: Dispatch hyperpowers:codebase-investigator with: "Find authentication implementation, including file locations, patterns used, and dependencies"
 ```
 
 ### When to Use internet-researcher
 
-**Use @agent-internet-researcher when you need to:**
+**Use hyperpowers:internet-researcher agent when you need to:**
 - Find current API documentation for external services
 - Research library capabilities and best practices
 - Compare technology options
@@ -72,7 +72,7 @@ Action: Dispatch codebase-investigator with: "Find authentication implementation
 **Example delegation:**
 ```
 Question: "What's the recommended way to handle file uploads with this framework?"
-Action: Dispatch internet-researcher with: "Find current best practices for file uploads in [framework], including official docs and common patterns"
+Action: Dispatch hyperpowers:internet-researcher with: "Find current best practices for file uploads in [framework], including official docs and common patterns"
 ```
 
 ### Research Protocol
@@ -104,7 +104,7 @@ Action: Dispatch internet-researcher with: "Find current best practices for file
 **Before asking questions:**
 
 1. **Investigate current state** - DON'T do this yourself:
-   - Dispatch codebase-investigator to verify project structure
+   - Dispatch hyperpowers:codebase-investigator to verify project structure
    - Ask investigator to find existing architecture and patterns
    - Ask investigator to identify constraints from current codebase
    - Review investigator's findings before proceeding
@@ -157,7 +157,7 @@ Options:
 **Before proposing approaches:**
 
 1. **Research existing patterns** - DON'T do this yourself:
-   - Dispatch codebase-investigator: "Find similar features and patterns used"
+   - Dispatch hyperpowers:codebase-investigator: "Find similar features and patterns used"
    - If similar feature exists, base one approach on that pattern
    - If no codebase pattern, dispatch internet-researcher: "Find recommended approaches for [problem]"
    - Review research findings before proposing

@@ -59,11 +59,11 @@ Make note of all task IDs to expand.
 
 **YOU MUST verify current codebase state before writing ANY task.**
 
-**DO NOT verify codebase yourself. Use codebase-investigator agent.**
+**DO NOT verify codebase yourself. Use hyperpowers:codebase-investigator agent.**
 
 **Provide the agent with bd issue assumptions so it can report discrepancies:**
 
-For each task in the epic, read the implementation checklist and file references, then dispatch @agent-codebase-investigator with:
+For each task in the epic, read the implementation checklist and file references, then dispatch hyperpowers:codebase-investigator agent with:
 - "bd-3 assumes these files exist: [list with expected paths from bd issue]"
 - "Verify each file exists and report any differences from these assumptions"
 - "bd-3 says [feature] is implemented in [location]. Verify this is accurate"
@@ -107,6 +107,8 @@ Review investigator findings and note any differences from bd task assumptions.
 - "Run the tests and make sure they pass" - step
 - "Commit" - step
 
+**Note:** These steps follow the test-driven-development skill's RED-GREEN-REFACTOR cycle. When writing implementation steps for new functionality, reference the TDD workflow.
+
 These detailed steps will be added to each bd task's design.
 
 ## Task-by-Task User Validation
@@ -133,7 +135,7 @@ Mark each task as in_progress when working on it, completed when user approves e
 1. **Mark task as in_progress** in TodoWrite
 2. **Read current task design from bd** using `bd show bd-3`
 3. **Verify codebase state** for files mentioned in this task:
-   - Dispatch codebase-investigator with bd task assumptions
+   - Dispatch hyperpowers:codebase-investigator with bd task assumptions
    - Review investigator findings for discrepancies
 4. **Draft expanded implementation steps** (in memory, not in bd yet) based on actual codebase state
 5. **Present expansion to user** - CRITICAL: Show the complete expanded design BEFORE asking for approval:
@@ -416,7 +418,7 @@ These are violations of the skill requirements:
 **For each task:**
 - [ ] Mark task as in_progress in TodoWrite
 - [ ] Read task design (`bd show bd-N`)
-- [ ] Dispatch codebase-investigator with bd task assumptions
+- [ ] Dispatch hyperpowers:codebase-investigator with bd task assumptions
 - [ ] Write complete step groups with exact paths and code based on investigator findings
 - [ ] Output complete task expansion in message text (verification findings + all step groups with all steps)
 - [ ] THEN use AskUserQuestion to get approval

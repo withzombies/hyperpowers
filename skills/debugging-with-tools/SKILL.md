@@ -50,7 +50,7 @@ You MUST complete each phase before proceeding to the next.
 
 **When error message is unclear or unfamiliar:**
 
-**Dispatch internet-researcher agent with:**
+**Dispatch hyperpowers:internet-researcher agent with:**
 - "Search for this error: [exact error message]"
 - "Find Stack Overflow discussions about: [error]"
 - "Search for GitHub issues related to: [library name] + [error]"
@@ -67,7 +67,7 @@ You MUST complete each phase before proceeding to the next.
 ```
 Error: "dyld: Symbol not found: _OBJC_CLASS_$_WKWebView"
 
-Dispatch internet-researcher with:
+Dispatch hyperpowers:internet-researcher with:
 "Search for 'dyld Symbol not found _OBJC_CLASS_$_WKWebView'
 - Check Stack Overflow solutions
 - Look for iOS/macOS framework linking issues
@@ -185,7 +185,7 @@ cargo test 2>&1 | grep "DEBUG process_request" -A 10
 
 #### 4. Find Working Examples
 
-**Dispatch codebase-investigator to find patterns:**
+**Dispatch hyperpowers:codebase-investigator to find patterns:**
 
 ```
 "Find similar code that handles [feature] successfully"
@@ -203,7 +203,7 @@ cargo test 2>&1 | grep "DEBUG process_request" -A 10
 ```
 Problem: WebSocket connection failing
 
-Dispatch codebase-investigator:
+Dispatch hyperpowers:codebase-investigator:
 "Find existing WebSocket connections that work
 - What configuration do they use?
 - How do they handle connection errors?
@@ -364,7 +364,7 @@ fn test_fix_works() {
 
 **Don't pollute context with test output:**
 
-Dispatch test-runner agent:
+Dispatch hyperpowers:test-runner agent:
 - "Run: cargo test"
 - "Run: npm test"
 - "Run: pytest"
@@ -384,7 +384,7 @@ Agent returns:
 **If you don't understand:**
 - Say "I don't understand X"
 - Don't pretend to know
-- Dispatch internet-researcher for more research
+- Dispatch hyperpowers:internet-researcher for more research
 - Ask human partner for help
 
 ### Phase 4: Proper Implementation
@@ -402,8 +402,8 @@ test('rejects empty email', () => {
 });
 ```
 
-**Run test via test-runner agent to confirm it fails:**
-- Dispatch test-runner: "Run: npm test -- rejects-empty-email"
+**Run test via hyperpowers:test-runner agent to confirm it fails:**
+- Dispatch hyperpowers:test-runner: "Run: npm test -- rejects-empty-email"
 - Verify test fails with expected error
 - This proves test actually tests the bug
 
@@ -421,7 +421,7 @@ test('rejects empty email', () => {
 
 **Run tests without polluting context:**
 
-Dispatch test-runner agent:
+Dispatch hyperpowers:test-runner agent:
 - "Run full test suite: cargo test"
 - Agent reports: summary + failures only
 - Verify new test passes
@@ -478,9 +478,9 @@ This is NOT a failed hypothesis - this is wrong architecture.
 | **Analysis** | Stack trace | Trace backward to root cause | Claude (reads) |
 | | Git history | Find what changed | Claude (bash) |
 | **Testing** | Test writing | Verify hypothesis with test | Claude (adds code) |
-| | test-runner agent | Run tests without context pollution | Claude (agent) |
+| | hyperpowers:test-runner agent | Run tests without context pollution | Claude (agent) |
 | **Implementation** | test-driven-development | Write proper failing test | Claude (skill) |
-| | test-runner agent | Verify fix, check regressions | Claude (agent) |
+| | hyperpowers:test-runner agent | Verify fix, check regressions | Claude (agent) |
 
 **Key distinction:**
 - **Claude can use directly:** Agents, lldb batch mode, strace, instrumentation, tests, git, grep
@@ -510,7 +510,7 @@ If you catch yourself thinking:
 | "Issue is simple, don't need debugger" | Debugger would show you're wrong in 30 seconds. |
 | "Print statements are faster than debugger" | Debugger shows ALL variables, not just ones you printed. |
 | "Error is obvious, don't need to search" | 5 minutes of research could save you hours. |
-| "No similar code exists" | Dispatch codebase-investigator to verify. |
+| "No similar code exists" | Dispatch hyperpowers:codebase-investigator to verify. |
 | "Emergency, no time for process" | Systematic debugging is FASTER than guess-and-check. |
 | "Just try this first, then investigate" | First fix sets the pattern. Do it right from start. |
 | "I'll write test after confirming fix works" | Untested fixes don't stick. Test proves it. |
@@ -523,9 +523,9 @@ If you catch yourself thinking:
 - **verification-before-completion** - REQUIRED before claiming success
 
 **This skill uses:**
-- **internet-researcher agent** - Search errors, find solutions (Phase 1)
-- **codebase-investigator agent** - Find working patterns (Phase 1)
-- **test-runner agent** - Run tests without context pollution (Phase 3, Phase 4)
+- **hyperpowers:internet-researcher agent** - Search errors, find solutions (Phase 1)
+- **hyperpowers:codebase-investigator agent** - Find working patterns (Phase 1)
+- **hyperpowers:test-runner agent** - Run tests without context pollution (Phase 3, Phase 4)
 
 **Complementary skills:**
 - **root-cause-tracing** - Deep stack trace analysis (when needed)
@@ -653,7 +653,7 @@ gdb ./myapp
 1. **Read error**: Symbol not found, linking issue
 2. **Internet research**:
    ```
-   Dispatch internet-researcher:
+   Dispatch hyperpowers:internet-researcher:
    "Search for 'dyld Symbol not found _OBJC_CLASS_$_WKWebView'
    Focus on: Xcode linking, framework configuration, iOS deployment"
 
@@ -664,7 +664,7 @@ gdb ./myapp
 
 4. **Codebase investigation**:
    ```
-   Dispatch codebase-investigator:
+   Dispatch hyperpowers:codebase-investigator:
    "Find other code using WKWebView - how is WebKit linked?"
 
    Results: Main app target has WebKit in frameworks, test target doesn't
@@ -685,7 +685,7 @@ Minimal test:
 3. Run tests
 
 ```
-Dispatch test-runner: "Run: swift test"
+Dispatch hyperpowers:test-runner: "Run: swift test"
 Result: ✓ All tests pass
 ```
 
@@ -707,7 +707,7 @@ Result: ✓ All tests pass
 - **Internet-researcher** can find solutions in seconds
 - **Automated debugging works** - lldb batch mode, strace, instrumentation
 - **Codebase-investigator** finds patterns you'd miss
-- **test-runner agent** keeps context clean
+- **hyperpowers:test-runner agent** keeps context clean
 - **Evidence before fixes**, always
 
 **Prefer automated tools:**

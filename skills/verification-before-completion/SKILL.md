@@ -28,7 +28,7 @@ BEFORE claiming any status or expressing satisfaction:
 
 1. IDENTIFY: What command proves this claim?
 2. RUN: Execute the FULL command (fresh, complete)
-   - For tests/pre-commit/commits: Use test-runner agent to avoid context pollution
+   - For tests/pre-commit/commits: Use hyperpowers:test-runner agent to avoid context pollution
    - Agent captures verbose output, returns only summary + failures
 3. READ: Full output, check exit code, count failures
 4. VERIFY: Does output confirm the claim?
@@ -39,8 +39,8 @@ BEFORE claiming any status or expressing satisfaction:
 Skip any step = lying, not verifying
 ```
 
-**Using the test-runner agent:**
-- Dispatch test-runner agent with the command: "Run: cargo test"
+**Using the hyperpowers:test-runner agent:**
+- Dispatch hyperpowers:test-runner agent with the command: "Run: cargo test"
 - Agent runs command, captures all output in its context
 - Returns concise report: summary stats + failure details only
 - Prevents context pollution from verbose test/hook output
@@ -93,6 +93,13 @@ Skip any step = lying, not verifying
 ```
 ✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
 ❌ "I've written a regression test" (without red-green verification)
+```
+
+**Commits (with pre-commit hooks):**
+```
+✅ [Dispatch hyperpowers:test-runner: "Run: git commit -m 'message'"] [Agent reports: hooks passed] "Commit created"
+❌ "git commit" (dumps 947+ lines of test output into context)
+❌ "Committing changes" (without waiting for hook results)
 ```
 
 **Build:**

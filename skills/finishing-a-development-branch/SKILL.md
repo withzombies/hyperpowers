@@ -50,12 +50,17 @@ bd status bd-1 --status closed
 
 ### Step 2: Verify Tests
 
-**Before presenting options, verify tests pass:**
+**Before presenting options, verify tests pass using hyperpowers:test-runner agent:**
 
-```bash
-# Run project's test suite
-npm test / cargo test / pytest / go test ./...
+**IMPORTANT:** Use hyperpowers:test-runner agent to avoid context pollution from verbose test output.
+
+Dispatch hyperpowers:test-runner agent:
 ```
+Run: cargo test
+(or: npm test / pytest / go test ./...)
+```
+
+Agent returns concise report with summary + failures only.
 
 **If tests fail:**
 ```

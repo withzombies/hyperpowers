@@ -87,7 +87,7 @@ bd status bd-123 --status in-progress
 3. **Hypothesis Testing**
    - Test minimally
    - Verify with debugger
-   - Run tests via test-runner agent
+   - Run tests via hyperpowers:test-runner agent
 
 4. **Confirm Root Cause**
    - Don't proceed until you understand WHY
@@ -136,7 +136,7 @@ fn test_create_user_rejects_empty_email() {
 
 **Verify test fails:**
 
-Dispatch test-runner agent:
+Dispatch hyperpowers:test-runner agent:
 - "Run: cargo test test_create_user_rejects_empty_email"
 - Confirm test fails with expected reason
 - This proves test actually tests the bug
@@ -171,15 +171,15 @@ fn create_user(req: UserRequest) -> Result<User> {
 
 **Run test to verify fix:**
 
-Dispatch test-runner agent:
+Dispatch hyperpowers:test-runner agent:
 - "Run: cargo test test_create_user_rejects_empty_email"
 - Confirm: ✓ Test now passes
 
 ### Step 5: Verify No Regressions
 
-**Run full test suite via test-runner agent:**
+**Run full test suite via hyperpowers:test-runner agent:**
 
-Dispatch test-runner agent:
+Dispatch hyperpowers:test-runner agent:
 - "Run: cargo test"
 - Verify: All tests pass, no new failures
 - Exit code: 0
@@ -200,7 +200,7 @@ Dispatch test-runner agent:
 - Code duplication to remove?
 
 **After each refactor:**
-- Dispatch test-runner agent: "Run: cargo test"
+- Dispatch hyperpowers:test-runner agent: "Run: cargo test"
 - Verify: Tests still pass
 - Only refactor while tests are green
 
@@ -235,13 +235,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 **Verify everything works:**
 
 1. **Run full test suite one more time:**
-   - Dispatch test-runner agent: "Run: cargo test"
+   - Dispatch hyperpowers:test-runner agent: "Run: cargo test"
    - Confirm: All tests pass, including new test
    - Check exit code: 0
 
 2. **Run linters/formatters if project uses them:**
-   - Dispatch test-runner agent: "Run: cargo clippy"
-   - Dispatch test-runner agent: "Run: cargo fmt --check"
+   - Dispatch hyperpowers:test-runner agent: "Run: cargo clippy"
+   - Dispatch hyperpowers:test-runner agent: "Run: cargo fmt --check"
    - Confirm: No new warnings
 
 3. **Manual verification if applicable:**
@@ -296,11 +296,11 @@ When you encounter a bug, follow this checklist:
 - [ ] Use debugging-with-tools to find root cause
 - [ ] Update bd issue with root cause and evidence
 - [ ] Write failing test that reproduces bug (RED)
-- [ ] Verify test fails via test-runner agent
+- [ ] Verify test fails via hyperpowers:test-runner agent
 - [ ] Commit failing test
 - [ ] Implement minimal fix (GREEN)
-- [ ] Verify fix passes test via test-runner agent
-- [ ] Run full test suite via test-runner agent (check regressions)
+- [ ] Verify fix passes test via hyperpowers:test-runner agent
+- [ ] Run full test suite via hyperpowers:test-runner agent (check regressions)
 - [ ] Refactor if needed (keep tests GREEN)
 - [ ] Commit fix with bd issue reference
 - [ ] Final verification via verification-before-completion
@@ -332,7 +332,7 @@ When you encounter a bug, follow this checklist:
 - Track every bug in bd
 - Write failing test first
 - Use debugging-with-tools systematically
-- Verify no regressions via test-runner agent
+- Verify no regressions via hyperpowers:test-runner agent
 - Document root cause in bd
 
 ## Integration with Other Skills
@@ -343,9 +343,9 @@ When you encounter a bug, follow this checklist:
 - **verification-before-completion** - REQUIRED for Phase 8 (final verification)
 
 **This skill uses:**
-- **test-runner agent** - Run tests without context pollution
-- **internet-researcher agent** - Via debugging-with-tools
-- **codebase-investigator agent** - Via debugging-with-tools
+- **hyperpowers:test-runner agent** - Run tests without context pollution
+- **hyperpowers:internet-researcher agent** - Via debugging-with-tools
+- **hyperpowers:codebase-investigator agent** - Via debugging-with-tools
 
 **This skill calls:**
 - **finishing-a-development-branch** - Optional for creating PR
@@ -365,9 +365,9 @@ bd status bd-123 --status in-progress
 
 ### Minutes 5-20: Investigation
 - Use debugging-with-tools
-- Dispatch internet-researcher: "Search for API validation patterns"
+- Dispatch hyperpowers:internet-researcher: "Search for API validation patterns"
 - Use debugger: Inspect where error occurs
-- Dispatch codebase-investigator: "Find other validation examples"
+- Dispatch hyperpowers:codebase-investigator: "Find other validation examples"
 - Find root cause: Missing validation at API boundary
 
 ```bash
@@ -380,7 +380,7 @@ bd edit bd-123 --design "Root cause: No validation at API handler..."
 fn test_rejects_empty_email() { ... }
 ```
 
-Dispatch test-runner: "Run: cargo test test_rejects_empty_email"
+Dispatch hyperpowers:test-runner: "Run: cargo test test_rejects_empty_email"
 Result: ✗ Test fails (good!)
 
 ```bash
@@ -392,11 +392,11 @@ git commit -m "test(bd-123): add failing test"
 if req.email.is_empty() { return Err(...); }
 ```
 
-Dispatch test-runner: "Run: cargo test test_rejects_empty_email"
+Dispatch hyperpowers:test-runner: "Run: cargo test test_rejects_empty_email"
 Result: ✓ Test passes
 
 ### Minutes 30-35: Verify
-Dispatch test-runner: "Run: cargo test"
+Dispatch hyperpowers:test-runner: "Run: cargo test"
 Result: ✓ All 156 tests pass, no regressions
 
 ```bash

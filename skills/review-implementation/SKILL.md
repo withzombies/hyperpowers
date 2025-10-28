@@ -64,12 +64,13 @@ git diff main...HEAD -- src/auth/jwt.ts
 2. **Verify success criteria:**
    - Run verification commands from success criteria
    - Check that each criterion is actually met
-   - Don't assume - verify with evidence
-   - **IMPORTANT:** Use test-runner agent for running tests
-     - Dispatch test-runner agent with command: "Run: cargo test"
+   - Don't assume - verify with evidence (see verification-before-completion skill)
+   - **IMPORTANT:** Use hyperpowers:test-runner agent for running tests
+     - Dispatch hyperpowers:test-runner agent with command: "Run: cargo test"
      - Keeps verbose test output in agent context
      - Returns only summary + failures
      - Prevents context pollution
+   - Follow verification-before-completion principles: evidence before claims, always
 
 3. **Check anti-patterns weren't violated:**
    - Search for prohibited patterns (unwrap/expect, TODO without issue #, etc.)
@@ -241,9 +242,9 @@ bd show bd-3 | grep -A 20 "Success Criteria"
 
 2. **Run each verification:**
 
-**For test commands (use test-runner agent):**
-- Dispatch test-runner agent with: "Run: cargo test"
-- Dispatch test-runner agent with: "Run: cargo clippy"
+**For test commands (use hyperpowers:test-runner agent):**
+- Dispatch hyperpowers:test-runner agent with: "Run: cargo test"
+- Dispatch hyperpowers:test-runner agent with: "Run: cargo clippy"
 
 **For search/analysis commands (use Bash/Grep):**
 ```bash
@@ -262,7 +263,9 @@ rg "\.unwrap\(\)" src/
 
 **Calls:**
 - **finishing-a-development-branch** - If review approves, hand off to finish
-- **verification-before-completion** - Uses same principles for individual verifications
+
+**Uses:**
+- **verification-before-completion** - All verifications follow its "evidence before claims" principle; no completion claims without fresh verification evidence
 
 **Order:**
 ```

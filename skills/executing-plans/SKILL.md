@@ -26,7 +26,7 @@ Read tasks from bd, execute ready tasks continuously, update bd status as you go
    - Best for catching integration issues
    - Faster overall execution
 
-2. **Per-task review** - Use code-reviewer agent after each task completes
+2. **Per-task review** - Use hyperpowers:code-reviewer agent after each task completes
    - Reviews each task immediately after implementation
    - Catches issues early before they cascade
    - Slower but more thorough
@@ -85,12 +85,17 @@ bd show bd-3
    - Each step is bite-sized (2-5 minutes)
    - Complete code examples provided
    - Exact commands specified
+   - **When implementing new functionality:** Use test-driven-development skill
+     - Write test first (RED phase)
+     - Watch test fail
+     - Write minimal code to pass (GREEN phase)
+     - Refactor while keeping tests green
 
 4. **Run verifications as specified**:
    - Tests should pass as you go
    - Follow exact verification commands from task
-   - **IMPORTANT:** Use test-runner agent for running tests
-     - Dispatch test-runner agent with command: "Run: cargo test"
+   - **IMPORTANT:** Use hyperpowers:test-runner agent for running tests
+     - Dispatch hyperpowers:test-runner agent with command: "Run: cargo test"
      - Keeps verbose test output in agent context
      - Returns only summary + failures
      - Prevents context pollution
@@ -100,16 +105,22 @@ bd show bd-3
 bd status bd-3 --status closed
 ```
 
-6. **Reference bd task in commits**:
-```bash
-git commit -m "feat(bd-3): implement feature
+6. **Commit changes** (use hyperpowers:test-runner agent to avoid hook pollution):
+   - **IMPORTANT:** Use hyperpowers:test-runner agent for commits
+   - Pre-commit hooks often run tests/linters with verbose output
+   - Agent captures all output, returns only summary + failures
 
-Completes bd-3: Task Name
-"
-```
+   Dispatch hyperpowers:test-runner agent:
+   ```
+   Run: git add <files> && git commit -m "feat(bd-3): implement feature
+
+   Completes bd-3: Task Name"
+   ```
+
+   If hooks fail, agent reports failures. Fix and retry commit.
 
 7. **Optional: Per-task review** (if user requested):
-   - Use code-reviewer agent to review this task's implementation
+   - Use hyperpowers:code-reviewer agent to review this task's implementation
    - Agent checks: implementation matches bd task, no anti-patterns, tests passing
    - Fix any issues found before proceeding
 
@@ -182,10 +193,11 @@ If a task is blocked, `bd ready` won't show it until its dependencies are closed
 - Read tasks from bd, not markdown files
 - Update bd status as you work (in_progress → closed)
 - Follow detailed implementation steps in bd task design
+- Use test-driven-development skill when implementing new functionality (write test first, watch fail, implement)
 - Don't skip verifications
 - Reference bd task IDs in commits
 - Work through ready tasks continuously using `bd ready`
 - Stop when blocked, don't guess
-- Review: per-task (code-reviewer agent) or final (review-implementation skill)
+- Review: per-task (hyperpowers:code-reviewer agent) or final (review-implementation skill)
   - Per-task if user requested: "Review each task as we go"
   - Final review (default): use review-implementation skill after all tasks complete
