@@ -23,10 +23,16 @@ Reusable workflows for common development tasks:
 - **root-cause-tracing** - Trace backward through call stack to find original trigger
 - **fixing-bugs** - Complete workflow from bug discovery to closure with bd tracking
 
+**Refactoring & Maintenance:**
+- **refactoring-safely** - Test-preserving transformations in small steps with tests staying green
+
 **Quality & Testing:**
 - **test-driven-development** - Write tests first, ensure they fail, then implement
 - **testing-anti-patterns** - Prevent common testing mistakes
 - **verification-before-completion** - Always verify before claiming success
+
+**Task & Project Management:**
+- **managing-bd-tasks** - Advanced bd operations: splitting tasks, merging duplicates, dependencies, metrics
 
 **Collaboration & Process:**
 - **dispatching-parallel-agents** - Investigate independent failures concurrently

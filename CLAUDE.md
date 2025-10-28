@@ -199,16 +199,18 @@ From RECOMMENDATIONS.md:
 **Currently covered:**
 - ✅ Greenfield feature development (idea → design → implementation → PR)
 - ✅ Bug fixing and debugging workflows (systematic investigation, root cause tracing)
+- ✅ Refactoring workflows (test-preserving transformations)
+- ✅ Advanced task management (splitting, merging, dependencies, metrics)
 - ✅ Quality culture (TDD, verification, SRE review)
 - ✅ Clean bd integration
 
 **Missing (see RECOMMENDATIONS.md for details):**
-- ❌ Refactoring workflows
 - ❌ Incident response
 - ❌ Code review response (receiving reviews)
 - ❌ Merge conflict resolution
+- ❌ Documentation workflows
 
-Priority: Continue adding maintenance workflows (refactoring, incident response).
+Priority: Continue adding collaboration workflows (code review response, incidents).
 
 ## File Naming Conventions
 
