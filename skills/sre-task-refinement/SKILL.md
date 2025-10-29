@@ -88,6 +88,7 @@ Don't rush. Catching one critical gap before implementation saves hours of rewor
 - ❌ Implementation checklist with fewer than 3 items per task
 - ❌ No effort estimates
 - ❌ Missing error handling considerations
+- ❌ **CRITICAL: Placeholder text in design field** - Any reference like "[detailed above]", "[as specified]", "[complete steps here]" instead of actual content
 
 ## Review Process
 
@@ -121,6 +122,14 @@ Add to the design:
 - References to similar code to study
 - Strengthened anti-patterns based on failure modes
 - Better effort estimates if original was off
+
+**E. Verify No Placeholder Text (MANDATORY)**
+After updating, read back the issue with `bd show bd-N` and verify:
+- ✅ All sections contain actual content, not meta-references
+- ✅ No placeholder text like "[detailed above]", "[as specified]", "[will be added]"
+- ✅ Implementation steps are fully written out with actual code examples
+- ✅ Success criteria are explicit, not referencing "criteria above"
+- ❌ If ANY placeholder text found: REJECT and rewrite with actual content
 
 ## Working with bd
 

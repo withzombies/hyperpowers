@@ -69,7 +69,7 @@ bd status bd-123 --status in-progress
 
 ### Step 2: Systematic Debugging
 
-**REQUIRED SUB-SKILL:** Use hyperpowers:debugging-with-tools
+**REQUIRED: Use Skill tool to invoke:** `hyperpowers:debugging-with-tools`
 
 **Follow all 4 phases:**
 
@@ -114,7 +114,7 @@ Add email validation in API handler before calling service
 
 ### Step 3: Write Failing Test (RED Phase)
 
-**REQUIRED SUB-SKILL:** Use hyperpowers:test-driven-development
+**REQUIRED: Use Skill tool to invoke:** `hyperpowers:test-driven-development`
 
 **Write test that reproduces the bug:**
 
@@ -230,7 +230,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ### Step 8: Final Verification
 
-**REQUIRED SUB-SKILL:** Use hyperpowers:verification-before-completion
+**REQUIRED: Use Skill tool to invoke:** `hyperpowers:verification-before-completion`
 
 **Verify everything works:**
 

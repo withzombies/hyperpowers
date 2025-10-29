@@ -9,9 +9,11 @@ description: Use after executing-plans completes all tasks to review implementat
 
 Review completed implementation against bd epic specification to catch gaps before claiming completion.
 
+**Review Perspective:** You are a **Google Fellow-level SRE with 20+ years of production experience** reviewing code written by a **junior engineer**. Apply rigorous production standards.
+
 **Core principle:** Implementation must match spec. Success criteria are the contract.
 
-**Announce at start:** "I'm using the review-implementation skill to verify the implementation matches the spec."
+**Announce at start:** "I'm using the review-implementation skill to verify the implementation matches the spec. I'm reviewing this with Google Fellow-level scrutiny."
 
 **Context:** This runs after executing-plans completes all tasks but before finishing-a-development-branch.
 
@@ -55,39 +57,183 @@ bd show bd-3
 
 **C. Review actual implementation:**
 
-1. **Check files mentioned in task:**
+**1. Run Automated Code Completeness Checks:**
+
 ```bash
-# For each file in implementation checklist
-git diff main...HEAD -- src/auth/jwt.ts
+# Check for TODOs/FIXMEs without issue numbers
+echo "🔍 Checking for TODOs/FIXMEs..."
+rg -i "todo|fixme" src/ tests/ || echo "✅ No TODOs/FIXMEs found"
+
+# Check for stub implementations
+echo "🔧 Checking for stub implementations..."
+rg "unimplemented!|todo!|unreachable!|panic!\(\"not implemented" src/ || echo "✅ No stubs found"
+
+# Check for unsafe error handling in production code
+echo "⚠️  Checking for unsafe patterns in production..."
+rg "\.unwrap\(\)|\.expect\(" src/ | grep -v "/tests/" || echo "✅ No unsafe patterns in production"
+
+# Check for ignored/skipped tests
+echo "🚫 Checking for ignored/skipped tests..."
+rg "#\[ignore\]|#\[skip\]|\.skip\(\)" tests/ src/ || echo "✅ No ignored tests"
 ```
 
-2. **Verify success criteria:**
-   - Run verification commands from success criteria
-   - Check that each criterion is actually met
-   - Don't assume - verify with evidence (see verification-before-completion skill)
-   - **IMPORTANT:** Use hyperpowers:test-runner agent for running tests
-     - Dispatch hyperpowers:test-runner agent with command: "Run: cargo test"
-     - Keeps verbose test output in agent context
-     - Returns only summary + failures
-     - Prevents context pollution
-   - Follow verification-before-completion principles: evidence before claims, always
+**2. Run Quality Gate Checks:**
 
-3. **Check anti-patterns weren't violated:**
-   - Search for prohibited patterns (unwrap/expect, TODO without issue #, etc.)
-   - Verify error handling follows project guidelines
-   - Check that stubs were actually implemented
+Dispatch **hyperpowers:test-runner agent** for each quality gate:
 
-4. **Check key considerations were addressed:**
-   - Review code for edge cases mentioned in task
-   - Verify error handling for failure modes
-   - Check that concerns from sre-task-refinement were addressed
+```bash
+# Run tests via agent
+hyperpowers:test-runner: "Run all tests: cargo test"
 
-**D. Record findings:**
+# Run formatter check via agent
+hyperpowers:test-runner: "Check formatting: cargo fmt --check"
 
-For this task:
-- ✅ **Met**: List what was successfully implemented
-- ❌ **Gap**: List what's missing or incomplete
-- ⚠️ **Concern**: List potential issues or anti-patterns found
+# Run linter via agent
+hyperpowers:test-runner: "Run linter: cargo clippy -- -D warnings"
+
+# Run pre-commit hook via agent
+hyperpowers:test-runner: "Run pre-commit: .git/hooks/pre-commit"
+```
+
+**3. READ Implementation Files:**
+
+**CRITICAL: You MUST read the actual code, not just check git diff.**
+
+For each file in the implementation checklist:
+
+```bash
+# First see what changed
+git diff main...HEAD -- src/auth/jwt.ts
+
+# THEN READ THE ACTUAL FILE
+# Use Read tool to read: src/auth/jwt.ts
+```
+
+**While reading, check:**
+- ✅ Is the code actually implementing what the checklist says?
+- ✅ Are functions/methods actually complete (not stubs)?
+- ✅ Does error handling use proper patterns (Result, try/catch)?
+- ✅ Are edge cases from "Key Considerations" handled in the code?
+- ✅ Is the code clear and maintainable?
+- ✅ Are there any anti-patterns present?
+
+**4. Code Quality Review (Google Fellow Perspective):**
+
+**CRITICAL: Assume this code was written by a junior engineer. Review with production-grade scrutiny.**
+
+For each implementation file, assess with Google Fellow standards:
+
+**Error Handling:**
+- Proper use of Result/Option types (Rust) or try/catch (JS/TS)?
+- Error messages helpful for debugging production issues?
+- No unwrap/expect in production code?
+- Errors propagate correctly with context?
+- Failure modes handled gracefully?
+
+**Safety:**
+- No unsafe code blocks without justification and thorough comments?
+- Proper bounds checking on arrays/slices?
+- No potential panics or crashes?
+- No data races or concurrency issues?
+- No SQL injection, XSS, or security vulnerabilities?
+
+**Clarity:**
+- Would a junior engineer understand this code in 6 months?
+- Functions have single responsibility?
+- Variable names descriptive and unambiguous?
+- Complex logic explained with comments?
+- No clever tricks - is the code obvious and boring?
+
+**Testing:**
+- Edge cases covered (empty input, max values, Unicode, etc.)?
+- Tests are meaningful, not just for coverage numbers?
+- Test names clearly describe what they verify?
+- Tests actually test behavior, not implementation details?
+- Failure scenarios tested (error paths)?
+
+**Production Readiness:**
+- Would you be comfortable deploying this to production?
+- Could this cause an outage or data loss?
+- Is performance acceptable under load?
+- Are there obvious optimization opportunities missed?
+- Logging/observability sufficient for debugging production issues?
+
+**5. Verify Success Criteria with Evidence:**
+
+For each success criterion:
+- Run verification commands
+- Check actual output
+- Don't assume - verify with evidence
+- Use test-runner agent for tests/lints/builds
+
+**6. Check Anti-Patterns:**
+
+Search for each prohibited pattern from bd task:
+- Unwrap/expect in production
+- TODOs without issue numbers
+- Stub implementations
+- Ignored tests without justification
+- Task-specific anti-patterns
+
+**7. Verify Key Considerations:**
+
+Read code to confirm edge cases were handled:
+- Empty input validation
+- Unicode handling
+- Concurrent access
+- Failure modes
+- Performance concerns
+
+**D. Record findings for this task:**
+
+```markdown
+### Task: [Name] (bd-N)
+
+#### Automated Checks
+- TODOs/FIXMEs: [✅ None / ❌ Found at: file:line]
+- Stubs: [✅ None / ❌ Found at: file:line]
+- Unsafe patterns: [✅ None / ❌ Found at: file:line]
+- Ignored tests: [✅ None / ❌ Found at: file:line]
+
+#### Quality Gates
+- Tests: [✅ Pass (N tests) / ❌ Fail (N failures)]
+- Formatting: [✅ Pass / ❌ Fail]
+- Linting: [✅ Pass / ❌ Warnings found]
+- Pre-commit: [✅ Pass / ❌ Fail]
+
+#### Files Reviewed
+- src/file1.rs: [✅ Implements checklist / ❌ Issues: ...]
+- src/file2.rs: [✅ Implements checklist / ❌ Issues: ...]
+- tests/file1_test.rs: [✅ Complete / ❌ Issues: ...]
+
+#### Code Quality (Google Fellow Review)
+- Error Handling: [✅ Good / ⚠️ Concerns: ... / ❌ Issues: ...]
+- Safety: [✅ Good / ⚠️ Concerns: ... / ❌ Issues: ...]
+- Clarity: [✅ Good / ⚠️ Concerns: ... / ❌ Issues: ...]
+- Testing: [✅ Good / ⚠️ Concerns: ... / ❌ Issues: ...]
+
+#### Success Criteria (from bd issue)
+1. [Criterion 1]: [✅ Met / ❌ Not met] - Evidence: [how verified]
+2. [Criterion 2]: [✅ Met / ❌ Not met] - Evidence: [how verified]
+
+#### Anti-Patterns Check
+- [Anti-pattern 1]: [✅ Avoided / ❌ Violated at: file:line]
+- [Anti-pattern 2]: [✅ Avoided / ❌ Violated at: file:line]
+
+#### Key Considerations Check
+- [Edge case 1]: [✅ Handled at file:line / ❌ Not addressed]
+- [Edge case 2]: [✅ Handled at file:line / ❌ Not addressed]
+
+#### Issues Found
+**Critical** (must fix):
+1. [Issue] - file:line - [Why critical]
+
+**Important** (should fix):
+1. [Issue] - file:line - [Impact]
+
+**Minor** (nice to have):
+1. [Issue] - file:line - [Suggestion]
+```
 
 **E. Mark task review as completed in TodoWrite**
 
@@ -150,7 +296,7 @@ Implementation does not match spec. Fix gaps before completing.
 
 **If APPROVED:**
 - Announce: "I'm using the finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use hyper:finishing-a-development-branch
+- **REQUIRED: Use Skill tool to invoke:** `hyperpowers:finishing-a-development-branch`
 
 **If GAPS FOUND:**
 - STOP. Do not proceed to finishing-a-development-branch
@@ -198,6 +344,9 @@ For each task, verify:
 | "Small gaps don't matter" | Spec is contract. All criteria must be met. |
 | "Will fix in next PR" | This PR should complete this epic. Fix now. |
 | "Partner will review" | You review first. Don't delegate your quality check. |
+| **"Can check git diff instead of reading files"** | **NO. Git diff shows changes, not full context. READ the actual files.** |
+| **"Automated checks cover quality"** | **NO. Automated checks + code review both required. Read the code.** |
+| **"Success criteria passing means done"** | **NO. Also check: anti-patterns, code quality, edge cases. Read the code.** |
 
 ## Red Flags - STOP
 
@@ -207,13 +356,19 @@ For each task, verify:
 - Ignore anti-pattern violations
 - Assume key considerations were addressed
 - Trust that "tests passing" means spec is met
+- **Only check git diff without reading actual files**
+- **Skip automated checks (TODOs, stubs, unwrap)**
+- **Skip code quality review (error handling, safety, clarity)**
 
 **Always:**
 - Review every task, no exceptions
 - Verify with commands and evidence
 - Document gaps explicitly
 - Check for anti-patterns from sre-task-refinement
-- Read the actual code changes
+- **READ the actual implementation files with Read tool**
+- **Run automated checks for TODOs, stubs, unsafe patterns**
+- **Run quality gates with test-runner agent**
+- **Assess code quality with Google Fellow perspective**
 
 ## Working with bd
 

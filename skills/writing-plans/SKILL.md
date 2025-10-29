@@ -209,6 +209,31 @@ Mark each task as in_progress when working on it, completed when user approves e
 
 This prevents going off track early and wasting effort on wrong implementation details.
 
+## CRITICAL: No Placeholder Text
+
+**NEVER EVER write meta-references in the design field. Examples of FORBIDDEN text:**
+
+❌ `[Full implementation steps as detailed above - includes all 6 step groups with complete code examples]`
+❌ `[Implementation steps as specified in the success criteria]`
+❌ `[Complete code examples will be added here]`
+❌ `[See above for detailed steps]`
+❌ `[As detailed in the implementation checklist]`
+
+**These are COMPLETELY UNACCEPTABLE because:**
+1. The bd task is the source of truth - there is no "above" to reference
+2. The executor (human or Claude) has zero context and needs ACTUAL steps
+3. Placeholders defeat the entire purpose of task refinement
+4. This violates the core principle of "exact instructions for zero-context engineer"
+
+**ALWAYS write actual content:**
+
+✅ Write the complete step-by-step instructions with actual code
+✅ Include all code examples in full
+✅ Specify exact file paths and commands
+✅ No shortcuts, no references to non-existent content
+
+**If you catch yourself writing a meta-reference: STOP. Delete it. Write the actual content.**
+
 ## Expanded Task Structure (in bd issue after enhancement)
 
 The expanded design you add to bd issues should follow this structure:
@@ -405,6 +430,8 @@ These are violations of the skill requirements:
 | "Plan looks complete enough to ask" | Show ALL step groups with ALL steps and code. Then ask. |
 | "Too many tasks, should suggest splitting" | No artificial limits. Work on as many tasks as user specifies. |
 | "Single task is too small for this skill" | Single task expansion is valid. Use the skill. |
+| "**CRITICAL: I'll use placeholder text and fill in later**" | **NO. Write actual implementation steps NOW. NEVER use "[detailed above]", "[as specified]", or similar meta-references.** |
+| "Design field is too long, use placeholder" | Length doesn't matter. Write complete content. Placeholder defeats entire purpose of task refinement. |
 
 **All of these mean: STOP. Follow the requirements exactly.**
 
@@ -431,6 +458,13 @@ These are violations of the skill requirements:
 - [ ] No conditional instructions ("if exists", "if needed")
 - [ ] Commit messages reference bd task ID
 
+**After updating each bd task (MANDATORY VERIFICATION):**
+- [ ] Run `bd show bd-N` to read back the design field
+- [ ] Verify NO placeholder text like "[detailed above]", "[as specified]", "[will be added]"
+- [ ] Verify ALL step groups are fully written with actual code examples
+- [ ] Verify ALL steps have complete commands and expected output
+- [ ] If ANY placeholder found: STOP, rewrite with actual content, update bd again
+
 **After all tasks approved:**
 - [ ] All bd issues updated with detailed implementation steps
 - [ ] Verify updates with `bd show bd-N` for each task
@@ -449,12 +483,12 @@ After all bd issues are enhanced with detailed steps, offer execution choice:
 **Which approach?"**
 
 **If Execute in this session:**
-- **REQUIRED SUB-SKILL:** Use hyper:executing-plans
+- **REQUIRED: Use Skill tool to invoke:** `hyperpowers:executing-plans`
 - Read tasks from bd
 - Follow detailed implementation steps
 - Update task status as work progresses
 
 **If Execute in separate session:**
 - Guide them to open new session
-- **REQUIRED SUB-SKILL:** New session uses hyper:executing-plans
+- **REQUIRED: New session uses Skill tool to invoke:** `hyperpowers:executing-plans`
 - bd issues contain everything needed for execution

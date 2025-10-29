@@ -135,7 +135,7 @@ Continue with next ready task immediately.
 
 After all tasks complete and verified:
 - Announce: "I'm using the review-implementation skill to verify the implementation matches the spec."
-- **REQUIRED SUB-SKILL:** Use hyper:review-implementation
+- **REQUIRED: Use Skill tool to invoke:** `hyperpowers:review-implementation`
 - review-implementation will:
   - Review each bd task's success criteria against actual implementation
   - Check for anti-pattern violations

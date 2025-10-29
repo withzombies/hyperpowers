@@ -43,6 +43,8 @@ These rationalizations appear across multiple contexts. When you catch yourself 
 | "Whole design at once for efficiency" | Incremental validation catches problems early. |
 | "Checklist is just suggestion" | Create TodoWrite todos. Track properly. |
 | "Subtask can reference parent for details" | NO. Subtasks must be complete. NO placeholders, NO "see parent". |
+| "I'll use placeholder and fill in later" | NO. Write actual content NOW. No meta-references like "[detailed above]". |
+| "Design field is too long, use placeholder" | Length doesn't matter. Write full content. Placeholder defeats the purpose. |
 
 ## Quality Shortcuts
 

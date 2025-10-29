@@ -25,6 +25,8 @@ Transform rough ideas into fully-formed designs through structured questioning a
 | **6. Validate and Refine** | Review and improve all issues | sre-task-refinement skill | Plan approved or revision needed |
 | **7. Enhance bd Tasks** | Expand tasks with detailed implementation steps | writing-plans skill | Enhanced bd issues |
 
+**⚠️ AFTER INTERRUPTIONS: Check TodoWrite to see current phase. Complete ALL remaining phases before coding. NEVER skip Phase 6 or 7.**
+
 ## The Process
 
 **REQUIRED: Create TodoWrite tracker at start**
@@ -40,6 +42,12 @@ Use TodoWrite to create todos for each phase:
 - Phase 7: Enhance bd Tasks (tasks expanded with detailed implementation steps)
 
 Mark each phase as in_progress when working on it, completed when finished.
+
+**CRITICAL: After ANY user interruption or additional context:**
+1. **Check TodoWrite FIRST** - See which phase is in_progress
+2. **Determine if interruption changes phase** - New requirements? Return to earlier phase
+3. **Complete ALL remaining phases** - NEVER skip Phase 6 or 7 to start coding
+4. **Update TodoWrite** - Keep it current after adjusting phases
 
 ## Research Agents
 
@@ -481,7 +489,7 @@ Now have the plan reviewed by an SRE perspective to catch issues before implemen
 
 - Mark Phase 6 as in_progress in TodoWrite
 - Announce: "I'm using the sre-task-refinement skill to review the plan."
-- **REQUIRED SUB-SKILL:** Use hyper:sre-task-refinement
+- **REQUIRED: Use Skill tool to invoke:** `hyperpowers:sre-task-refinement`
 - sre-task-refinement will:
   - Review all issues for completeness
   - Check task granularity (no task >16 hours)
@@ -499,7 +507,7 @@ Now expand the approved bd tasks with detailed step-by-step implementation instr
 
 - Mark Phase 7 as in_progress in TodoWrite
 - Announce: "I'm using the writing-plans skill to enhance the bd tasks with detailed steps."
-- **REQUIRED SUB-SKILL:** Use hyper:writing-plans
+- **REQUIRED: Use Skill tool to invoke:** `hyperpowers:writing-plans`
 - writing-plans will:
   - Read the epic and all tasks from bd
   - Verify codebase state for each task
@@ -567,6 +575,48 @@ finishing-a-development-branch (closes epic, creates PR)
 
 **Don't do deep research yourself** - you'll consume context and may hallucinate. Agents are specialized for this.
 
+## Handling Interruptions and Additional Context
+
+**CRITICAL: When user provides additional context mid-brainstorming:**
+
+1. **Check TodoWrite FIRST** - See which phase you're in
+2. **Acknowledge the context** - "Thanks for the additional context about [X]"
+3. **Determine impact:**
+   - If context changes requirements → Return to Phase 1
+   - If context affects approach → Return to Phase 2
+   - If context is clarification → Continue current phase
+4. **NEVER skip to implementation** - Complete all 7 phases
+5. **Update TodoWrite** - Adjust phase status if needed
+
+**Example interrupt handling:**
+
+```
+User (mid-Phase 4): "Oh, and we also need to handle OAuth in addition to JWT"
+
+WRONG Response:
+"Got it, let me start implementing OAuth support..."
+[Skips Phase 5, 6, 7 - jumps to code]
+
+CORRECT Response:
+"Thanks for the additional context about OAuth. This is a new authentication method beyond what we discussed in Phase 2.
+
+[Checks TodoWrite - currently in Phase 4]
+
+Since this changes our authentication approach, let me return to Phase 2 to explore OAuth integration with the existing JWT plan. We'll then continue through the remaining phases (5-7) before implementation.
+
+[Returns to Phase 2, proposes 2-3 approaches for OAuth+JWT integration]
+[Continues through all phases]
+[Only then executes]
+```
+
+**Red flags that you're skipping phases:**
+- ❌ User adds context → You immediately start coding
+- ❌ You say "let me implement..." before completing Phase 7
+- ❌ You forget to run sre-task-refinement (Phase 6)
+- ❌ You forget to run writing-plans (Phase 7)
+
+**Always check TodoWrite after interruption to resume at correct phase.**
+
 ## When to Revisit Earlier Phases
 
 ```dot
@@ -616,6 +666,8 @@ These are violations of the skill requirements:
 | "I know this codebase, don't need investigator" | You don't know current state. Always verify. |
 | "Obvious solution, skip research" | Codebase may have established pattern. Check first. |
 | "Subtask can reference parent for details" | NO. Subtasks must be complete. NO placeholders, NO "see parent". |
+| **"Partner added context, can start coding now"** | **NO. Check TodoWrite. Complete all remaining phases (including 6 & 7).** |
+| **"Design is done, let me implement..."** | **NO. Run Phase 6 (sre-task-refinement) and Phase 7 (writing-plans) FIRST.** |
 
 **All of these mean: STOP. Follow the requirements exactly.**
 

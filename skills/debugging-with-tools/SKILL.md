@@ -407,7 +407,7 @@ test('rejects empty email', () => {
 - Verify test fails with expected error
 - This proves test actually tests the bug
 
-**REQUIRED SUB-SKILL:** Use hyperpowers:test-driven-development for proper test writing
+**REQUIRED: Use Skill tool to invoke:** `hyperpowers:test-driven-development` for proper test writing
 
 #### 2. Implement Minimal Fix
 
