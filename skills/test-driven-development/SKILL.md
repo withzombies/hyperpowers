@@ -72,95 +72,12 @@ digraph tdd_cycle {
 
 Write one minimal test showing what should happen.
 
-**Good Examples:**
-
-**Rust:**
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn retries_failed_operations_3_times() {
-        let mut attempts = 0;
-        let operation = || -> Result<&str, &str> {
-            attempts += 1;
-            if attempts < 3 {
-                Err("fail")
-            } else {
-                Ok("success")
-            }
-        };
-
-        let result = retry_operation(operation);
-
-        assert_eq!(result, Ok("success"));
-        assert_eq!(attempts, 3);
-    }
-}
-```
-
-**Swift:**
-```swift
-func testRetriesFailedOperations3Times() async throws {
-    var attempts = 0
-    let operation = { () -> Result<String, Error> in
-        attempts += 1
-        if attempts < 3 {
-            return .failure(RetryError.failed)
-        }
-        return .success("success")
-    }
-
-    let result = try await retryOperation(operation)
-
-    XCTAssertEqual(result, "success")
-    XCTAssertEqual(attempts, 3)
-}
-```
-
-**TypeScript:**
-```typescript
-describe('retryOperation', () => {
-  it('retries failed operations 3 times', async () => {
-    let attempts = 0;
-    const operation = () => {
-      attempts++;
-      if (attempts < 3) {
-        throw new Error('fail');
-      }
-      return 'success';
-    };
-
-    const result = await retryOperation(operation);
-
-    expect(result).toBe('success');
-    expect(attempts).toBe(3);
-  });
-});
-```
-
-**Why these are good:** Clear names, test real behavior, one thing per test.
-
-**Bad Example:**
-```typescript
-test('retry', () => {
-    let mockCalls = 0;
-    const mock = () => {
-        mockCalls++;
-        return 'success';
-    };
-    retryOperation(mock);
-    expect(mockCalls).toBe(1); // Tests mock, not behavior
-});
-```
-
-**Why this is bad:** Vague name, tests mock behavior not real retry logic.
-
 **Requirements:**
 - One behavior
 - Clear name
 - Real code (no mocks unless unavoidable)
+
+**For detailed examples in Rust, Swift, and TypeScript, see:** [resources/language-examples.md](resources/language-examples.md)
 
 ### Verify RED - Watch It Fail
 
@@ -193,84 +110,9 @@ Confirm:
 
 Write simplest code to pass the test.
 
-**Good Examples - Just enough to pass:**
+**Key principle:** Don't add features, refactor other code, or "improve" beyond the test.
 
-**Rust:**
-```rust
-fn retry_operation<F, T, E>(mut operation: F) -> Result<T, E>
-where
-    F: FnMut() -> Result<T, E>,
-{
-    for i in 0..3 {
-        match operation() {
-            Ok(result) => return Ok(result),
-            Err(e) => {
-                if i == 2 {
-                    return Err(e);
-                }
-            }
-        }
-    }
-    unreachable!()
-}
-```
-
-**Swift:**
-```swift
-func retryOperation<T>(_ operation: () async throws -> T) async throws -> T {
-    var lastError: Error?
-    for attempt in 0..<3 {
-        do {
-            return try await operation()
-        } catch {
-            lastError = error
-            if attempt == 2 {
-                throw error
-            }
-        }
-    }
-    throw lastError!
-}
-```
-
-**TypeScript:**
-```typescript
-async function retryOperation<T>(
-  operation: () => Promise<T>
-): Promise<T> {
-  let lastError: Error | undefined;
-  for (let i = 0; i < 3; i++) {
-    try {
-      return await operation();
-    } catch (error) {
-      lastError = error as Error;
-      if (i === 2) {
-        throw error;
-      }
-    }
-  }
-  throw lastError;
-}
-```
-
-**Bad Example - Over-engineered (YAGNI):**
-```typescript
-async function retryOperation<T>(
-  operation: () => Promise<T>,
-  options: {
-    maxRetries?: number;
-    backoff?: 'linear' | 'exponential';
-    onRetry?: (attempt: number) => void;
-    shouldRetry?: (error: Error) => boolean;
-  } = {}
-): Promise<T> {
-  // Don't add features the test doesn't require!
-}
-```
-
-**Why this is bad:** Test only requires 3 retries. Don't add configurable retries, backoff strategies, callbacks, or error filtering until a test requires them.
-
-Don't add features, refactor other code, or "improve" beyond the test.
+**For detailed examples showing minimal implementations, see:** [resources/language-examples.md](resources/language-examples.md)
 
 ### Verify GREEN - Watch It Pass
 

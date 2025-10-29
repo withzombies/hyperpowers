@@ -347,125 +347,13 @@ For each phase task created in Phase 3:
 
 ### Phase 5: Refine Subtask Granularity
 
+**For detailed guidance on subtask expansion with examples, see:** [resources/subtask-expansion-guide.md](resources/subtask-expansion-guide.md)
+
+**Summary:**
+
 **Goal:** Check if any phase tasks are too large (>16 hours) and break them into subtasks with COMPLETE designs.
 
 **CRITICAL:** Subtasks must have complete, self-contained designs. NO placeholders, NO "see parent", NO "see full details".
-
-- Mark Phase 5 as in_progress in TodoWrite
-
-#### Review Task Sizes
-
-For each phase task created in Phase 3 and expanded in Phase 4:
-
-1. **Estimate effort based on design**
-   - Review the implementation checklist
-   - Count files, functions, tests to implement
-   - Estimate: 4-8 hours ideal, up to 16 hours acceptable
-
-2. **If task is >16 hours, break it down**
-
-   **MANDATORY PROCESS:**
-
-   a. **First, read the parent task design from bd:**
-      ```bash
-      bd show bd-3 --format json  # Get parent task's complete design
-      ```
-
-   b. **Split the design content across subtasks:**
-      - Each subtask gets its portion of architecture, components, implementation checklist
-      - Each subtask must be COMPLETE and self-contained
-      - NO references like "See parent" or "Full details in parent"
-      - If implementation details are in parent, COPY them to subtasks
-
-   c. **Create subtasks with COMPLETE designs:**
-
-   ```bash
-   # Example: Phase 2 (bd-3) is 50 hours - break into subtasks
-   # After reading bd-3's complete design, split it:
-
-   bd create "Subtask 1: Vehicle Identifiers" --type task --priority 1 \
-     --design "## Goal
-   Implement regex-based vehicle identifier scanner (VIN, license plates)
-
-   ## Design
-
-   ### Architecture
-   VehicleScanner struct implements Scanner trait with:
-   - Regex patterns for VINs (17 chars, specific format)
-   - Regex patterns for US/EU license plates
-   - Confidence scoring based on context
-
-   ### Components
-   - VehicleScanner::new() - initialize with compiled regexes
-   - Scanner::scan() implementation - find all matches
-   - Scanner::name() returns \"vehicle_identifiers\"
-
-   ## Implementation Checklist
-   - [ ] src/scanners/vehicle.rs - VehicleScanner struct
-   - [ ] Implement Scanner trait (scan, name, confidence)
-   - [ ] VIN regex: [A-HJ-NPR-Z0-9]{17} with validation
-   - [ ] License plate regex: [A-Z]{3}[0-9]{4} (US format)
-   - [ ] Confidence: 0.9 if in automotive context, 0.7 otherwise
-   - [ ] tests/scanners/vehicle_test.rs - unit tests
-   - [ ] Test: valid VINs detected
-   - [ ] Test: invalid VINs rejected (I, O, Q chars)
-   - [ ] Test: license plates with spaces/no spaces
-   - [ ] Test: confidence scoring based on context
-
-   ## Success Criteria
-   - [ ] VehicleScanner fully implemented
-   - [ ] All Scanner trait methods working
-   - [ ] Unit tests passing (10+ test cases)
-   - [ ] Pre-commit hooks pass
-   - [ ] No TODOs without issue numbers
-
-   ## Effort Estimate
-   6-8 hours"
-   # Returns bd-6
-
-   bd create "Subtask 2: Medical Device IDs" --type task --priority 1 \
-     --design "## Goal
-   Implement medical device identifier scanner (FDA UDI, EU MDR)
-
-   ## Design
-
-   ### Architecture
-   MedicalDeviceScanner struct with:
-   - UDI parsing (device identifier + production identifier)
-   - EU MDR number matching
-   - Clinical context detection
-
-   [FULL DESIGN HERE - NOT abbreviated]
-
-   ## Implementation Checklist
-   [COMPLETE CHECKLIST - NOT \"see parent\"]
-
-   ## Success Criteria
-   [SPECIFIC CRITERIA]
-
-   ## Effort Estimate
-   6-8 hours"
-   # Returns bd-7
-
-   # Link subtasks to parent phase
-   bd dep add bd-6 bd-3 --type parent-child  # Subtask is child of Phase
-   bd dep add bd-7 bd-3 --type parent-child
-
-   # Add sequential dependencies if needed
-   bd dep add bd-7 bd-6  # bd-7 depends on bd-6 (do bd-6 first)
-   ```
-
-   **VALIDATION:** Before proceeding, verify each subtask:
-   - Has Goal section (not "TBD")
-   - Has Design section with architecture details (not "See parent")
-   - Has complete Implementation Checklist (not "See parent")
-   - Has specific Success Criteria (not generic)
-   - Has Effort Estimate (not "TBD")
-
-   **If any subtask has placeholders, STOP and fix it.**
-
-3. **Keep small tasks as-is**
-   - If task is ≤16 hours, no changes needed
    - It will be implemented as a single unit
 
 #### Verify Final Structure
@@ -533,47 +421,10 @@ review-implementation (verifies against spec)
 finishing-a-development-branch (closes epic, creates PR)
 ```
 
+
 ## Question Patterns
 
-### When to Use AskUserQuestion Tool
-
-**Use AskUserQuestion for:**
-- Phase 1: Clarifying questions with 2-4 clear options
-- Phase 2: Architectural approach selection (2-3 alternatives)
-- Any decision with distinct, mutually exclusive choices
-- When options have clear trade-offs to explain
-- When agent research yields no answer (present as open decision)
-
-**Benefits:**
-- Structured presentation of options with descriptions
-- Clear trade-off visibility for partner
-- Forces explicit choice (prevents vague "maybe both" responses)
-
-### When to Use Open-Ended Questions
-
-**Use open-ended questions for:**
-- Phase 4: Design validation ("Does this look right so far?")
-- When you need detailed feedback or explanation
-- When partner should describe their own requirements
-- When structured options would limit creative input
-
-**Example decision flow:**
-- "What authentication method?" → Use AskUserQuestion (2-4 options)
-- "Does this design handle your use case?" → Open-ended (validation)
-
-### When to Use Research Agents
-
-**Use codebase-investigator for:**
-- "How is X implemented?" → Agent finds and reports
-- "Where does Y live?" → Agent locates files
-- "What pattern exists for Z?" → Agent identifies pattern
-
-**Use internet-researcher for:**
-- "What's the current API for X?" → Agent finds docs
-- "How do people handle Y?" → Agent finds patterns
-- "What libraries exist for Z?" → Agent researches options
-
-**Don't do deep research yourself** - you'll consume context and may hallucinate. Agents are specialized for this.
+**For common question patterns and examples, see:** [resources/question-patterns.md](resources/question-patterns.md)
 
 ## Handling Interruptions and Additional Context
 
@@ -612,48 +463,11 @@ Since this changes our authentication approach, let me return to Phase 2 to expl
 **Red flags that you're skipping phases:**
 - ❌ User adds context → You immediately start coding
 - ❌ You say "let me implement..." before completing Phase 7
-- ❌ You forget to run sre-task-refinement (Phase 6)
-- ❌ You forget to run writing-plans (Phase 7)
 
-**Always check TodoWrite after interruption to resume at correct phase.**
+## Handling Interruptions
 
-## When to Revisit Earlier Phases
+**For guidance on handling interruptions and additional context, see:** [resources/handling-interruptions.md](resources/handling-interruptions.md)
 
-```dot
-digraph revisit_phases {
-    rankdir=LR;
-    "New constraint revealed?" [shape=diamond];
-    "Partner questions approach?" [shape=diamond];
-    "Requirements unclear?" [shape=diamond];
-    "Return to Phase 1" [shape=box, style=filled, fillcolor="#ffcccc"];
-    "Return to Phase 2" [shape=box, style=filled, fillcolor="#ffffcc"];
-    "Continue forward" [shape=box, style=filled, fillcolor="#ccffcc"];
-
-    "New constraint revealed?" -> "Return to Phase 1" [label="yes"];
-    "New constraint revealed?" -> "Partner questions approach?" [label="no"];
-    "Partner questions approach?" -> "Return to Phase 2" [label="yes"];
-    "Partner questions approach?" -> "Requirements unclear?" [label="no"];
-    "Requirements unclear?" -> "Return to Phase 1" [label="yes"];
-    "Requirements unclear?" -> "Continue forward" [label="no"];
-}
-```
-
-**You can and should go backward when:**
-- Partner reveals new constraint during Phase 2, 3, or 4 → Return to Phase 1
-- Validation shows fundamental gap in requirements → Return to Phase 1
-- Partner questions approach during Phase 4 (Design) → Return to Phase 2
-- Something doesn't make sense → Go back and clarify
-- Agent research reveals constraint you didn't know → Reassess phase
-
-**Don't force forward linearly** when going backward would give better results.
-
-## Common Rationalizations - STOP
-
-These are violations of the skill requirements:
-
-| Excuse | Reality |
-|--------|---------|
-| "Idea is simple, can skip exploring alternatives" | Always propose 2-3 approaches. Comparison reveals issues. |
 | "Partner knows what they want, can skip questions" | Questions reveal hidden constraints. Always ask. |
 | "Request is detailed, don't need AskUserQuestion" | MUST invoke tool 3+ times. Output text is not asking. |
 | "I'll present whole design at once for efficiency" | Incremental validation catches problems early. |

@@ -316,124 +316,13 @@ bd status bd-456 --status closed
 
 ## Common Refactoring Patterns
 
-### Extract Method
+**For detailed refactoring patterns with code examples:**
+- Extract Method
+- Rename Variable/Function
+- Extract Class/Struct
+- Inline Unnecessary Abstraction
 
-**When:** Duplicated code or long function
-
-```rust
-// Before: Long function
-fn process(data: Vec<i32>) -> i32 {
-    let mut sum = 0;
-    for x in data {
-        sum += x * x;
-    }
-    sum
-}
-
-// After: Extracted method
-fn process(data: Vec<i32>) -> i32 {
-    data.iter().map(|x| square(x)).sum()
-}
-
-fn square(x: &i32) -> i32 {
-    x * x
-}
-```
-
-**Steps:**
-1. Extract square() function
-2. Run tests
-3. Commit
-4. Replace loop with iterator
-5. Run tests
-6. Commit
-
-### Rename Variable/Function
-
-**When:** Name is unclear or misleading
-
-```rust
-// Before
-fn calc(d: Vec<i32>) -> f64 {
-    let s: i32 = d.iter().sum();
-    s as f64 / d.len() as f64
-}
-
-// After - Step by step
-// Step 1: Rename function
-fn calculate_average(d: Vec<i32>) -> f64 { ... }  // Test, commit
-
-// Step 2: Rename parameter
-fn calculate_average(data: Vec<i32>) -> f64 { ... }  // Test, commit
-
-// Step 3: Rename variable
-fn calculate_average(data: Vec<i32>) -> f64 {
-    let sum: i32 = data.iter().sum();  // Test, commit
-    sum as f64 / data.len() as f64
-}
-```
-
-### Extract Class/Struct
-
-**When:** Class has multiple responsibilities
-
-```rust
-// Before: God object
-struct UserService {
-    db: Database,
-    email_validator: Regex,
-    name_validator: Regex,
-}
-
-// After: Single responsibility
-struct UserService {
-    db: Database,
-    validator: UserValidator,  // EXTRACTED
-}
-
-struct UserValidator {
-    email_pattern: Regex,
-    name_pattern: Regex,
-}
-```
-
-**Steps:**
-1. Create empty UserValidator struct
-2. Test, commit
-3. Move email_validator field
-4. Test, commit
-5. Move name_validator field
-6. Test, commit
-7. Update UserService to use UserValidator
-8. Test, commit
-
-### Inline Unnecessary Abstraction
-
-**When:** Abstraction adds no value
-
-```rust
-// Before: Pointless wrapper
-fn get_user_email(user: &User) -> &str {
-    &user.email
-}
-
-fn process() {
-    let email = get_user_email(&user);  // Just use user.email!
-}
-
-// After: Inline
-fn process() {
-    let email = &user.email;
-}
-```
-
-**Steps:**
-1. Replace one call site with direct access
-2. Test, commit
-3. Replace next call site
-4. Test, commit
-5. Remove wrapper function
-6. Test, commit
+**See:** [resources/refactoring-patterns.md](resources/refactoring-patterns.md)
 
 ## Refactoring Anti-Patterns - STOP
 
@@ -571,84 +460,15 @@ If you catch yourself thinking:
 | "Easier to do all at once" | Easier to break. Small steps safer. |
 | "I know it works" | Your confidence ≠ proof. Tests prove it. |
 
-## Example: Complete Refactoring Session
+## Complete Refactoring Example
 
-**Goal:** Extract validation logic from UserService
+**For a detailed minute-by-minute refactoring session showing:**
+- Creating bd task
+- Incremental steps with test/commit cycles
+- Using test-runner agent
+- Final verification
 
-**Time: 60 minutes**
-
-### Minutes 0-5: Verify Tests Pass
-```bash
-Dispatch hyperpowers:test-runner: "Run: cargo test"
-Result: ✓ 234 tests pass
-```
-
-### Minutes 5-10: Create bd Task
-```bash
-bd create "Refactor: Extract user validation" --type task
-bd edit bd-456 --design "Extract validation to UserValidator class..."
-bd status bd-456 --status in-progress
-```
-
-### Minutes 10-15: Step 1 - Extract email validation function
-```rust
-// Extract validate_email()
-```
-```bash
-Dispatch hyperpowers:test-runner: "Run: cargo test"
-Result: ✓ 234 tests pass
-git commit -m "refactor(bd-456): extract email validation"
-```
-
-### Minutes 15-20: Step 2 - Extract name validation function
-```rust
-// Extract validate_name()
-```
-```bash
-Dispatch hyperpowers:test-runner: "Run: cargo test"
-Result: ✓ 234 tests pass
-git commit -m "refactor(bd-456): extract name validation"
-```
-
-### Minutes 20-25: Step 3 - Create UserValidator struct
-```rust
-struct UserValidator { /* empty */ }
-impl UserValidator { /* empty */ }
-```
-```bash
-Dispatch hyperpowers:test-runner: "Run: cargo test"
-Result: ✓ 234 tests pass
-git commit -m "refactor(bd-456): create UserValidator struct"
-```
-
-### Minutes 25-35: Steps 4-6 - Move validations to UserValidator
-Each step: move one method, test, commit
-
-### Minutes 35-45: Step 7 - Update UserService to use validator
-```rust
-// Use UserValidator instead of inline validation
-```
-```bash
-Dispatch hyperpowers:test-runner: "Run: cargo test"
-Result: ✓ 234 tests pass
-git commit -m "refactor(bd-456): use UserValidator in UserService"
-```
-
-### Minutes 45-55: Step 8 - Remove duplication from other services
-Each service: one change, test, commit
-
-### Minutes 55-60: Final verification and close
-```bash
-Dispatch hyperpowers:test-runner: "Run: cargo test"
-Result: ✓ 234 tests pass
-
-Dispatch hyperpowers:test-runner: "Run: cargo clippy"
-Result: ✓ No warnings
-
-bd status bd-456 --status closed
-```
-
-**Result:** Refactoring complete, 8 safe commits, all tests green throughout.
+**See:** [resources/example-session.md](resources/example-session.md)
 
 ## Remember
 
