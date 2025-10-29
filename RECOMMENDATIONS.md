@@ -350,6 +350,24 @@ bd create --template bug-fix "Fix login issue"
 - Easier to update anti-patterns
 - Consistent rationalizations across skills
 
+### Infrastructure & Customization Skills
+
+**Completed:**
+- ✅ Created **building-hooks** skill with progressive disclosure
+  - Main skill: 397 lines
+  - Resources: hook-examples.md, hook-patterns.md, testing-hooks.md
+  - Covers all hook lifecycle events, progressive enhancement, security
+- ✅ Created **skills-auto-activation** skill with progressive disclosure
+  - Main skill: 484 lines
+  - Resources: hook-implementation.md, skill-rules-examples.md, troubleshooting.md
+  - Covers the known problem of skills not activating reliably
+  - Documents official solutions and custom hook-based workarounds
+
+**Benefits:**
+- Addresses common pain point: skills not activating automatically
+- Provides reusable patterns for custom workflow automation
+- Follows Anthropic's <500 line recommendation with progressive disclosure
+
 ### Missing Cross-References
 
 Some skills should reference each other more explicitly:

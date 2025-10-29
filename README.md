@@ -38,6 +38,10 @@ Reusable workflows for common development tasks:
 - **dispatching-parallel-agents** - Investigate independent failures concurrently
 - **writing-skills** - TDD for process documentation itself
 
+**Infrastructure & Customization:**
+- **building-hooks** - Create custom hooks for automating quality checks and workflow enhancements
+- **skills-auto-activation** - Solve skills not activating reliably through better descriptions or custom hooks
+
 ### Slash Commands
 
 Quick access to key workflows:
