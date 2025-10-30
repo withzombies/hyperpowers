@@ -1,0 +1,275 @@
+{
+  "_comment": "Skill activation rules for hyperpowers plugin - 19 skills total",
+  "_schema": {
+    "description": "Each skill has type, enforcement, priority, and triggers",
+    "type": "process|domain|workflow",
+    "enforcement": "suggest",
+    "priority": "critical|high|medium|low",
+    "promptTriggers": {
+      "keywords": "Array of case-insensitive strings",
+      "intentPatterns": "Array of regex patterns for action+object"
+    }
+  },
+  "test-driven-development": {
+    "type": "process",
+    "enforcement": "suggest",
+    "priority": "critical",
+    "promptTriggers": {
+      "keywords": ["test", "testing", "TDD", "spec", "unit test", "integration test", "test first", "red green refactor"],
+      "intentPatterns": [
+        "(write|add|create|implement).*?(test|spec|unit test)",
+        "test.*(first|before|driven)",
+        "(implement|build|create).*?(feature|function|component)",
+        "red.*(green|refactor)",
+        "(bug|fix|issue).*?reproduce"
+      ]
+    }
+  },
+  "debugging-with-tools": {
+    "type": "process",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": ["debug", "debugging", "error", "bug", "crash", "fails", "broken", "not working", "issue"],
+      "intentPatterns": [
+        "(debug|fix|solve|investigate|troubleshoot).*?(error|bug|issue|problem)",
+        "(why|what).*?(failing|broken|not working|crashing)",
+        "(find|locate|identify).*?(bug|issue|problem|root cause)",
+        "reproduce.*(bug|issue|error)",
+        "stack.*(trace|error)"
+      ]
+    }
+  },
+  "refactoring-safely": {
+    "type": "process",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": ["refactor", "refactoring", "cleanup", "improve", "restructure", "reorganize", "simplify"],
+      "intentPatterns": [
+        "(refactor|clean up|improve|restructure).*?(code|function|class|component)",
+        "(extract|split|separate).*?(function|method|component|logic)",
+        "(rename|move|relocate).*?(file|function|class)",
+        "remove.*(duplication|duplicate|repeated code)"
+      ]
+    }
+  },
+  "fixing-bugs": {
+    "type": "process",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": ["bug", "fix", "issue", "problem", "defect", "regression"],
+      "intentPatterns": [
+        "(fix|resolve|solve).*?(bug|issue|problem|defect)",
+        "(bug|issue|problem).*(report|ticket|found)",
+        "regression.*(test|fix|found)",
+        "(broken|not working).*(fix|repair)"
+      ]
+    }
+  },
+  "root-cause-tracing": {
+    "type": "process",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": ["root cause", "trace", "origin", "source", "why", "deep dive"],
+      "intentPatterns": [
+        "root.*(cause|problem|issue)",
+        "trace.*(back|origin|source)",
+        "(why|how).*(happening|occurring|caused)",
+        "deep.*(dive|analysis|investigation)"
+      ]
+    }
+  },
+  "brainstorming": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": ["plan", "design", "architecture", "approach", "brainstorm", "idea", "feature", "implement"],
+      "intentPatterns": [
+        "(create|build|add|implement).*?(feature|system|component|functionality)",
+        "(how should|what's the best way|how to).*?(implement|build|design)",
+        "I want to.*(add|create|build|implement)",
+        "(plan|design|architect).*?(system|feature|component)",
+        "let's.*(think|plan|design)"
+      ]
+    }
+  },
+  "writing-plans": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": ["expand", "enhance", "detailed steps", "implementation steps", "bd tasks"],
+      "intentPatterns": [
+        "expand.*?(bd|task|plan)",
+        "enhance.*?with.*(steps|details)",
+        "add.*(implementation|detailed).*(steps|instructions)",
+        "write.*?plan"
+      ]
+    }
+  },
+  "executing-plans": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": ["execute", "implement", "start working", "begin implementation", "work on bd"],
+      "intentPatterns": [
+        "execute.*(plan|tasks|bd)",
+        "(start|begin).*(implementation|work|executing)",
+        "implement.*?bd-\\d+",
+        "work.*?on.*(tasks|bd|plan)"
+      ]
+    }
+  },
+  "review-implementation": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": ["review implementation", "check implementation", "verify implementation", "review against spec"],
+      "intentPatterns": [
+        "review.*?implementation",
+        "check.*?(implementation|against spec)",
+        "verify.*?(implementation|spec|requirements)",
+        "implementation.*?complete"
+      ]
+    }
+  },
+  "finishing-a-development-branch": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": ["merge", "PR", "pull request", "finish branch", "close epic"],
+      "intentPatterns": [
+        "(create|open|make).*?(PR|pull request)",
+        "(merge|finish|close|complete).*?(branch|epic|feature)",
+        "ready.*?to.*(merge|ship|release)"
+      ]
+    }
+  },
+  "sre-task-refinement": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "low",
+    "promptTriggers": {
+      "keywords": ["refine task", "corner cases", "requirements", "edge cases"],
+      "intentPatterns": [
+        "refine.*?(task|subtask|requirements)",
+        "(corner|edge).*(cases|scenarios)",
+        "requirements.*?(clear|complete|understood)"
+      ]
+    }
+  },
+  "managing-bd-tasks": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "low",
+    "promptTriggers": {
+      "keywords": ["split task", "merge tasks", "bd dependencies", "archive epic"],
+      "intentPatterns": [
+        "(split|divide).*?task",
+        "merge.*?tasks",
+        "(change|add|remove).*?dependencies",
+        "(archive|query|metrics).*?bd"
+      ]
+    }
+  },
+  "verification-before-completion": {
+    "type": "process",
+    "enforcement": "suggest",
+    "priority": "critical",
+    "promptTriggers": {
+      "keywords": ["done", "complete", "finished", "ready", "verified", "works", "passing"],
+      "intentPatterns": [
+        "(I'm|it's|work is).*(done|complete|finished)",
+        "(ready|prepared).*(merge|commit|push|PR)",
+        "everything.*(works|passes|ready)",
+        "(verified|tested|checked).*?(everything|all)",
+        "can we.*(merge|commit|ship)"
+      ]
+    }
+  },
+  "dispatching-parallel-agents": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": ["multiple failures", "independent problems", "parallel investigation"],
+      "intentPatterns": [
+        "(multiple|several|many).*(failures|errors|issues)",
+        "(independent|separate|parallel).*(problems|tasks|investigations)",
+        "investigate.*?in parallel"
+      ]
+    }
+  },
+  "building-hooks": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "low",
+    "promptTriggers": {
+      "keywords": ["create hook", "write hook", "automation", "quality check"],
+      "intentPatterns": [
+        "(create|write|build).*?hook",
+        "hook.*?(automation|quality|workflow)",
+        "automate.*?(check|validation|workflow)"
+      ]
+    }
+  },
+  "skills-auto-activation": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "low",
+    "promptTriggers": {
+      "keywords": ["skill activation", "skills not activating", "force skill"],
+      "intentPatterns": [
+        "skill.*?(not activating|activation|triggering)",
+        "force.*?skill",
+        "skills.*?reliably"
+      ]
+    }
+  },
+  "testing-anti-patterns": {
+    "type": "process",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": ["mock", "testing", "test doubles", "test-only methods"],
+      "intentPatterns": [
+        "(mock|stub|fake).*?(behavior|dependency)",
+        "test.*?only.*?method",
+        "(testing|test).*?(anti-pattern|smell|problem)"
+      ]
+    }
+  },
+  "using-hyper": {
+    "type": "process",
+    "enforcement": "suggest",
+    "priority": "critical",
+    "promptTriggers": {
+      "keywords": ["start", "begin", "first time", "how to use"],
+      "intentPatterns": [
+        "(start|begin|first).*?(conversation|task|work)",
+        "how.*?use.*?(skills|hyper)",
+        "getting started"
+      ]
+    }
+  },
+  "writing-skills": {
+    "type": "workflow",
+    "enforcement": "suggest",
+    "priority": "low",
+    "promptTriggers": {
+      "keywords": ["create skill", "write skill", "edit skill", "new skill"],
+      "intentPatterns": [
+        "(create|write|build|edit).*?skill",
+        "new.*?skill",
+        "skill.*?(documentation|workflow)"
+      ]
+    }
+  }
+}
