@@ -275,7 +275,7 @@
   "test-runner": {
     "type": "agent",
     "enforcement": "suggest",
-    "priority": "medium",
+    "priority": "high",
     "promptTriggers": {
       "keywords": ["commit", "git commit", "pre-commit", "commit changes", "committing"],
       "intentPatterns": [
@@ -283,7 +283,11 @@
         "(make|create|run).*?commit",
         "commit.*?(message|with)",
         "ready.*?commit",
-        "pre-commit.*?(hooks|run)"
+        "pre-commit.*?(hooks|run)",
+        "(finish|complete|wrap up|done with).*?bd-\\d+",
+        "(save|persist).*?(work|changes)",
+        "(mark|update|close).*?(bd-\\d+|task).*?(done|complete|finished)",
+        "update.*?bd.*?status"
       ]
     }
   }

@@ -38,6 +38,7 @@ fi
 SHOW_TDD_REMINDER=false
 SHOW_VERIFY_REMINDER=false
 SHOW_COMMIT_REMINDER=false
+SHOW_TEST_RUNNER_REMINDER=false
 
 # Check 1: Files edited but no test files?
 if [ "$FILE_COUNT" -gt 0 ]; then
@@ -62,8 +63,16 @@ if [ "$FILE_COUNT" -gt 0 ]; then
     fi
 fi
 
-# Display appropriate reminders (max 5 lines)
-if [ "$SHOW_TDD_REMINDER" = true ] || [ "$SHOW_VERIFY_REMINDER" = true ] || [ "$SHOW_COMMIT_REMINDER" = true ]; then
+# Check 4: Did Claude run git commit with verbose output? (pre-commit hooks)
+if echo "$RESPONSE" | grep -E '(Bash\(|`)(git commit|git add.*&&.*git commit)' >/dev/null 2>&1; then
+    # Check if response seems verbose (mentions lots of output lines or ctrl+b to background)
+    if echo "$RESPONSE" | grep -E '(\+[0-9]{2,}.*lines|ctrl\+b to run in background|timeout:.*[0-9]+m)' >/dev/null 2>&1; then
+        SHOW_TEST_RUNNER_REMINDER=true
+    fi
+fi
+
+# Display appropriate reminders (max 6 lines)
+if [ "$SHOW_TDD_REMINDER" = true ] || [ "$SHOW_VERIFY_REMINDER" = true ] || [ "$SHOW_COMMIT_REMINDER" = true ] || [ "$SHOW_TEST_RUNNER_REMINDER" = true ]; then
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
@@ -77,6 +86,10 @@ if [ "$SHOW_TDD_REMINDER" = true ] || [ "$SHOW_VERIFY_REMINDER" = true ] || [ "$
 
     if [ "$SHOW_COMMIT_REMINDER" = true ]; then
         echo "💾 Consider: $FILE_COUNT files edited - use hyperpowers:test-runner agent"
+    fi
+
+    if [ "$SHOW_TEST_RUNNER_REMINDER" = true ]; then
+        echo "🚀 Tip: Use hyperpowers:test-runner agent for commits to keep verbose hook output out of context"
     fi
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
