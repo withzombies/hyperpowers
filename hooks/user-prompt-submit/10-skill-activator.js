@@ -156,7 +156,7 @@ async function main() {
             if (CONFIG.debugMode) {
                 console.error('No rules loaded');
             }
-            console.log(JSON.stringify({ decision: 'approve' }));
+            console.log(JSON.stringify({}));
             return;
         }
 
@@ -164,7 +164,7 @@ async function main() {
         const prompt = await readPrompt();
 
         if (!prompt.text || prompt.text.trim() === '') {
-            console.log(JSON.stringify({ decision: 'approve' }));
+            console.log(JSON.stringify({}));
             return;
         }
 
@@ -180,21 +180,20 @@ async function main() {
             }
 
             console.log(JSON.stringify({
-                decision: 'approve',
                 additionalContext: context
             }));
         } else {
             if (CONFIG.debugMode) {
                 console.error('No skills activated');
             }
-            console.log(JSON.stringify({ decision: 'approve' }));
+            console.log(JSON.stringify({}));
         }
     } catch (error) {
         if (CONFIG.debugMode) {
             console.error('Hook error:', error.message, error.stack);
         }
-        // Always approve on error - never block user
-        console.log(JSON.stringify({ decision: 'approve' }));
+        // Always return empty response on error - never block user
+        console.log(JSON.stringify({}));
     }
 }
 

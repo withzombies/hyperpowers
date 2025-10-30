@@ -107,7 +107,7 @@ should_run() {
 
 # Main execution
 if ! should_run; then
-    echo '{"decision": "approve"}'
+    echo '{}'
     exit 0
 fi
 
@@ -154,7 +154,7 @@ if should_run; then
     mark_run
 fi
 
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ## Pattern: Multi-Project Detection
@@ -231,8 +231,8 @@ try_with_fallback \
     "npm run build:dev" \
     "Building project"
 
-# Always approve (non-blocking)
-echo '{"decision": "approve"}'
+# Always return empty response (non-blocking)
+echo '{}'
 ```
 
 ## Pattern: Parallel Execution
@@ -290,7 +290,7 @@ else
     cat /tmp/eslint-output.txt
 fi
 
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ## Pattern: Smart Caching
@@ -384,7 +384,7 @@ else
     complete_progress "failure"
 fi
 
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ## Pattern: Context Injection
@@ -474,7 +474,7 @@ fi
 
 report_errors
 
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ## Pattern: Conditional Blocking
@@ -517,10 +517,10 @@ case "$ERROR_LEVEL" in
         ;;
     "warning")
         echo "⚠️  Warning: Found debug statements (console.log, debugger)"
-        echo '{"decision": "approve"}'
+        echo '{}'
         ;;
     *)
-        echo '{"decision": "approve"}'
+        echo '{}'
         ;;
 esac
 ```
@@ -541,7 +541,7 @@ jq -n \
     '{lastRun: $timestamp, filesEdited: ($files | split(","))}' \
     > "$STATE_FILE"
 
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ```bash
@@ -559,7 +559,7 @@ if [ -f "$STATE_FILE" ]; then
     done
 fi
 
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ## Pattern: User Notification
@@ -598,7 +598,7 @@ if [ "$error_count" -gt 10 ]; then
     notify "⚠️  Build has $error_count errors"
 fi
 
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ## Remember

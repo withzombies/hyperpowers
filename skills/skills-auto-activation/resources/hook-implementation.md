@@ -440,7 +440,6 @@ echo '{"text": "How do I create a new API endpoint?"}' | \
 **Expected output:**
 ```json
 {
-  "decision": "approve",
   "additionalContext": "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎯 SKILL ACTIVATION CHECK\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nRelevant skills for this prompt:\n\n⭐ **backend-dev-guidelines** (high priority)\n\nBefore responding, check if any of these skills should be used.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
 }
 ```

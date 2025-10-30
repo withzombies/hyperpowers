@@ -11,10 +11,10 @@ test_prompt() {
     echo "Test: $prompt"
     result=$(echo "{\"text\": \"$prompt\"}" | node hooks/user-prompt-submit/10-skill-activator.js)
 
-    if echo "$result" | jq -e '.decision == "approve"' > /dev/null; then
-        echo "✓ Returns approve decision"
+    if echo "$result" | jq -e 'has("decision") | not' > /dev/null; then
+        echo "✓ Returns valid response without decision field"
     else
-        echo "✗ FAIL: Wrong decision"
+        echo "✗ FAIL: Should not have decision field"
         return 1
     fi
 
@@ -50,7 +50,7 @@ test_prompt "I want to design a new authentication system" "brainstorming"
 # Test 4: Refactoring prompt should activate refactoring-safely
 test_prompt "Let's refactor this code to be cleaner" "refactoring-safely"
 
-# Test 5: Empty prompt should return approve with no context
+# Test 5: Empty prompt should return response with no context and no decision field
 test_prompt "" ""
 
 echo "=== All Tests Complete ==="

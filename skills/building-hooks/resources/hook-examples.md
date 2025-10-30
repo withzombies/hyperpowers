@@ -73,7 +73,7 @@ if [ "$line_count" -gt "$MAX_LOG_LINES" ]; then
 fi
 
 # Return success (non-blocking)
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 **Configuration (`hooks.json`):**
@@ -199,7 +199,7 @@ else
 fi
 
 # Non-blocking - always return success
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ## Example 3: TypeScript Prettier Formatter (Stop)
@@ -278,7 +278,7 @@ done
 echo "✅ Formatted $formatted_count file(s)"
 
 # Non-blocking
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ## Example 4: Skill Activation Injector (UserPromptSubmit)
@@ -472,7 +472,7 @@ EOF
 fi
 
 # Non-blocking
-echo '{"decision": "approve"}'
+echo '{}'
 ```
 
 ## Example 6: Dangerous Operation Blocker (PreToolUse)
@@ -524,8 +524,8 @@ EOF
     fi
 fi
 
-# Allow operation
-echo '{"decision": "approve"}'
+# Allow operation (NOTE: PreToolUse hooks should use hookSpecificOutput format with permissionDecision)
+echo '{"decision": "allow"}'
 ```
 
 ## Testing These Examples
