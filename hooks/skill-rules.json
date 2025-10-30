@@ -277,7 +277,7 @@
     "enforcement": "suggest",
     "priority": "high",
     "promptTriggers": {
-      "keywords": ["commit", "git commit", "pre-commit", "commit changes", "committing"],
+      "keywords": ["commit", "git commit", "pre-commit", "commit changes", "committing", "run tests", "npm test", "pytest", "cargo test", "go test", "jest", "mocha"],
       "intentPatterns": [
         "(git )?commit.*?(changes|files|code)",
         "(make|create|run).*?commit",
@@ -287,7 +287,15 @@
         "(finish|complete|wrap up|done with).*?bd-\\d+",
         "(save|persist).*?(work|changes)",
         "(mark|update|close).*?(bd-\\d+|task).*?(done|complete|finished)",
-        "update.*?bd.*?status"
+        "update.*?bd.*?status",
+        "(run|execute).*?(test|spec).*?(suite|script|sh|all)?",
+        "(npm|yarn|pnpm|bun).*(test|run test)",
+        "pytest|python.*test",
+        "cargo test",
+        "go test",
+        "(jest|mocha|vitest|ava|tape|jasmine)",
+        "\\./.*test.*\\.(sh|bash|js|ts)",
+        "bash.*test.*\\.sh"
       ]
     }
   }
