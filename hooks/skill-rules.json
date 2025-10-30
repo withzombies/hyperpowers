@@ -1,8 +1,8 @@
 {
-  "_comment": "Skill activation rules for hyperpowers plugin - 19 skills total",
+  "_comment": "Skill and agent activation rules for hyperpowers plugin - 19 skills + 1 agent = 20 total",
   "_schema": {
-    "description": "Each skill has type, enforcement, priority, and triggers",
-    "type": "process|domain|workflow",
+    "description": "Each skill/agent has type, enforcement, priority, and triggers",
+    "type": "process|domain|workflow|agent",
     "enforcement": "suggest",
     "priority": "critical|high|medium|low",
     "promptTriggers": {
@@ -269,6 +269,21 @@
         "(create|write|build|edit).*?skill",
         "new.*?skill",
         "skill.*?(documentation|workflow)"
+      ]
+    }
+  },
+  "test-runner": {
+    "type": "agent",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": ["commit", "git commit", "pre-commit", "commit changes", "committing"],
+      "intentPatterns": [
+        "(git )?commit.*?(changes|files|code)",
+        "(make|create|run).*?commit",
+        "commit.*?(message|with)",
+        "ready.*?commit",
+        "pre-commit.*?(hooks|run)"
       ]
     }
   }

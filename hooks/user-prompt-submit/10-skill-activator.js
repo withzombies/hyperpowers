@@ -116,30 +116,61 @@ function generateContext(skills) {
         return null;
     }
 
+    const hasSkills = skills.some(s => s.type !== 'agent');
+    const hasAgents = skills.some(s => s.type === 'agent');
+
     const lines = [
         '',
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-        '🎯 SKILL ACTIVATION CHECK',
+        '🎯 SKILL/AGENT ACTIVATION CHECK',
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-        '',
-        'Relevant skills for this prompt:',
         ''
     ];
 
-    for (const skill of skills) {
-        const emoji = skill.priority === 'critical' ? '🔴' :
-                     skill.priority === 'high' ? '⭐' :
-                     skill.priority === 'medium' ? '📌' : '💡';
-        lines.push(`${emoji} **${skill.skill}** (${skill.priority} priority, ${skill.type})`);
+    // Display skills
+    const skillItems = skills.filter(s => s.type !== 'agent');
+    if (skillItems.length > 0) {
+        lines.push('Relevant skills for this prompt:');
+        lines.push('');
+        for (const skill of skillItems) {
+            const emoji = skill.priority === 'critical' ? '🔴' :
+                         skill.priority === 'high' ? '⭐' :
+                         skill.priority === 'medium' ? '📌' : '💡';
+            lines.push(`${emoji} **${skill.skill}** (${skill.priority} priority, ${skill.type})`);
 
-        if (CONFIG.debugMode) {
-            lines.push(`   Matched: ${skill.reason}`);
+            if (CONFIG.debugMode) {
+                lines.push(`   Matched: ${skill.reason}`);
+            }
         }
+        lines.push('');
     }
 
-    lines.push('');
-    lines.push('Before responding, check if any of these skills should be used.');
-    lines.push('Use the Skill tool to activate: `Skill command="hyperpowers:<skill-name>"`');
+    // Display agents
+    const agentItems = skills.filter(s => s.type === 'agent');
+    if (agentItems.length > 0) {
+        lines.push('Relevant agents for this prompt:');
+        lines.push('');
+        for (const agent of agentItems) {
+            const emoji = agent.priority === 'critical' ? '🔴' :
+                         agent.priority === 'high' ? '⭐' :
+                         agent.priority === 'medium' ? '💾' : '🤖';
+            lines.push(`${emoji} **hyperpowers:${agent.skill}** (${agent.priority} priority)`);
+
+            if (CONFIG.debugMode) {
+                lines.push(`   Matched: ${agent.reason}`);
+            }
+        }
+        lines.push('');
+    }
+
+    // Activation instructions
+    if (hasSkills) {
+        lines.push('Use the Skill tool for skills: `Skill command="hyperpowers:<skill-name>"`');
+    }
+    if (hasAgents) {
+        lines.push('Use the Task tool for agents: `Task(subagent_type="hyperpowers:<agent-name>", ...)`');
+        lines.push('Example: `Task(subagent_type="hyperpowers:test-runner", prompt="Run: git commit...", ...)`');
+    }
     lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     lines.push('');
 

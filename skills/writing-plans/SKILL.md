@@ -282,14 +282,14 @@ def function(input):
 Run: `pytest tests/path/test.py::test_name -v`
 Expected: PASS
 
-**Step 5: Commit**
+**Step 5: Commit (use hyperpowers:test-runner agent)**
 
 ```bash
-git add tests/path/test.py src/path/file.py
-git commit -m "feat(bd-[N]): add specific feature
+# Use test-runner agent to avoid pre-commit hook pollution
+Dispatch hyperpowers:test-runner agent: "Run: git add tests/path/test.py src/path/file.py && git commit -m 'feat(bd-[N]): add specific feature
 
 Implements step group 1 of bd-[N]
-"
+'"
 ```
 
 ### Step Group 2: [Next Component]
@@ -393,14 +393,14 @@ export function generateToken(payload: Record<string, any>): string {
 Run: `npm test tests/auth/jwt.test.ts`
 Expected: PASS
 
-**Step 5: Commit**
+**Step 5: Commit (use hyperpowers:test-runner agent)**
 
 \`\`\`bash
-git add src/auth/jwt.ts tests/auth/jwt.test.ts
-git commit -m "feat(bd-3): add JWT token generation
+# Use test-runner agent to avoid pre-commit hook pollution
+Dispatch hyperpowers:test-runner agent: "Run: git add src/auth/jwt.ts tests/auth/jwt.test.ts && git commit -m 'feat(bd-3): add JWT token generation
 
 Implements step group 1 of bd-3: User Authentication
-"
+'"
 \`\`\`
 
 [Continue with step groups for verifyToken, middleware...]

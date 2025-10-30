@@ -9,34 +9,49 @@ Hyperpowers uses Claude Code's hooks system to provide intelligent, context-awar
 ### UserPromptSubmit Hook
 
 **File:** `hooks/user-prompt-submit/10-skill-activator.js`
-**Purpose:** Analyzes prompts and suggests relevant skills
+**Purpose:** Analyzes prompts and suggests relevant skills and agents
 **Input:** `{"text": "user prompt text"}`
-**Output:** `{"additionalContext": "skill suggestions"}` (no decision field)
+**Output:** `{"additionalContext": "skill/agent suggestions"}` (no decision field)
 
 **How it works:**
 1. You type a prompt (e.g., "I want to write a test for the login function")
 2. Hook analyzes prompt against patterns in `hooks/skill-rules.json`
-3. Returns top 3 matching skills sorted by priority
-4. Skill suggestions appear before Claude responds
+3. Returns top 3 matching skills/agents sorted by priority
+4. Suggestions appear before Claude responds
 
-**Example output:**
+**Example output (skills):**
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 SKILL ACTIVATION CHECK
+🎯 SKILL/AGENT ACTIVATION CHECK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Relevant skills for this prompt:
 
 🔴 **test-driven-development** (critical priority, process)
 
-Before responding, check if any of these skills should be used.
-Use the Skill tool to activate: `Skill command="hyperpowers:<skill-name>"`
+Use the Skill tool for skills: `Skill command="hyperpowers:<skill-name>"`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Example output (agents):**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 SKILL/AGENT ACTIVATION CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Relevant agents for this prompt:
+
+💾 **hyperpowers:test-runner** (medium priority)
+
+Use the Task tool for agents: `Task(subagent_type="hyperpowers:<agent-name>", ...)`
+Example: `Task(subagent_type="hyperpowers:test-runner", prompt="Run: git commit...", ...)`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Configuration:**
-- Edit `hooks/skill-rules.json` to adjust skill triggers
-- Add keywords or intent patterns for your skills
+- Edit `hooks/skill-rules.json` to adjust skill/agent triggers
+- Add keywords or intent patterns for your skills or agents
+- Set type to "agent" for agents (e.g., test-runner)
 - Set `DEBUG_HOOKS=true` environment variable for troubleshooting
 
 ### PostToolUse Hook
@@ -83,7 +98,7 @@ Use the Skill tool to activate: `Skill command="hyperpowers:<skill-name>"`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 💭 Remember: Write tests first (TDD)
 ✅ Before claiming complete: Run tests
-💾 Consider: 5 files edited - commit?
+💾 Consider: 5 files edited - use hyperpowers:test-runner agent
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -172,10 +187,11 @@ jq . hooks/hooks.json
 
 ## Customization
 
-### Adjusting skill triggers
+### Adjusting skill/agent triggers
 
-Edit `hooks/skill-rules.json` to add or modify skill activation patterns:
+Edit `hooks/skill-rules.json` to add or modify skill/agent activation patterns:
 
+**Adding a skill:**
 ```json
 {
   "my-custom-skill": {
@@ -193,11 +209,30 @@ Edit `hooks/skill-rules.json` to add or modify skill activation patterns:
 }
 ```
 
+**Adding an agent:**
+```json
+{
+  "my-custom-agent": {
+    "type": "agent",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": ["commit", "git commit"],
+      "intentPatterns": [
+        "(git )?commit.*?(changes|files)",
+        "(make|create).*?commit"
+      ]
+    }
+  }
+}
+```
+
 **Pattern tips:**
 - Use lowercase keywords (matching is case-insensitive)
 - Intent patterns are regex (use `.*?` for non-greedy matching)
 - Test patterns on [regex101.com](https://regex101.com) first
 - Priority: `critical` > `high` > `medium` > `low`
+- Type: `process|domain|workflow|agent`
 
 ### Adjusting reminder thresholds
 
@@ -302,8 +337,8 @@ A: No, hooks are designed to be fast (<100ms) and run in the background.
 **Q: Can hooks fail and block me?**
 A: No, all hooks are non-blocking and always return empty responses `{}` even on error.
 
-**Q: How do I add my own skills to the activator?**
-A: Edit `hooks/skill-rules.json` to add your skill with keywords and patterns.
+**Q: How do I add my own skills/agents to the activator?**
+A: Edit `hooks/skill-rules.json` to add your skill/agent with keywords and patterns. Use `"type": "agent"` for agents.
 
 **Q: Can I see what patterns matched?**
 A: Yes, set `DEBUG_HOOKS=true` to see match reasons in hook output.

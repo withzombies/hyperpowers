@@ -141,14 +141,14 @@ Dispatch hyperpowers:test-runner agent:
 - Confirm test fails with expected reason
 - This proves test actually tests the bug
 
-**Commit the failing test:**
+**Commit the failing test using hyperpowers:test-runner agent:**
 ```bash
-git add tests/user_tests.rs
-git commit -m "test(bd-123): add failing test for empty email validation
+# Use test-runner agent to avoid pre-commit hook pollution
+Dispatch hyperpowers:test-runner agent: "Run: git add tests/user_tests.rs && git commit -m 'test(bd-123): add failing test for empty email validation
 
 Currently fails because API doesn't validate empty email.
 
-Related to bd-123"
+Related to bd-123'"
 ```
 
 ### Step 4: Implement Fix (GREEN Phase)
@@ -206,11 +206,11 @@ Dispatch hyperpowers:test-runner agent:
 
 ### Step 7: Commit Fix
 
-**Reference bd issue in commit:**
+**Reference bd issue in commit using hyperpowers:test-runner agent:**
 
 ```bash
-git add src/api/users.rs
-git commit -m "fix(bd-123): validate email at API boundary
+# Use test-runner agent to avoid pre-commit hook pollution
+Dispatch hyperpowers:test-runner agent: "Run: git add src/api/users.rs && git commit -m 'fix(bd-123): validate email at API boundary
 
 Reject empty emails before calling service layer.
 Returns 400 ValidationError instead of 500 database error.
@@ -384,7 +384,8 @@ Dispatch hyperpowers:test-runner: "Run: cargo test test_rejects_empty_email"
 Result: ✗ Test fails (good!)
 
 ```bash
-git commit -m "test(bd-123): add failing test"
+# Commit via test-runner agent
+Dispatch hyperpowers:test-runner: "Run: git add tests/user_tests.rs && git commit -m 'test(bd-123): add failing test'"
 ```
 
 ### Minutes 25-30: Implement Fix (GREEN)
@@ -400,7 +401,8 @@ Dispatch hyperpowers:test-runner: "Run: cargo test"
 Result: ✓ All 156 tests pass, no regressions
 
 ```bash
-git commit -m "fix(bd-123): validate email at API boundary"
+# Commit via test-runner agent
+Dispatch hyperpowers:test-runner: "Run: git add src/api/users.rs && git commit -m 'fix(bd-123): validate email at API boundary'"
 ```
 
 ### Minutes 35-40: Close

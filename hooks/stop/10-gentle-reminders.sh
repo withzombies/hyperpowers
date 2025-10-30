@@ -76,7 +76,7 @@ if [ "$SHOW_TDD_REMINDER" = true ] || [ "$SHOW_VERIFY_REMINDER" = true ] || [ "$
     fi
 
     if [ "$SHOW_COMMIT_REMINDER" = true ]; then
-        echo "💾 Consider: $FILE_COUNT files edited - commit?"
+        echo "💾 Consider: $FILE_COUNT files edited - use hyperpowers:test-runner agent"
     fi
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

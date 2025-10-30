@@ -232,15 +232,15 @@ Dispatch hyperpowers:test-runner agent: "Run: cargo test"
 
 ### Step 5: Commit the Small Change
 
-**Commit each safe transformation:**
+**Commit each safe transformation using hyperpowers:test-runner agent:**
 
 ```bash
-git add src/user_service.rs
-git commit -m "refactor(bd-456): extract email validation to function
+# Use test-runner agent to avoid pre-commit hook pollution
+Dispatch hyperpowers:test-runner agent: "Run: git add src/user_service.rs && git commit -m 'refactor(bd-456): extract email validation to function
 
 No behavior change. All tests pass.
 
-Part of bd-456"
+Part of bd-456'"
 ```
 
 **Why commit so often:**
