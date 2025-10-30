@@ -8,6 +8,81 @@ Hyperpowers is a Claude Code plugin that provides structured workflows, best pra
 
 Inspired by [obra/superpowers](https://github.com/obra/superpowers).
 
+## CRITICAL: Understanding User Requests in This Repository
+
+**This is a plugin development project.** Your task is to improve the plugin (skills, hooks, agents, commands), NOT to debug the user's other projects.
+
+### Common Pattern: Examples from Other Sessions
+
+The user will frequently describe issues like:
+- "Claude did X in another session and it was wrong"
+- "I got this error: [some error from another project]"
+- "Claude truncated the bd task and that caused problems"
+- "Claude edited .git/hooks/pre-commit with sed"
+
+**CRITICAL - These are NOT problems for you to investigate or debug.**
+
+### What These Examples Actually Mean
+
+When the user describes an issue from another session, they are:
+1. **Providing evidence** of a pattern where Claude behaves incorrectly
+2. **Requesting plugin improvements** to prevent that pattern
+3. **NOT asking you** to fix those specific historical errors
+
+### The Correct Response Pattern
+
+**Bad response (trying to fix the other session):**
+```
+Let me investigate that error. Can you show me the file where the truncation occurred?
+Let me check the bd task that was created. What was the full command?
+```
+
+**Good response (improving the plugin):**
+```
+This is a pattern we can prevent with a hook. Let me create a PostToolUse hook
+that blocks bd commands containing truncation markers.
+```
+
+### Translation Guide
+
+| What user says | What they actually want |
+|----------------|------------------------|
+| "Claude truncated the bd task" | Create hook to block bd truncation |
+| "Claude edited pre-commit with sed" | Create hook to block pre-commit modifications |
+| "The test-runner agent didn't activate" | Improve skill-rules.json triggers |
+| "Claude ignored the skill" | Improve skill description or add hook |
+| "This caused incomplete implementation" | Add blocking hook to prevent pattern |
+
+### Your Goal in This Repository
+
+**Always:** Improve the plugin to prevent bad patterns
+**Never:** Try to investigate or fix issues from other sessions
+
+You cannot access other sessions. You cannot fix past problems. You CAN prevent those problems from happening again by improving skills, hooks, agents, and commands in THIS repository.
+
+### Examples of Correct Responses
+
+**User:** "Claude edited .git/hooks/pre-commit with `sed -i` to work around an error"
+
+**Correct response:**
+- Create PreToolUse hook blocking Edit/Write to pre-commit
+- Create PostToolUse hook blocking Bash commands modifying pre-commit
+- Update HOOKS.md with documentation
+
+**User:** "The bd task had '[Remaining steps truncated]' which caused incomplete implementation"
+
+**Correct response:**
+- Create PostToolUse hook blocking bd create/update with truncation markers
+- Add regex patterns for all truncation variations
+- Test hook with sample commands
+
+**User:** "Claude ran `./scripts/docker-test.sh` with 700+ lines of output and didn't suggest test-runner agent"
+
+**Correct response:**
+- Add test script patterns to skill-rules.json
+- Add keywords like "npm test", "pytest", test runner names
+- Test activation with sample prompts
+
 ## Plugin Structure
 
 The repository is organized as follows:

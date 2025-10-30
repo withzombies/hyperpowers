@@ -54,7 +54,45 @@ Example: `Task(subagent_type="hyperpowers:test-runner", prompt="Run: git commit.
 - Set type to "agent" for agents (e.g., test-runner)
 - Set `DEBUG_HOOKS=true` environment variable for troubleshooting
 
-### PostToolUse Hook
+### PreToolUse Hooks
+
+**File:** `hooks/block-beads-direct-read.py`
+**Purpose:** Blocks direct Read/Grep access to `.beads/issues.jsonl`
+**Input:** `{"tool_name": "Read", "tool_input": {"file_path": "..."}}`
+**Output:** `{"hookSpecificOutput": {"permissionDecision": "deny", ...}}` (blocking)
+
+**How it works:**
+1. Intercepts Read and Grep tool calls
+2. Checks if path contains `.beads/issues.jsonl`
+3. Blocks the operation and suggests using `bd` CLI instead
+
+**Why blocking is necessary:**
+Direct file access bypasses bd validation and often fails due to file size. The bd CLI provides the correct interface.
+
+**File:** `hooks/pre-tool-use/01-block-pre-commit-edits.py`
+**Purpose:** Blocks direct Edit/Write modifications to `.git/hooks/pre-commit`
+**Input:** `{"tool_name": "Edit|Write", "tool_input": {"file_path": "..."}}`
+**Output:** `{"hookSpecificOutput": {"permissionDecision": "deny", ...}}` (blocking)
+
+**How it works:**
+1. Intercepts Edit and Write tool calls
+2. Checks if file path contains `.git/hooks/pre-commit`
+3. Blocks the operation if detected
+4. Provides guidance on proper hook management
+
+**Why blocking is necessary:**
+- Pre-commit hooks enforce critical quality standards
+- Direct modifications bypass code review
+- Changes can break CI/CD pipelines
+- Hook modifications should be version controlled
+
+**If hooks need modification:**
+- Edit source templates in version control
+- Use proper tooling (husky, pre-commit framework)
+- Document changes and get them reviewed
+- Never bypass with --no-verify
+
+### PostToolUse Hooks
 
 **File:** `hooks/post-tool-use/01-track-edits.sh`
 **Purpose:** Tracks file edits for context awareness
@@ -77,6 +115,62 @@ Example: `Task(subagent_type="hyperpowers:test-runner", prompt="Run: git commit.
 - `get_session_files [session_start]` - Get unique files edited in session
 - `was_file_edited <file_path> [since]` - Check if specific file was edited
 - `get_repo_stats [since]` - Get edit counts by repo
+
+**File:** `hooks/post-tool-use/02-block-bd-truncation.py`
+**Purpose:** Prevents bd tasks from being created with truncated specifications
+**Input:** `{"tool_name": "Bash", "tool_input": {"command": "bd create ..."}}`
+**Output:** `{"hookSpecificOutput": {"permissionDecision": "deny", ...}}` (blocking)
+
+**How it works:**
+1. Intercepts Bash tool calls containing `bd create` or `bd update`
+2. Scans command for truncation markers like "[Remaining steps truncated]", "[etc.]", etc.
+3. Blocks the command if truncation detected
+4. Provides helpful error message explaining the issue
+
+**Detected truncation patterns:**
+- `[Remaining ... truncated]`
+- `[truncated]`
+- `[...]`
+- `[etc.]`
+- `[Omitted ...]`
+- `(truncated)`
+- `(abbreviated)`
+
+**Why blocking is necessary:**
+Truncated bd tasks lead to incomplete implementations. Brainstorming, writing-plans, and sre-task-refinement skills sometimes generate partial specifications marked with truncation indicators. This hook prevents these from being saved, forcing complete specifications.
+
+**File:** `hooks/post-tool-use/03-block-pre-commit-bash.py`
+**Purpose:** Blocks Bash commands that modify `.git/hooks/pre-commit`
+**Input:** `{"tool_name": "Bash", "tool_input": {"command": "..."}}`
+**Output:** `{"hookSpecificOutput": {"permissionDecision": "deny", ...}}` (blocking)
+
+**How it works:**
+1. Intercepts Bash tool calls
+2. Scans command for patterns that modify pre-commit hooks
+3. Blocks commands containing modification attempts
+4. Provides guidance on proper hook management
+
+**Detected modification patterns:**
+- `sed -i ... pre-commit` (in-place editing)
+- `> .git/hooks/pre-commit` (redirect to file)
+- `>> .git/hooks/pre-commit` (append to file)
+- `mv ... pre-commit` (moving to pre-commit)
+- `cp ... pre-commit` (copying to pre-commit)
+- `chmod ... pre-commit` (changing permissions)
+- `cat > .git/hooks/pre-commit` (creating with cat)
+- `tee .git/hooks/pre-commit` (piping with tee)
+- Heredoc redirects to pre-commit
+
+**Why blocking is necessary:**
+Claude sometimes attempts "clever" workarounds when pre-commit hooks produce errors:
+- Using `sed` to comment out failing checks
+- Redirecting empty content to disable hooks
+- Moving backup files over hooks
+- Changing permissions to bypass hooks
+
+These modifications bypass code review, break CI/CD, and hide underlying issues. The hook forces proper problem resolution instead of hook circumvention.
+
+**Works in tandem with:** `hooks/pre-tool-use/01-block-pre-commit-edits.py` (blocks direct Edit/Write)
 
 ### Stop Hook
 

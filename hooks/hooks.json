@@ -20,6 +20,15 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-beads-direct-read.py"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool-use/01-block-pre-commit-edits.py"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -39,6 +48,19 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use/01-track-edits.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use/02-block-bd-truncation.py"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use/03-block-pre-commit-bash.py"
           }
         ]
       }
