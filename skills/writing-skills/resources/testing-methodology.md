@@ -4,7 +4,7 @@ Different skill types need different test approaches:
 
 ### Discipline-Enforcing Skills (rules/requirements)
 
-**Examples:** TDD, verification-before-completion, designing-before-coding
+**Examples:** TDD, hyperpowers:verification-before-completion, hyperpowers:designing-before-coding
 
 **Test with:**
 - Academic questions: Do they understand the rules?
@@ -16,7 +16,7 @@ Different skill types need different test approaches:
 
 ### Technique Skills (how-to guides)
 
-**Examples:** condition-based-waiting, root-cause-tracing, defensive-programming
+**Examples:** condition-based-waiting, hyperpowers:root-cause-tracing, defensive-programming
 
 **Test with:**
 - Application scenarios: Can they apply the technique correctly?

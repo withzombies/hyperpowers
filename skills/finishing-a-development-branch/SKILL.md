@@ -11,9 +11,9 @@ Close bd epic, verify tests, present integration options, execute choice, clean 
 
 **Core principle:** Close bd epic → Verify tests → Present options → Execute choice → Clean up.
 
-**Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
+**Announce at start:** "I'm using the hyperpowers:finishing-a-development-branch skill to complete this work."
 
-**Context:** Called after review-implementation approves the implementation (which runs after executing-plans).
+**Context:** Called after hyperpowers:review-implementation approves the implementation (which runs after hyperpowers:executing-plans).
 
 **CRITICAL:** NEVER read `.beads/issues.jsonl` directly. ALWAYS use `bd show`, `bd list`, and `bd status` commands to interact with tasks. The bd CLI provides the correct interface.
 
@@ -251,11 +251,11 @@ git worktree remove <worktree-path>
 ## Integration
 
 **Called by:**
-- **review-implementation** (Step 4) - After implementation review approves
+- **hyperpowers:review-implementation** (Step 4) - After implementation review approves
 
 **Call chain:**
 ```
-executing-plans → review-implementation → finishing-a-development-branch
+hyperpowers:executing-plans → hyperpowers:review-implementation → hyperpowers:finishing-a-development-branch
                         ↓
                   (if gaps: STOP)
 ```

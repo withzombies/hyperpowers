@@ -28,7 +28,7 @@
 
 ### When to Use Research Agents
 
-**Use codebase-investigator for:**
+**Use hyperpowers:codebase-investigator for:**
 - "How is X implemented?" → Agent finds and reports
 - "Where does Y live?" → Agent locates files
 - "What pattern exists for Z?" → Agent identifies pattern

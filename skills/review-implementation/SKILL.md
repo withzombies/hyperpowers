@@ -1,6 +1,6 @@
 ---
 name: review-implementation
-description: Use after executing-plans completes all tasks to review implementation against bd spec - verifies all success criteria met, anti-patterns avoided, and nothing missed before declaring work complete
+description: Use after hyperpowers:executing-plans completes all tasks to review implementation against bd spec - verifies all success criteria met, anti-patterns avoided, and nothing missed before declaring work complete
 ---
 
 # Review Implementation
@@ -13,9 +13,9 @@ Review completed implementation against bd epic specification to catch gaps befo
 
 **Core principle:** Implementation must match spec. Success criteria are the contract.
 
-**Announce at start:** "I'm using the review-implementation skill to verify the implementation matches the spec. I'm reviewing this with Google Fellow-level scrutiny."
+**Announce at start:** "I'm using the hyperpowers:review-implementation skill to verify the implementation matches the spec. I'm reviewing this with Google Fellow-level scrutiny."
 
-**Context:** This runs after executing-plans completes all tasks but before finishing-a-development-branch.
+**Context:** This runs after hyperpowers:executing-plans completes all tasks but before hyperpowers:finishing-a-development-branch.
 
 **CRITICAL:** NEVER read `.beads/issues.jsonl` directly. ALWAYS use `bd show`, `bd list`, and `bd dep tree` commands to read task specifications. The bd CLI provides the correct interface.
 
@@ -164,7 +164,7 @@ For each success criterion:
 - Run verification commands
 - Check actual output
 - Don't assume - verify with evidence
-- Use test-runner agent for tests/lints/builds
+- Use hyperpowers:test-runner agent for tests/lints/builds
 
 **6. Check Anti-Patterns:**
 
@@ -263,7 +263,7 @@ Reviewed bd-1 (<epic name>) against implementation.
 ### Evidence
 [Show key verification command outputs]
 
-Ready to proceed to finishing-a-development-branch.
+Ready to proceed to hyperpowers:finishing-a-development-branch.
 ```
 
 **If gaps found:**
@@ -295,11 +295,11 @@ Implementation does not match spec. Fix gaps before completing.
 ### Step 4: Gate Decision
 
 **If APPROVED:**
-- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
+- Announce: "I'm using the hyperpowers:finishing-a-development-branch skill to complete this work."
 - **REQUIRED: Use Skill tool to invoke:** `hyperpowers:finishing-a-development-branch`
 
 **If GAPS FOUND:**
-- STOP. Do not proceed to finishing-a-development-branch
+- STOP. Do not proceed to hyperpowers:finishing-a-development-branch
 - Fix gaps or discuss with partner
 - Re-run review after fixes
 
@@ -364,7 +364,7 @@ For each task, verify:
 - Review every task, no exceptions
 - Verify with commands and evidence
 - Document gaps explicitly
-- Check for anti-patterns from sre-task-refinement
+- Check for anti-patterns from hyperpowers:sre-task-refinement
 - **READ the actual implementation files with Read tool**
 - **Run automated checks for TODOs, stubs, unsafe patterns**
 - **Run quality gates with test-runner agent**
@@ -414,17 +414,17 @@ rg "\.unwrap\(\)" src/
 ## Integration
 
 **Called by:**
-- **executing-plans** (Step 5) - After all tasks executed, before finishing
+- **hyperpowers:executing-plans** (Step 5) - After all tasks executed, before finishing
 
 **Calls:**
-- **finishing-a-development-branch** - If review approves, hand off to finish
+- **hyperpowers:finishing-a-development-branch** - If review approves, hand off to finish
 
 **Uses:**
-- **verification-before-completion** - All verifications follow its "evidence before claims" principle; no completion claims without fresh verification evidence
+- **hyperpowers:verification-before-completion** - All verifications follow its "evidence before claims" principle; no completion claims without fresh verification evidence
 
 **Order:**
 ```
-executing-plans → review-implementation → finishing-a-development-branch
+hyperpowers:executing-plans → hyperpowers:review-implementation → hyperpowers:finishing-a-development-branch
                         ↓
                   (if gaps found: STOP)
 ```
@@ -446,7 +446,7 @@ executing-plans → review-implementation → finishing-a-development-branch
    - Review catches early
 
 3. **Edge cases missed:**
-   - sre-task-refinement identified edge cases
+   - hyperpowers:sre-task-refinement identified edge cases
    - Developer focused on happy path
    - Edge cases untested
    - Review catches before PR

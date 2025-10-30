@@ -312,7 +312,7 @@ After reviewing all issues, provide:
 [If NEEDS REVISION]:
 ⚠️ Plan needs improvements before implementation:
 - [List major items that need addressing]
-- After changes, re-run hyper:sre-task-refinement
+- After changes, re-run hyperpowers:sre-task-refinement
 
 [If REJECT]:
 ❌ Plan has fundamental issues and needs redesign:
@@ -438,7 +438,7 @@ Implement VIN (Vehicle Identification Number) and license plate scanner
 
 ### If Major Revisions Made:
 1. All issue designs updated
-2. Re-review with hyper:sre-task-refinement
+2. Re-review with hyperpowers:sre-task-refinement
 3. Repeat until plan is APPROVED
 
 ### If Plan is APPROVED:

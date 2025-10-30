@@ -272,7 +272,7 @@ Fix location: Add validation at API handler, not database layer
 
 #### 2. Compare Working vs. Broken
 
-**Use codebase-investigator results:**
+**Use hyperpowers:codebase-investigator results:**
 - What's different between working and broken?
 - List every difference, however small
 - Don't assume "that can't matter"
@@ -280,7 +280,7 @@ Fix location: Add validation at API handler, not database layer
 
 #### 3. Review Internet Research
 
-**From internet-researcher findings:**
+**From hyperpowers:internet-researcher findings:**
 - Do solutions match your situation exactly?
 - What root causes do others identify?
 - Are there multiple explanations for this error?
@@ -474,12 +474,12 @@ This is NOT a failed hypothesis - this is wrong architecture.
 | | strace/dtrace | System call tracing | Claude (bash) |
 | | Instrumentation (logging) | Add debug output | Claude (adds code) |
 | | Interactive debuggers | Step through execution | User (Claude guides) |
-| | codebase-investigator | Find working examples | Claude (agent) |
+| | hyperpowers:codebase-investigator | Find working examples | Claude (agent) |
 | **Analysis** | Stack trace | Trace backward to root cause | Claude (reads) |
 | | Git history | Find what changed | Claude (bash) |
 | **Testing** | Test writing | Verify hypothesis with test | Claude (adds code) |
 | | hyperpowers:test-runner agent | Run tests without context pollution | Claude (agent) |
-| **Implementation** | test-driven-development | Write proper failing test | Claude (skill) |
+| **Implementation** | hyperpowers:test-driven-development | Write proper failing test | Claude (skill) |
 | | hyperpowers:test-runner agent | Verify fix, check regressions | Claude (agent) |
 
 **Key distinction:**
@@ -519,8 +519,8 @@ If you catch yourself thinking:
 ## Integration with Other Skills
 
 **This skill requires:**
-- **test-driven-development** - REQUIRED for creating failing test (Phase 4, Step 1)
-- **verification-before-completion** - REQUIRED before claiming success
+- **hyperpowers:test-driven-development** - REQUIRED for creating failing test (Phase 4, Step 1)
+- **hyperpowers:verification-before-completion** - REQUIRED before claiming success
 
 **This skill uses:**
 - **hyperpowers:internet-researcher agent** - Search errors, find solutions (Phase 1)
@@ -528,8 +528,8 @@ If you catch yourself thinking:
 - **hyperpowers:test-runner agent** - Run tests without context pollution (Phase 3, Phase 4)
 
 **Complementary skills:**
-- **root-cause-tracing** - Deep stack trace analysis (when needed)
-- **defense-in-depth** - Add validation at multiple layers after fixing
+- **hyperpowers:root-cause-tracing** - Deep stack trace analysis (when needed)
+- **hyperpowers:defense-in-depth** - Add validation at multiple layers after fixing
 
 ## Debugger Quick Reference
 

@@ -25,7 +25,7 @@ Use this skill when:
 
 **Do NOT use for:**
 - Changing functionality (use feature development instead)
-- Fixing bugs (use fixing-bugs instead)
+- Fixing bugs (use hyperpowers:fixing-bugs instead)
 - Adding new features while restructuring (do separately)
 
 ## When to Refactor vs. Rewrite
@@ -428,8 +428,8 @@ Change 10 files, extract 5 classes, rename everything, THEN test
 ## Integration with Other Skills
 
 **This skill requires:**
-- **test-driven-development** - For writing tests before refactoring (if none exist)
-- **verification-before-completion** - For final verification
+- **hyperpowers:test-driven-development** - For writing tests before refactoring (if none exist)
+- **hyperpowers:verification-before-completion** - For final verification
 - **hyperpowers:test-runner agent** - For running tests without context pollution
 
 **This skill uses:**
@@ -465,7 +465,7 @@ If you catch yourself thinking:
 **For a detailed minute-by-minute refactoring session showing:**
 - Creating bd task
 - Incremental steps with test/commit cycles
-- Using test-runner agent
+- Using hyperpowers:test-runner agent
 - Final verification
 
 **See:** [resources/example-session.md](resources/example-session.md)

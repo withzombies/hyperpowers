@@ -2,4 +2,4 @@
 description: Review implementation was faithfully executed
 ---
 
-Use the review-implementation skill exactly as written
+Use the hyperpowers:review-implementation skill exactly as written

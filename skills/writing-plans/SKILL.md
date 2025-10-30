@@ -11,9 +11,9 @@ Enhance bd tasks with comprehensive implementation details assuming the engineer
 
 Assume they are a junior developer who knows almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
-**Announce at start:** "I'm using the writing-plans skill to expand bd task(s) with detailed implementation steps."
+**Announce at start:** "I'm using the hyperpowers:writing-plans skill to expand bd task(s) with detailed implementation steps."
 
-**Context:** This can run after sre-task-refinement approves bd issues, or anytime you want to expand tasks with more detail.
+**Context:** This can run after hyperpowers:sre-task-refinement approves bd issues, or anytime you want to expand tasks with more detail.
 
 **Input:** One or more bd task IDs (e.g., bd-2, or bd-2 through bd-5)
 
@@ -107,7 +107,7 @@ Review investigator findings and note any differences from bd task assumptions.
 - "Run the tests and make sure they pass" - step
 - "Commit" - step
 
-**Note:** These steps follow the test-driven-development skill's RED-GREEN-REFACTOR cycle. When writing implementation steps for new functionality, reference the TDD workflow.
+**Note:** These steps follow the hyperpowers:test-driven-development skill's RED-GREEN-REFACTOR cycle. When writing implementation steps for new functionality, reference the TDD workflow.
 
 These detailed steps will be added to each bd task's design.
 
@@ -203,7 +203,7 @@ Mark each task as in_progress when working on it, completed when user approves e
 8. **After ALL tasks expanded and updated in bd:**
    - All bd issues now contain detailed implementation steps
    - Epic is ready for execution
-   - Offer execution choice (executing-plans skill)
+   - Offer execution choice (hyperpowers:executing-plans skill)
 
 **DO NOT update bd issues until each task expansion is user-validated.**
 
@@ -303,7 +303,7 @@ Implements step group 1 of bd-[N]
 [Original anti-patterns - keep these]
 ```
 
-**Important:** Preserve all original sections from sre-task-refinement, and add the detailed "Implementation Steps" section.
+**Important:** Preserve all original sections from hyperpowers:sre-task-refinement, and add the detailed "Implementation Steps" section.
 
 ## Working with bd
 
@@ -406,10 +406,10 @@ Implements step group 1 of bd-3: User Authentication
 [Continue with step groups for verifyToken, middleware...]
 
 ## Key Considerations
-[Original from sre-task-refinement]
+[Original from hyperpowers:sre-task-refinement]
 
 ## Anti-patterns
-[Original from sre-task-refinement]
+[Original from hyperpowers:sre-task-refinement]
 EOF
 )"
 ```
@@ -420,9 +420,9 @@ These are violations of the skill requirements:
 
 | Excuse | Reality |
 |--------|---------|
-| "File probably exists, I'll say 'update if exists'" | Use codebase-investigator. Write definitive instruction. |
+| "File probably exists, I'll say 'update if exists'" | Use hyperpowers:codebase-investigator. Write definitive instruction. |
 | "bd issue mentioned this file, must be there" | Codebase changes. Use investigator to verify current state. |
-| "I can quickly verify files myself" | Use codebase-investigator. Saves context and prevents hallucination. |
+| "I can quickly verify files myself" | Use hyperpowers:codebase-investigator. Saves context and prevents hallucination. |
 | "User can figure out if file exists during execution" | Your job is exact instructions. No ambiguity. |
 | "Task validation slows me down" | Going off track wastes far more time. Validate each task. |
 | "I'll batch all tasks then validate at end" | Early mistake cascades to all later tasks. Validate incrementally. |
@@ -476,9 +476,9 @@ After all bd issues are enhanced with detailed steps, offer execution choice:
 
 **"All bd tasks enhanced with detailed implementation steps. Ready for execution. Two options:**
 
-**1. Execute in this session** - Use hyper:executing-plans to work through enhanced bd tasks
+**1. Execute in this session** - Use hyperpowers:executing-plans to work through enhanced bd tasks
 
-**2. Execute in separate session** - Open new session, use hyper:executing-plans there
+**2. Execute in separate session** - Open new session, use hyperpowers:executing-plans there
 
 **Which approach?"**
 

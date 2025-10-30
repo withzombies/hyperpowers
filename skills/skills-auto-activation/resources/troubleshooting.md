@@ -342,7 +342,7 @@ Add to project's CLAUDE.md:
 
 - backend-dev-guidelines: Use for all backend code
 - frontend-dev-guidelines: Use for all frontend code
-- test-driven-development: Use when writing tests
+- hyperpowers:test-driven-development: Use when writing tests
 ```
 
 ## Problem: Hook Crashes Claude Code

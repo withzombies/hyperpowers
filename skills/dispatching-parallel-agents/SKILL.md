@@ -176,7 +176,7 @@ As agents work:
 4. **Run full test suite**
    - Not just the fixed tests
    - Verify no regressions in other areas
-   - Use verification-before-completion skill
+   - Use hyperpowers:verification-before-completion skill
 
 5. **Document what happened**
    - Which agents fixed what
@@ -321,7 +321,7 @@ After agents return:
 2. Read the agent's summary - did they mention this change?
 3. Evaluate if change is correct but tests need updating
 4. Or if change broke something, need to refine the fix
-5. Use verification-before-completion skill for final check
+5. Use hyperpowers:verification-before-completion skill for final check
 
 ### False Independence
 

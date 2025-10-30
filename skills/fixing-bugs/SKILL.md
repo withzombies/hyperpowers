@@ -11,7 +11,7 @@ Bug fixing is not just writing a fix. It's a complete workflow: reproduce, track
 
 **Core principle:** Every bug gets a bd issue, a regression test, and systematic investigation before fixing.
 
-**This skill orchestrates:** debugging-with-tools + test-driven-development + bd workflow + verification-before-completion
+**This skill orchestrates:** hyperpowers:debugging-with-tools + hyperpowers:test-driven-development + bd workflow + hyperpowers:verification-before-completion
 
 ## When to Use
 
@@ -104,7 +104,7 @@ Database constraint catches it but returns 500.
 
 ## Evidence
 - Debugger showed email='' passed through unchecked
-- Similar endpoints validate in handler layer (codebase-investigator found pattern)
+- Similar endpoints validate in handler layer (hyperpowers:codebase-investigator found pattern)
 - Stack Overflow: validation should happen at API boundary
 
 ## Solution Approach
@@ -293,7 +293,7 @@ When you encounter a bug, follow this checklist:
 
 - [ ] Create bd bug issue with reproduction steps
 - [ ] Mark bd issue as in-progress
-- [ ] Use debugging-with-tools to find root cause
+- [ ] Use hyperpowers:debugging-with-tools to find root cause
 - [ ] Update bd issue with root cause and evidence
 - [ ] Write failing test that reproduces bug (RED)
 - [ ] Verify test fails via hyperpowers:test-runner agent
@@ -303,10 +303,10 @@ When you encounter a bug, follow this checklist:
 - [ ] Run full test suite via hyperpowers:test-runner agent (check regressions)
 - [ ] Refactor if needed (keep tests GREEN)
 - [ ] Commit fix with bd issue reference
-- [ ] Final verification via verification-before-completion
+- [ ] Final verification via hyperpowers:verification-before-completion
 - [ ] Update bd issue with solution details
 - [ ] Close bd issue
-- [ ] Create PR if applicable (finishing-a-development-branch)
+- [ ] Create PR if applicable (hyperpowers:finishing-a-development-branch)
 
 ## Common Rationalizations - STOP
 
@@ -331,24 +331,24 @@ When you encounter a bug, follow this checklist:
 **Always:**
 - Track every bug in bd
 - Write failing test first
-- Use debugging-with-tools systematically
+- Use hyperpowers:debugging-with-tools systematically
 - Verify no regressions via hyperpowers:test-runner agent
 - Document root cause in bd
 
 ## Integration with Other Skills
 
 **This skill requires:**
-- **debugging-with-tools** - REQUIRED for Phase 2 (investigation)
-- **test-driven-development** - REQUIRED for Phase 3 & 4 (test & fix)
-- **verification-before-completion** - REQUIRED for Phase 8 (final verification)
+- **hyperpowers:debugging-with-tools** - REQUIRED for Phase 2 (investigation)
+- **hyperpowers:test-driven-development** - REQUIRED for Phase 3 & 4 (test & fix)
+- **hyperpowers:verification-before-completion** - REQUIRED for Phase 8 (final verification)
 
 **This skill uses:**
 - **hyperpowers:test-runner agent** - Run tests without context pollution
-- **hyperpowers:internet-researcher agent** - Via debugging-with-tools
-- **hyperpowers:codebase-investigator agent** - Via debugging-with-tools
+- **hyperpowers:internet-researcher agent** - Via hyperpowers:debugging-with-tools
+- **hyperpowers:codebase-investigator agent** - Via hyperpowers:debugging-with-tools
 
 **This skill calls:**
-- **finishing-a-development-branch** - Optional for creating PR
+- **hyperpowers:finishing-a-development-branch** - Optional for creating PR
 
 ## Example: Complete Bug Fix Session
 
@@ -364,7 +364,7 @@ bd status bd-123 --status in-progress
 ```
 
 ### Minutes 5-20: Investigation
-- Use debugging-with-tools
+- Use hyperpowers:debugging-with-tools
 - Dispatch hyperpowers:internet-researcher: "Search for API validation patterns"
 - Use debugger: Inspect where error occurs
 - Dispatch hyperpowers:codebase-investigator: "Find other validation examples"
@@ -410,7 +410,7 @@ bd status bd-123 --status closed
 ```
 
 ### Minutes 40-45: PR (optional)
-Use finishing-a-development-branch to create PR
+Use hyperpowers:finishing-a-development-branch to create PR
 
 **Result:** Bug fixed properly with test, tracked in bd, verified working
 

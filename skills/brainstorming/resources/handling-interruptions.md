@@ -1,5 +1,5 @@
-- ❌ You forget to run sre-task-refinement (Phase 6)
-- ❌ You forget to run writing-plans (Phase 7)
+- ❌ You forget to run hyperpowers:sre-task-refinement (Phase 6)
+- ❌ You forget to run hyperpowers:writing-plans (Phase 7)
 
 **Always check TodoWrite after interruption to resume at correct phase.**
 

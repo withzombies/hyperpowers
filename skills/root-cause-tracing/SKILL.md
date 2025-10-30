@@ -345,18 +345,18 @@ if directory.is_empty() { panic!("invariant violated"); }
 
 **But:** Fix at source first. Defense is backup, not primary fix.
 
-## Integration with debugging-with-tools
+## Integration with hyperpowers:debugging-with-tools
 
-Use root-cause-tracing when:
-- debugging-with-tools Phase 2: "Trace Backward Through Call Stack"
+Use hyperpowers:root-cause-tracing when:
+- hyperpowers:debugging-with-tools Phase 2: "Trace Backward Through Call Stack"
 - Error is deep in execution
 - Stack trace shows multiple layers
 - Need to find original trigger
 
 **Pattern:**
-1. Start with debugging-with-tools
-2. In Phase 2, use root-cause-tracing for deep stack analysis
-3. Return to debugging-with-tools with root cause identified
+1. Start with hyperpowers:debugging-with-tools
+2. In Phase 2, use hyperpowers:root-cause-tracing for deep stack analysis
+3. Return to hyperpowers:debugging-with-tools with root cause identified
 
 ## Quick Reference
 

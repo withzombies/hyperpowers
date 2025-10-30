@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-description: Use to execute bd tasks continuously - reads tasks from bd, executes ready tasks one by one, updates bd status as you go, calls review-implementation when complete
+description: Use to execute bd tasks continuously - reads tasks from bd, executes ready tasks one by one, updates bd status as you go, calls hyperpowers:review-implementation when complete
 ---
 
 # Executing Plans
@@ -13,7 +13,7 @@ Read tasks from bd, execute ready tasks continuously, update bd status as you go
 
 **Announce at start:** "I'm using the executing-plans skill to implement these bd tasks."
 
-**Context:** This runs after writing-plans has enhanced bd tasks with detailed implementation steps.
+**Context:** This runs after hyperpowers:writing-plans has enhanced bd tasks with detailed implementation steps.
 
 **CRITICAL:** NEVER read `.beads/issues.jsonl` directly. ALWAYS use `bd show`, `bd ready`, `bd list`, and `bd status` commands to interact with tasks. The bd CLI provides the correct interface.
 
@@ -21,7 +21,7 @@ Read tasks from bd, execute ready tasks continuously, update bd status as you go
 
 **You can review at two levels:**
 
-1. **Final review** (default) - Use review-implementation skill after all tasks complete
+1. **Final review** (default) - Use hyperpowers:review-implementation skill after all tasks complete
    - Reviews entire implementation against epic
    - Best for catching integration issues
    - Faster overall execution
@@ -81,11 +81,11 @@ bd show bd-3
 ```
 
 3. **Follow each step exactly**:
-   - Task has detailed "Implementation Steps" section from writing-plans
+   - Task has detailed "Implementation Steps" section from hyperpowers:writing-plans
    - Each step is bite-sized (2-5 minutes)
    - Complete code examples provided
    - Exact commands specified
-   - **When implementing new functionality:** Use test-driven-development skill
+   - **When implementing new functionality:** Use hyperpowers:test-driven-development skill
      - Write test first (RED phase)
      - Watch test fail
      - Write minimal code to pass (GREEN phase)
@@ -134,14 +134,14 @@ Continue with next ready task immediately.
 ### Step 3: Review Implementation Against Spec
 
 After all tasks complete and verified:
-- Announce: "I'm using the review-implementation skill to verify the implementation matches the spec."
+- Announce: "I'm using the hyperpowers:review-implementation skill to verify the implementation matches the spec."
 - **REQUIRED: Use Skill tool to invoke:** `hyperpowers:review-implementation`
-- review-implementation will:
+- hyperpowers:review-implementation will:
   - Review each bd task's success criteria against actual implementation
   - Check for anti-pattern violations
   - Verify key considerations were addressed
   - Report gaps or approve for completion
-- If approved, review-implementation calls hyper:finishing-a-development-branch
+- If approved, hyperpowers:review-implementation calls hyperpowers:finishing-a-development-branch
 - If gaps found, fix them before proceeding
 
 ## When to Stop and Ask for Help
@@ -193,11 +193,11 @@ If a task is blocked, `bd ready` won't show it until its dependencies are closed
 - Read tasks from bd, not markdown files
 - Update bd status as you work (in_progress → closed)
 - Follow detailed implementation steps in bd task design
-- Use test-driven-development skill when implementing new functionality (write test first, watch fail, implement)
+- Use hyperpowers:test-driven-development skill when implementing new functionality (write test first, watch fail, implement)
 - Don't skip verifications
 - Reference bd task IDs in commits
 - Work through ready tasks continuously using `bd ready`
 - Stop when blocked, don't guess
-- Review: per-task (hyperpowers:code-reviewer agent) or final (review-implementation skill)
+- Review: per-task (hyperpowers:code-reviewer agent) or final (hyperpowers:review-implementation skill)
   - Per-task if user requested: "Review each task as we go"
-  - Final review (default): use review-implementation skill after all tasks complete
+  - Final review (default): use hyperpowers:review-implementation skill after all tasks complete

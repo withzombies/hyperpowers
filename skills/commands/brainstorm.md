@@ -1,1 +1,1 @@
-Use your brainstorming skill.
+Use your hyperpowers:brainstorming skill.

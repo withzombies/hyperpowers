@@ -184,7 +184,7 @@ fi
 
 ### Pattern 4: Skills Auto-Activation (UserPromptSubmit Hook)
 
-**See:** skills-auto-activation skill for complete implementation
+**See:** hyperpowers:skills-auto-activation skill for complete implementation
 
 **Summary:** Analyzes prompt keywords/intent and injects skill activation reminder before Claude processes the prompt.
 
@@ -354,9 +354,9 @@ fi
 ## Integration with Other Skills
 
 **Related skills:**
-- **skills-auto-activation** - Complete skill activation hook implementation
-- **verification-before-completion** - Quality checks (hooks automate this)
-- **testing-anti-patterns** - Avoid testing anti-patterns in hooks
+- **hyperpowers:skills-auto-activation** - Complete skill activation hook implementation
+- **hyperpowers:verification-before-completion** - Quality checks (hooks automate this)
+- **hyperpowers:testing-anti-patterns** - Avoid testing anti-patterns in hooks
 
 **Hook patterns support:**
 - Automatic skill activation

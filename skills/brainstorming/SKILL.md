@@ -22,8 +22,8 @@ Transform rough ideas into fully-formed designs through structured questioning a
 | **3. Create bd Structure** | Create epic + skeleton phase tasks | bd CLI commands | Epic and placeholder tasks in bd |
 | **4. Design Presentation** | Present sections, update bd tasks | Open-ended questions, bd update | bd tasks with validated designs |
 | **5. Refine Subtask Granularity** | Break large tasks into subtasks if needed | bd CLI commands | All tasks properly sized (4-8 hours) |
-| **6. Validate and Refine** | Review and improve all issues | sre-task-refinement skill | Plan approved or revision needed |
-| **7. Enhance bd Tasks** | Expand tasks with detailed implementation steps | writing-plans skill | Enhanced bd issues |
+| **6. Validate and Refine** | Review and improve all issues | hyperpowers:sre-task-refinement skill | Plan approved or revision needed |
+| **7. Enhance bd Tasks** | Expand tasks with detailed implementation steps | hyperpowers:writing-plans skill | Enhanced bd issues |
 
 **⚠️ AFTER INTERRUPTIONS: Check TodoWrite to see current phase. Complete ALL remaining phases before coding. NEVER skip Phase 6 or 7.**
 
@@ -38,7 +38,7 @@ Use TodoWrite to create todos for each phase:
 - Phase 3: Create bd Structure (epic + skeleton phase tasks created in bd)
 - Phase 4: Design Presentation (present sections, update bd tasks incrementally)
 - Phase 5: Refine Subtask Granularity (break large tasks into 4-8 hour subtasks)
-- Phase 6: Validate and Refine (plan reviewed and approved by sre-task-refinement)
+- Phase 6: Validate and Refine (plan reviewed and approved by hyperpowers:sre-task-refinement)
 - Phase 7: Enhance bd Tasks (tasks expanded with detailed implementation steps)
 
 Mark each phase as in_progress when working on it, completed when finished.
@@ -53,7 +53,7 @@ Mark each phase as in_progress when working on it, completed when finished.
 
 **DO NOT perform deep research yourself. Delegate to specialized agents.**
 
-### When to Use codebase-investigator
+### When to Use hyperpowers:codebase-investigator
 
 **Use hyperpowers:codebase-investigator agent when you need to:**
 - Understand how existing features are implemented
@@ -68,7 +68,7 @@ Question: "How is authentication currently implemented?"
 Action: Dispatch hyperpowers:codebase-investigator with: "Find authentication implementation, including file locations, patterns used, and dependencies"
 ```
 
-### When to Use internet-researcher
+### When to Use hyperpowers:internet-researcher
 
 **Use hyperpowers:internet-researcher agent when you need to:**
 - Find current API documentation for external services
@@ -86,12 +86,12 @@ Action: Dispatch hyperpowers:internet-researcher with: "Find current best practi
 ### Research Protocol
 
 **If codebase pattern exists:**
-1. Use codebase-investigator to find it
+1. Use hyperpowers:codebase-investigator to find it
 2. Unless pattern is clearly unwise, assume it's the correct approach
 3. Design should follow existing patterns for consistency
 
 **If no codebase pattern exists:**
-1. Use internet-researcher to find external patterns
+1. Use hyperpowers:internet-researcher to find external patterns
 2. Present 2-3 approaches from research in Phase 2
 3. Let user choose which pattern to adopt
 
@@ -129,7 +129,7 @@ Action: Dispatch hyperpowers:internet-researcher with: "Find current best practi
 
 **If you catch yourself thinking:**
 - "The user's request is detailed enough"
-- "I have context from codebase-investigator"
+- "I have context from hyperpowers:codebase-investigator"
 - "I can infer what they want"
 - "This is straightforward, don't need questions"
 
@@ -156,7 +156,7 @@ Options:
 ```
 
 **When to delegate vs ask user:**
-- "Where is auth implemented?" → codebase-investigator
+- "Where is auth implemented?" → hyperpowers:codebase-investigator
 - "What auth library should we use?" → internet-researcher (if not in codebase)
 - "Do you want JWT or sessions?" → AskUserQuestion (design decision)
 
@@ -167,7 +167,7 @@ Options:
 1. **Research existing patterns** - DON'T do this yourself:
    - Dispatch hyperpowers:codebase-investigator: "Find similar features and patterns used"
    - If similar feature exists, base one approach on that pattern
-   - If no codebase pattern, dispatch internet-researcher: "Find recommended approaches for [problem]"
+   - If no codebase pattern, dispatch hyperpowers:internet-researcher: "Find recommended approaches for [problem]"
    - Review research findings before proposing
 
 2. **Then propose approaches:**
@@ -376,16 +376,16 @@ bd ready          # Should show first workable task
 Now have the plan reviewed by an SRE perspective to catch issues before implementation.
 
 - Mark Phase 6 as in_progress in TodoWrite
-- Announce: "I'm using the sre-task-refinement skill to review the plan."
+- Announce: "I'm using the hyperpowers:sre-task-refinement skill to review the plan."
 - **REQUIRED: Use Skill tool to invoke:** `hyperpowers:sre-task-refinement`
-- sre-task-refinement will:
+- hyperpowers:sre-task-refinement will:
   - Review all issues for completeness
   - Check task granularity (no task >16 hours)
   - Verify junior-engineer implementability
   - Identify missing edge cases
   - Update issues with improvements via `bd update`
   - Provide approval or request revisions
-- If major revisions needed, re-run hyper:sre-task-refinement
+- If major revisions needed, re-run hyperpowers:sre-task-refinement
 - Mark Phase 6 as completed when plan is approved
 
 
@@ -394,20 +394,20 @@ Now have the plan reviewed by an SRE perspective to catch issues before implemen
 Now expand the approved bd tasks with detailed step-by-step implementation instructions.
 
 - Mark Phase 7 as in_progress in TodoWrite
-- Announce: "I'm using the writing-plans skill to enhance the bd tasks with detailed steps."
+- Announce: "I'm using the hyperpowers:writing-plans skill to enhance the bd tasks with detailed steps."
 - **REQUIRED: Use Skill tool to invoke:** `hyperpowers:writing-plans`
-- writing-plans will:
+- hyperpowers:writing-plans will:
   - Read the epic and all tasks from bd
   - Verify codebase state for each task
   - Expand implementation checklists into detailed steps with complete code
   - Validate each task expansion with user before updating bd
   - Update each bd issue with enhanced design using `bd update`
-  - Offer execution choice (executing-plans skill)
+  - Offer execution choice (hyperpowers:executing-plans skill)
 - Mark Phase 7 as completed when all bd tasks are enhanced
 
 **After Phase 7:**
 - bd issues contain complete execution-ready instructions
-- User can execute using hyper:executing-plans
+- User can execute using hyperpowers:executing-plans
 - All implementation details live in bd (no separate markdown files)
 
 **Complete workflow:**
@@ -472,16 +472,16 @@ Since this changes our authentication approach, let me return to Phase 2 to expl
 | "Request is detailed, don't need AskUserQuestion" | MUST invoke tool 3+ times. Output text is not asking. |
 | "I'll present whole design at once for efficiency" | Incremental validation catches problems early. |
 | "Checklist is just a suggestion" | Create TodoWrite todos. Track progress properly. |
-| "Design doc structure doesn't matter" | sre-task-refinement expects structured issues. Follow the structure. |
+| "Design doc structure doesn't matter" | hyperpowers:sre-task-refinement expects structured issues. Follow the structure. |
 | "I can research this quickly myself" | Use agents. You'll hallucinate or consume excessive context. |
 | "Agent didn't find it on first try, must not exist" | Be persistent. Refine query and try again. |
 | "This is small, don't need worktree" | If implementing, use worktree. Isolation prevents mistakes. |
-| "Partner said yes, can skip refinement phase" | sre-task-refinement catches critical gaps. Always run Phase 6. |
+| "Partner said yes, can skip refinement phase" | hyperpowers:sre-task-refinement catches critical gaps. Always run Phase 6. |
 | "I know this codebase, don't need investigator" | You don't know current state. Always verify. |
 | "Obvious solution, skip research" | Codebase may have established pattern. Check first. |
 | "Subtask can reference parent for details" | NO. Subtasks must be complete. NO placeholders, NO "see parent". |
 | **"Partner added context, can start coding now"** | **NO. Check TodoWrite. Complete all remaining phases (including 6 & 7).** |
-| **"Design is done, let me implement..."** | **NO. Run Phase 6 (sre-task-refinement) and Phase 7 (writing-plans) FIRST.** |
+| **"Design is done, let me implement..."** | **NO. Run Phase 6 (hyperpowers:sre-task-refinement) and Phase 7 (hyperpowers:writing-plans) FIRST.** |
 
 **All of these mean: STOP. Follow the requirements exactly.**
 

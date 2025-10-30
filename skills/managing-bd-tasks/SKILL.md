@@ -483,9 +483,9 @@ bd edit bd-10 --design "
 
 **Related operations in other skills:**
 - Basic bd commands: See skills/common-patterns/bd-commands.md
-- Creating epics: writing-plans skill
-- Executing tasks: executing-plans skill
-- Closing tasks: verification-before-completion skill
+- Creating epics: hyperpowers:writing-plans skill
+- Executing tasks: hyperpowers:executing-plans skill
+- Closing tasks: hyperpowers:verification-before-completion skill
 
 ## Quick Reference
 
