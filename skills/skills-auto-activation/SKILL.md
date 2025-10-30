@@ -5,6 +5,12 @@ description: Use when skills aren't activating reliably - covers official soluti
 
 # Skills Auto-Activation
 
+> **Note:** Hyperpowers now includes automatic skill activation via the hooks system.
+> The `UserPromptSubmit` hook (at `hooks/user-prompt-submit/10-skill-activator.js`) analyzes your prompts and suggests relevant skills before Claude responds.
+> See [HOOKS.md](../../HOOKS.md) for configuration and customization.
+>
+> This skill documents the underlying techniques and how to extend the system for custom skills.
+
 ## Overview
 
 Skills often don't activate automatically despite relevant keywords and context. This is a known issue in Claude Code.
@@ -443,9 +449,9 @@ Combine all guidelines into CLAUDE.md instead of separate skills:
 ## Integration with Other Skills
 
 **Related skills:**
-- **building-hooks** - How to build the hook system
-- **using-hyper** - When to use skills generally
-- **writing-skills** - Creating skills that activate well
+- **hyperpowers:building-hooks** - How to build the hook system
+- **hyperpowers:using-hyper** - When to use skills generally
+- **hyperpowers:writing-skills** - Creating skills that activate well
 
 **This skill enables:**
 - Consistent enforcement of patterns

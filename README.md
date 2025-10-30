@@ -60,12 +60,20 @@ Domain-specific agents for complex tasks:
 - **internet-researcher** - Research APIs, libraries, and current best practices
 - **test-runner** - Run tests/pre-commit hooks/commits without context pollution (uses Haiku)
 
-### Hooks
+### Hooks System
 
-Automatic behaviors that enhance your workflow:
+Intelligent hooks that provide context-aware assistance:
 
-- Session start hooks to establish context
-- Integration with development workflows
+**Automatic Skill Activation** - The UserPromptSubmit hook analyzes your prompts and suggests relevant skills before Claude responds. Simply type what you want to do, and you'll get skill recommendations if applicable.
+
+**Context Tracking** - The PostToolUse hook tracks file edits during your session, maintaining context for intelligent reminders.
+
+**Gentle Reminders** - The Stop hook provides helpful reminders after Claude responds:
+- 💭 TDD reminder when editing source without tests
+- ✅ Verification reminder when claiming completion
+- 💾 Commit reminder after multiple file edits
+
+See [HOOKS.md](HOOKS.md) for configuration, troubleshooting, and customization details.
 
 ## Key Benefits
 
