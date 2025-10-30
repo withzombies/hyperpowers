@@ -1,0 +1,56 @@
+#!/bin/bash
+set -e
+
+echo "=== Testing Skill Activator Hook ==="
+echo ""
+
+test_prompt() {
+    local prompt="$1"
+    local expected_skills="$2"
+
+    echo "Test: $prompt"
+    result=$(echo "{\"text\": \"$prompt\"}" | node hooks/user-prompt-submit/10-skill-activator.js)
+
+    if echo "$result" | jq -e '.decision == "continue"' > /dev/null; then
+        echo "✓ Returns continue decision"
+    else
+        echo "✗ FAIL: Wrong decision"
+        return 1
+    fi
+
+    if echo "$result" | jq -e '.additionalContext' > /dev/null 2>&1; then
+        activated=$(echo "$result" | jq -r '.additionalContext' | grep -o '\*\*[^*]\+\*\*' | sed 's/\*\*//g' | tr '\n' ' ' || true)
+        echo "  Activated: $activated"
+
+        if [ -n "$expected_skills" ]; then
+            for skill in $expected_skills; do
+                if echo "$activated" | grep -q "$skill"; then
+                    echo "  ✓ Expected skill activated: $skill"
+                else
+                    echo "  ✗ Missing expected skill: $skill"
+                fi
+            done
+        fi
+    else
+        echo "  No skills activated"
+    fi
+
+    echo ""
+}
+
+# Test 1: TDD prompt should activate test-driven-development
+test_prompt "I want to write a test for the login function" "test-driven-development"
+
+# Test 2: Debugging prompt should activate debugging-with-tools
+test_prompt "Help me debug this error in my code" "debugging-with-tools"
+
+# Test 3: Planning prompt should activate brainstorming
+test_prompt "I want to design a new authentication system" "brainstorming"
+
+# Test 4: Refactoring prompt should activate refactoring-safely
+test_prompt "Let's refactor this code to be cleaner" "refactoring-safely"
+
+# Test 5: Empty prompt should return continue with no context
+test_prompt "" ""
+
+echo "=== All Tests Complete ==="
