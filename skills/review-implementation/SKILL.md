@@ -367,7 +367,7 @@ For each task, verify:
 - Check for anti-patterns from hyperpowers:sre-task-refinement
 - **READ the actual implementation files with Read tool**
 - **Run automated checks for TODOs, stubs, unsafe patterns**
-- **Run quality gates with test-runner agent**
+- **Run quality gates with hyperpowers:test-runner agent**
 - **Assess code quality with Google Fellow perspective**
 
 ## Working with bd

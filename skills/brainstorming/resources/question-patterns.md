@@ -33,7 +33,7 @@
 - "Where does Y live?" → Agent locates files
 - "What pattern exists for Z?" → Agent identifies pattern
 
-**Use internet-researcher for:**
+**Use hyperpowers:internet-researcher for:**
 - "What's the current API for X?" → Agent finds docs
 - "How do people handle Y?" → Agent finds patterns
 - "What libraries exist for Z?" → Agent researches options

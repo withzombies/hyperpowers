@@ -360,7 +360,7 @@ fn test_fix_works() {
 }
 ```
 
-#### 3. Run Tests via test-runner Agent
+#### 3. Run Tests via hyperpowers:test-runner Agent
 
 **Don't pollute context with test output:**
 
@@ -417,7 +417,7 @@ test('rejects empty email', () => {
 - No "while I'm here" improvements
 - No bundled refactoring
 
-#### 3. Verify Fix via test-runner Agent
+#### 3. Verify Fix via hyperpowers:test-runner Agent
 
 **Run tests without polluting context:**
 
@@ -469,7 +469,7 @@ This is NOT a failed hypothesis - this is wrong architecture.
 
 | Phase | Tools to Use | Purpose | Who Uses It |
 |-------|-------------|---------|-------------|
-| **Investigation** | internet-researcher | Search error messages, find solutions | Claude (agent) |
+| **Investigation** | hyperpowers:internet-researcher | Search error messages, find solutions | Claude (agent) |
 | | lldb batch mode | Non-interactive variable inspection | Claude (bash) |
 | | strace/dtrace | System call tracing | Claude (bash) |
 | | Instrumentation (logging) | Add debug output | Claude (adds code) |

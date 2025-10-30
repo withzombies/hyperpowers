@@ -157,7 +157,7 @@ Options:
 
 **When to delegate vs ask user:**
 - "Where is auth implemented?" → hyperpowers:codebase-investigator
-- "What auth library should we use?" → internet-researcher (if not in codebase)
+- "What auth library should we use?" → hyperpowers:internet-researcher (if not in codebase)
 - "Do you want JWT or sessions?" → AskUserQuestion (design decision)
 
 ### Phase 2: Exploration

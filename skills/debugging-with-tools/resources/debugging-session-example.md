@@ -58,7 +58,7 @@ Result: ✓ All tests pass
 ## Remember
 
 - **Tools make debugging faster**, not slower
-- **Internet-researcher** can find solutions in seconds
+- **hyperpowers:internet-researcher** can find solutions in seconds
 - **Automated debugging works** - lldb batch mode, strace, instrumentation
 - **hyperpowers:codebase-investigator** finds patterns you'd miss
 - **hyperpowers:test-runner agent** keeps context clean
