@@ -107,7 +107,7 @@ should_run() {
 
 # Main execution
 if ! should_run; then
-    echo '{"decision": "continue"}'
+    echo '{"decision": "approve"}'
     exit 0
 fi
 
@@ -154,7 +154,7 @@ if should_run; then
     mark_run
 fi
 
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Pattern: Multi-Project Detection
@@ -231,8 +231,8 @@ try_with_fallback \
     "npm run build:dev" \
     "Building project"
 
-# Always continue (non-blocking)
-echo '{"decision": "continue"}'
+# Always approve (non-blocking)
+echo '{"decision": "approve"}'
 ```
 
 ## Pattern: Parallel Execution
@@ -290,7 +290,7 @@ else
     cat /tmp/eslint-output.txt
 fi
 
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Pattern: Smart Caching
@@ -384,7 +384,7 @@ else
     complete_progress "failure"
 fi
 
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Pattern: Context Injection
@@ -414,11 +414,11 @@ function injectContext(prompt) {
     }
 
     if (context.length === 0) {
-        return { decision: 'continue' };
+        return { decision: 'approve' };
     }
 
     return {
-        decision: 'continue',
+        decision: 'approve',
         additionalContext: `\n\n---\n${context.join('\n')}\n---\n`
     };
 }
@@ -474,7 +474,7 @@ fi
 
 report_errors
 
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Pattern: Conditional Blocking
@@ -517,10 +517,10 @@ case "$ERROR_LEVEL" in
         ;;
     "warning")
         echo "⚠️  Warning: Found debug statements (console.log, debugger)"
-        echo '{"decision": "continue"}'
+        echo '{"decision": "approve"}'
         ;;
     *)
-        echo '{"decision": "continue"}'
+        echo '{"decision": "approve"}'
         ;;
 esac
 ```
@@ -541,7 +541,7 @@ jq -n \
     '{lastRun: $timestamp, filesEdited: ($files | split(","))}' \
     > "$STATE_FILE"
 
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ```bash
@@ -559,7 +559,7 @@ if [ -f "$STATE_FILE" ]; then
     done
 fi
 
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Pattern: User Notification
@@ -598,7 +598,7 @@ if [ "$error_count" -gt 10 ]; then
     notify "⚠️  Build has $error_count errors"
 fi
 
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Remember

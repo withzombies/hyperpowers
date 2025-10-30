@@ -70,13 +70,13 @@ find_repo() {
 
 # Read tool use event from stdin (with timeout to prevent hanging)
 if ! read -t 2 -r tool_use_json; then
-    echo '{"decision": "continue"}'
+    echo '{"decision": "approve"}'
     exit 0
 fi
 
 # Validate JSON to prevent injection
 if ! echo "$tool_use_json" | jq empty 2>/dev/null; then
-    echo '{"decision": "continue"}'
+    echo '{"decision": "approve"}'
     exit 0
 fi
 
@@ -95,7 +95,7 @@ case "$tool_name" in
                 log_edit "$path" "$tool_name"
             fi
         done
-        echo '{"decision": "continue"}'
+        echo '{"decision": "approve"}'
         exit 0
         ;;
 esac
@@ -116,4 +116,4 @@ if acquire_lock; then
 fi
 
 # Return success (non-blocking)
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'

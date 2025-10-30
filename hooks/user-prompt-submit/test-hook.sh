@@ -11,8 +11,8 @@ test_prompt() {
     echo "Test: $prompt"
     result=$(echo "{\"text\": \"$prompt\"}" | node hooks/user-prompt-submit/10-skill-activator.js)
 
-    if echo "$result" | jq -e '.decision == "continue"' > /dev/null; then
-        echo "✓ Returns continue decision"
+    if echo "$result" | jq -e '.decision == "approve"' > /dev/null; then
+        echo "✓ Returns approve decision"
     else
         echo "✗ FAIL: Wrong decision"
         return 1
@@ -50,7 +50,7 @@ test_prompt "I want to design a new authentication system" "brainstorming"
 # Test 4: Refactoring prompt should activate refactoring-safely
 test_prompt "Let's refactor this code to be cleaner" "refactoring-safely"
 
-# Test 5: Empty prompt should return continue with no context
+# Test 5: Empty prompt should return approve with no context
 test_prompt "" ""
 
 echo "=== All Tests Complete ==="

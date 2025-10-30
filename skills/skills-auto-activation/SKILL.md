@@ -266,11 +266,11 @@ process.stdin.on('end', () => {
         const context = generateActivationContext(activatedSkills);
 
         console.log(JSON.stringify({
-            decision: 'continue',
+            decision: 'approve',
             additionalContext: context
         }));
     } else {
-        console.log(JSON.stringify({ decision: 'continue' }));
+        console.log(JSON.stringify({ decision: 'approve' }));
     }
 });
 

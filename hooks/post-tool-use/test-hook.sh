@@ -10,8 +10,8 @@ echo ""
 # Test 1: Edit tool event
 echo "Test 1: Edit tool event"
 result=$(echo '{"tool":{"name":"Edit","input":{"file_path":"/Users/ryan/src/hyper/test.txt"}}}' | bash hooks/post-tool-use/01-track-edits.sh)
-if echo "$result" | jq -e '.decision == "continue"' > /dev/null; then
-    echo "✓ Returns continue decision"
+if echo "$result" | jq -e '.decision == "approve"' > /dev/null; then
+    echo "✓ Returns approve decision"
 else
     echo "✗ FAIL: Wrong decision"
 fi
@@ -26,8 +26,8 @@ echo ""
 # Test 2: Write tool event
 echo "Test 2: Write tool event"
 result=$(echo '{"tool":{"name":"Write","input":{"file_path":"/Users/ryan/src/hyper/newfile.txt"}}}' | bash hooks/post-tool-use/01-track-edits.sh)
-if echo "$result" | jq -e '.decision == "continue"' > /dev/null; then
-    echo "✓ Returns continue decision"
+if echo "$result" | jq -e '.decision == "approve"' > /dev/null; then
+    echo "✓ Returns approve decision"
 else
     echo "✗ FAIL: Wrong decision"
 fi
@@ -42,7 +42,7 @@ echo ""
 # Test 3: Malformed JSON
 echo "Test 3: Malformed JSON"
 result=$(echo 'invalid json' | bash hooks/post-tool-use/01-track-edits.sh)
-if echo "$result" | jq -e '.decision == "continue"' > /dev/null; then
+if echo "$result" | jq -e '.decision == "approve"' > /dev/null; then
     echo "✓ Gracefully handles malformed JSON"
 else
     echo "✗ FAIL: Did not handle malformed JSON"
@@ -52,7 +52,7 @@ echo ""
 # Test 4: Empty input
 echo "Test 4: Empty input"
 result=$(echo '' | bash hooks/post-tool-use/01-track-edits.sh)
-if echo "$result" | jq -e '.decision == "continue"' > /dev/null; then
+if echo "$result" | jq -e '.decision == "approve"' > /dev/null; then
     echo "✓ Gracefully handles empty input"
 else
     echo "✗ FAIL: Did not handle empty input"

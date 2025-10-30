@@ -375,8 +375,8 @@ async function main() {
         // ... hook logic
     } catch (error) {
         console.error('Hook error:', error.message);
-        // Always return continue on error
-        console.log(JSON.stringify({ decision: 'continue' }));
+        // Always return approve on error
+        console.log(JSON.stringify({ decision: 'approve' }));
     }
 }
 ```
@@ -384,7 +384,7 @@ async function main() {
 **Solution 2: Add timeout protection**
 ```javascript
 const timeout = setTimeout(() => {
-    console.log(JSON.stringify({ decision: 'continue' }));
+    console.log(JSON.stringify({ decision: 'approve' }));
     process.exit(0);
 }, 900);  // Exit before hook timeout
 
@@ -408,7 +408,7 @@ Remove complex logic and test minimal version:
 ```javascript
 // Minimal hook for testing
 console.log(JSON.stringify({
-    decision: 'continue',
+    decision: 'approve',
     additionalContext: '🎯 Test message'
 }));
 ```

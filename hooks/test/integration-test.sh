@@ -78,13 +78,13 @@ main() {
         "echo '{\"text\": \"I want to write a test for login\"}' | node $HOOKS_DIR/user-prompt-submit/10-skill-activator.js" \
         "test-driven-development"
 
-    run_test "Empty prompt returns continue" \
+    run_test "Empty prompt returns approve" \
         "echo '{\"text\": \"\"}' | node $HOOKS_DIR/user-prompt-submit/10-skill-activator.js" \
-        '{"decision":"continue"}'
+        '{"decision":"approve"}'
 
     run_test "Malformed JSON handled" \
         "echo 'not json' | node $HOOKS_DIR/user-prompt-submit/10-skill-activator.js" \
-        '{"decision":"continue"}'
+        '{"decision":"approve"}'
 
     # Test 2: PostToolUse Hook
     echo -e "\n${YELLOW}Testing PostToolUse Hook...${NC}"

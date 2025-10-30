@@ -73,7 +73,7 @@ if [ "$line_count" -gt "$MAX_LOG_LINES" ]; then
 fi
 
 # Return success (non-blocking)
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 **Configuration (`hooks.json`):**
@@ -199,7 +199,7 @@ else
 fi
 
 # Non-blocking - always return success
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Example 3: TypeScript Prettier Formatter (Stop)
@@ -278,7 +278,7 @@ done
 echo "✅ Formatted $formatted_count file(s)"
 
 # Non-blocking
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Example 4: Skill Activation Injector (UserPromptSubmit)
@@ -310,11 +310,11 @@ process.stdin.on('end', () => {
     if (activatedSkills.length > 0) {
         const context = generateContext(activatedSkills);
         console.log(JSON.stringify({
-            decision: 'continue',
+            decision: 'approve',
             additionalContext: context
         }));
     } else {
-        console.log(JSON.stringify({ decision: 'continue' }));
+        console.log(JSON.stringify({ decision: 'approve' }));
     }
 });
 
@@ -472,7 +472,7 @@ EOF
 fi
 
 # Non-blocking
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Example 6: Dangerous Operation Blocker (PreToolUse)
@@ -525,7 +525,7 @@ EOF
 fi
 
 # Allow operation
-echo '{"decision": "continue"}'
+echo '{"decision": "approve"}'
 ```
 
 ## Testing These Examples

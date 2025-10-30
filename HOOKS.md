@@ -11,7 +11,7 @@ Hyperpowers uses Claude Code's hooks system to provide intelligent, context-awar
 **File:** `hooks/user-prompt-submit/10-skill-activator.js`
 **Purpose:** Analyzes prompts and suggests relevant skills
 **Input:** `{"text": "user prompt text"}`
-**Output:** `{"decision": "continue", "additionalContext": "skill suggestions"}`
+**Output:** `{"decision": "approve", "additionalContext": "skill suggestions"}`
 
 **How it works:**
 1. You type a prompt (e.g., "I want to write a test for the login function")
@@ -44,7 +44,7 @@ Use the Skill tool to activate: `Skill command="hyperpowers:<skill-name>"`
 **File:** `hooks/post-tool-use/01-track-edits.sh`
 **Purpose:** Tracks file edits for context awareness
 **Input:** `{"tool": {"name": "Edit", "input": {"file_path": "..."}}}`
-**Output:** `{"decision": "continue"}`
+**Output:** `{"decision": "approve"}`
 
 **How it works:**
 1. Intercepts Edit and Write tool usage
@@ -300,7 +300,7 @@ A: Yes, remove all entries from `hooks/hooks.json` or rename the `hooks/` direct
 A: No, hooks are designed to be fast (<100ms) and run in the background.
 
 **Q: Can hooks fail and block me?**
-A: No, all hooks are non-blocking and always return `{"decision": "continue"}` even on error.
+A: No, all hooks are non-blocking and always return `{"decision": "approve"}` even on error.
 
 **Q: How do I add my own skills to the activator?**
 A: Edit `hooks/skill-rules.json` to add your skill with keywords and patterns.
