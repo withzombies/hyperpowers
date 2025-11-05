@@ -46,6 +46,15 @@ These rationalizations appear across multiple contexts. When you catch yourself 
 | "I'll use placeholder and fill in later" | NO. Write actual content NOW. No meta-references like "[detailed above]". |
 | "Design field is too long, use placeholder" | Length doesn't matter. Write full content. Placeholder defeats the purpose. |
 
+## Execution Shortcuts
+
+| Excuse | Reality |
+|--------|---------|
+| "Task is tracked in TodoWrite, don't need step tracking" | Tasks have 4-8 implementation steps. Without substep tracking, steps 4-8 get skipped. |
+| "Made progress on the task, can move on" | Progress ≠ complete. All substeps must finish. 2/6 steps = 33%, not done. |
+| "Other tasks are waiting, should continue" | Current task incomplete = blocked. Finish all substeps first. |
+| "Can finish remaining steps later" | Later never comes. Complete all substeps now before closing task. |
+
 ## Quality Shortcuts
 
 | Excuse | Reality |

@@ -80,7 +80,40 @@ bd status bd-3 --status in_progress
 bd show bd-3
 ```
 
-3. **Follow each step exactly**:
+3. **Create substep TodoWrite todos**:
+
+   **CRITICAL:** "Checklists without TodoWrite tracking = steps get skipped. Every time." (from using-hyper skill)
+
+   Tasks contain 4-8 implementation steps. You MUST create TodoWrite todos for ALL steps to prevent incomplete execution.
+
+   **Example:** If bd-3 has implementation steps:
+   ```
+   1. Write test for validation function
+   2. Run test (RED phase)
+   3. Implement validation function
+   4. Run test (GREEN phase)
+   5. Refactor for clarity
+   6. Commit changes
+   ```
+
+   Create TodoWrite with these substeps:
+   ```
+   - bd-3 Step 1: Write test for validation function (pending)
+   - bd-3 Step 2: Run test (RED phase) (pending)
+   - bd-3 Step 3: Implement validation function (pending)
+   - bd-3 Step 4: Run test (GREEN phase) (pending)
+   - bd-3 Step 5: Refactor for clarity (pending)
+   - bd-3 Step 6: Commit changes (pending)
+   ```
+
+   **As you execute:**
+   - Mark current step as in_progress
+   - Mark completed steps as completed
+   - This provides visible progress: "2/6 steps done" prevents premature task closure
+
+   **Why this matters:** Without substep tracking, you'll mark tasks "complete" at 33% execution (2/6 steps done). TodoWrite visibility prevents this rationalization.
+
+4. **Follow each step exactly**:
    - Task has detailed "Implementation Steps" section from hyperpowers:writing-plans
    - Each step is bite-sized (2-5 minutes)
    - Complete code examples provided
@@ -90,8 +123,9 @@ bd show bd-3
      - Watch test fail
      - Write minimal code to pass (GREEN phase)
      - Refactor while keeping tests green
+   - **As you complete each substep:** Mark it as completed in TodoWrite immediately
 
-4. **Run verifications as specified**:
+5. **Run verifications as specified**:
    - Tests should pass as you go
    - Follow exact verification commands from task
    - **IMPORTANT:** Use hyperpowers:test-runner agent for running tests
@@ -100,12 +134,34 @@ bd show bd-3
      - Returns only summary + failures
      - Prevents context pollution
 
-5. **Complete task** - Mark as completed in both TodoWrite and bd:
+6. **Pre-close verification checkpoint**:
+
+   **CRITICAL GATE:** Before marking task complete, verify ALL substeps are done.
+
+   **Check TodoWrite:**
+   - Are ALL substeps marked as completed?
+   - Example: bd-3 has 6 substeps, all 6 must show status "completed"
+
+   **If substeps incomplete:**
+   - ❌ DO NOT close task
+   - ❌ DO NOT run `bd status bd-3 --status closed`
+   - ✅ Continue execution with remaining substeps
+   - ✅ Mark each substep completed as you finish it
+
+   **If all substeps completed:**
+   - ✅ Proceed to step 7 (Complete task)
+
+   **This checkpoint prevents:**
+   - Marking tasks "complete" at 2/6 steps (33% execution)
+   - Rationalizing "made progress" as "task done"
+   - Skipping steps 4-6 due to "continue immediately" pressure
+
+7. **Complete task** - Mark as completed in both TodoWrite and bd:
 ```bash
 bd status bd-3 --status closed
 ```
 
-6. **Commit changes** (use hyperpowers:test-runner agent to avoid hook pollution):
+8. **Commit changes** (use hyperpowers:test-runner agent to avoid hook pollution):
    - **IMPORTANT:** Use hyperpowers:test-runner agent for commits
    - Pre-commit hooks often run tests/linters with verbose output
    - Agent captures all output, returns only summary + failures
@@ -119,17 +175,27 @@ bd status bd-3 --status closed
 
    If hooks fail, agent reports failures. Fix and retry commit.
 
-7. **Optional: Per-task review** (if user requested):
+9. **Optional: Per-task review** (if user requested):
    - Use hyperpowers:code-reviewer agent to review this task's implementation
    - Agent checks: implementation matches bd task, no anti-patterns, tests passing
    - Fix any issues found before proceeding
 
-8. **Move to next task**:
+10. **Move to next task**:
 ```bash
 bd ready  # Get next ready task
 ```
 
-Continue with next ready task immediately.
+**Verify all substeps complete in current task, THEN continue with next ready task.**
+
+**Do NOT continue to next task if:**
+- Current task's TodoWrite substeps show incomplete steps
+- You rationalize "made progress, can finish later"
+- You feel pressure to "move fast"
+
+**Only continue when:**
+- ALL substeps in TodoWrite are marked completed
+- Current task closed in bd
+- Commit complete (if applicable)
 
 ### Step 3: Review Implementation Against Spec
 
