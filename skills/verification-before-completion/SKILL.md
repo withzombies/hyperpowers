@@ -21,6 +21,30 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 
 If you haven't run the verification command in this message, you cannot claim it passes.
 
+## Pre-Commit Hook Assumption
+
+**IMPORTANT:** If your project uses pre-commit hooks that enforce passing tests:
+
+```
+ALL test failures are from your current changes
+ALL lint errors are from your current changes
+DO NOT check if errors were "pre-existing"
+```
+
+**Why:** Pre-commit hooks guarantee the previous commit passed all checks. If a test fails now, it's because of changes made since the last commit.
+
+**Never do this:**
+- ❌ Check out previous commits to see if errors existed before
+- ❌ Run `git checkout <sha> && pytest` to verify errors are new
+- ❌ Claim errors are "pre-existing" when pre-commit hooks enforce quality
+
+**Always do this:**
+- ✅ Read the error message
+- ✅ Fix the error directly
+- ✅ Run tests to verify the fix
+
+Checking git history for errors wastes time when pre-commit hooks enforce quality standards.
+
 ## The Gate Function
 
 ```

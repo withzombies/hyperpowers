@@ -225,6 +225,10 @@ Dispatch hyperpowers:codebase-investigator:
 
 #### 6. Check Recent Changes
 
+**IMPORTANT:** If your project uses pre-commit hooks that enforce passing tests, **skip this step for test failures**. All test failures are from your current changes because pre-commit hooks prevent commits with failures.
+
+**Only when pre-commit hooks are NOT enforcing tests, or for non-test issues:**
+
 **What changed that could cause this?**
 ```bash
 # See recent commits

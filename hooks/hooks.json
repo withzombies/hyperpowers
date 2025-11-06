@@ -61,6 +61,10 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use/03-block-pre-commit-bash.py"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-use/04-block-pre-existing-checks.py"
           }
         ]
       }

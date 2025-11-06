@@ -172,6 +172,34 @@ These modifications bypass code review, break CI/CD, and hide underlying issues.
 
 **Works in tandem with:** `hooks/pre-tool-use/01-block-pre-commit-edits.py` (blocks direct Edit/Write)
 
+**File:** `hooks/post-tool-use/04-block-pre-existing-checks.py`
+**Purpose:** Blocks git checkout commands used to check if errors are "pre-existing"
+**Input:** `{"tool_name": "Bash", "tool_input": {"command": "..."}}`
+**Output:** `{"hookSpecificOutput": {"permissionDecision": "deny", ...}}` (blocking)
+
+**How it works:**
+1. Intercepts Bash tool calls
+2. Detects patterns of checking previous commits for test/lint results
+3. Blocks commands that combine git checkout with verification commands
+4. Provides guidance on fixing errors directly
+
+**Detected patterns:**
+- `git checkout <commit-sha>` combined with test/lint commands
+- `git stash && git checkout` (common pattern for checking previous commits)
+- Running verification commands (ruff, pytest, mypy, cargo test, npm test, etc.) on previous commits
+
+**Why blocking is necessary:**
+When projects use pre-commit hooks that enforce passing tests, checking if errors are "pre-existing" wastes time. Pre-commit hooks guarantee the previous commit passed all checks, so any test failure or lint error must be from current changes.
+
+Claude sometimes attempts to verify errors are new by:
+- Checking out previous commits to run tests
+- Running linters on previous commits to compare results
+- Using git history to investigate when errors were introduced
+
+These investigations are unnecessary when pre-commit hooks enforce quality standards. The hook forces Claude to fix errors directly instead of investigating git history.
+
+**Related skills:** `verification-before-completion`, `debugging-with-tools` both document the pre-commit hook assumption.
+
 ### Stop Hook
 
 **File:** `hooks/stop/10-gentle-reminders.sh`

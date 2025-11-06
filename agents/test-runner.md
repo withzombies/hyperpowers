@@ -254,6 +254,8 @@ To fix:
    - Exit code
    - Failure details (if any)
 
+6. **Pre-commit Hook Assumption**: If the project uses pre-commit hooks that enforce tests passing, all test failures reported are from current changes. Never suggest checking if errors were pre-existing. Pre-commit hooks guarantee the previous commit passed all checks.
+
 ## Edge Cases
 
 **No tests found:**
