@@ -45,6 +45,9 @@ These rationalizations appear across multiple contexts. When you catch yourself 
 | "Subtask can reference parent for details" | NO. Subtasks must be complete. NO placeholders, NO "see parent". |
 | "I'll use placeholder and fill in later" | NO. Write actual content NOW. No meta-references like "[detailed above]". |
 | "Design field is too long, use placeholder" | Length doesn't matter. Write full content. Placeholder defeats the purpose. |
+| "Should I continue to the next task?" | YES. You have a TodoWrite plan. Execute it. Don't interrupt your own workflow. |
+| "Let me ask user's preference for remaining tasks" | NO. The user gave you the work. Do it. Only ask at natural completion points. |
+| "Should I stop here or keep going?" | Your TodoWrite list tells you. If tasks remain, continue. |
 
 ## Execution Shortcuts
 

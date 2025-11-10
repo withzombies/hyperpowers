@@ -195,7 +195,7 @@ Mark each task as in_progress when working on it, completed when user approves e
 6. **If approved:**
    - Update bd issue with expanded design using `bd update bd-3 --design "..."`
    - Mark task as completed in TodoWrite
-   - Continue to next task
+   - **IMMEDIATELY continue to next task WITHOUT asking the user**
 7. **If needs revision:**
    - Keep as in_progress
    - Revise based on feedback
@@ -204,6 +204,12 @@ Mark each task as in_progress when working on it, completed when user approves e
    - All bd issues now contain detailed implementation steps
    - Epic is ready for execution
    - Offer execution choice (hyperpowers:executing-plans skill)
+
+**CRITICAL: DO NOT ask the user if you should continue to the next task. DO NOT ask "Should I continue?" or "What's your preference?" between tasks. The TodoWrite todo list is YOUR plan. Execute it completely. The ONLY time you ask the user anything is:**
+- When presenting each task expansion for validation (step 5 above)
+- At the VERY END after ALL tasks are done, to offer execution choice (step 8 above)
+
+**Between task validations: JUST CONTINUE. No permission needed.**
 
 **DO NOT update bd issues until each task expansion is user-validated.**
 
@@ -430,6 +436,9 @@ These are violations of the skill requirements:
 | "Plan looks complete enough to ask" | Show ALL step groups with ALL steps and code. Then ask. |
 | "Too many tasks, should suggest splitting" | No artificial limits. Work on as many tasks as user specifies. |
 | "Single task is too small for this skill" | Single task expansion is valid. Use the skill. |
+| "Should I continue to the next task?" | YES. You have a TodoWrite todo list. Execute it. Don't ask. |
+| "Let me ask user's preference for remaining tasks" | NO. Continue automatically. Only ask at the VERY END about execution. |
+| "Should I stop here or continue?" | Continue. Your todo list tells you what to do. |
 | "**CRITICAL: I'll use placeholder text and fill in later**" | **NO. Write actual implementation steps NOW. NEVER use "[detailed above]", "[as specified]", or similar meta-references.** |
 | "Design field is too long, use placeholder" | Length doesn't matter. Write complete content. Placeholder defeats entire purpose of task refinement. |
 
