@@ -54,7 +54,7 @@ digraph when_to_use {
 
 **Why 3+?** With only 2 failures, overhead of coordination often exceeds sequential investigation time. With 3+, parallelization wins clearly.
 
-**Don't use when:**
+**When to avoid:**
 - Failures are related (fix one might fix others)
 - Need to understand full system state first
 - Agents would interfere with each other (editing same files)
@@ -206,7 +206,7 @@ These are timing/race condition issues. Your task:
    - Fixing bugs in abort implementation if found
    - Adjusting test expectations if testing changed behavior
 
-Do NOT just increase timeouts - find the real issue.
+Never just increase timeouts - find the real issue.
 
 Return: Summary of what you found and what you fixed.
 ```

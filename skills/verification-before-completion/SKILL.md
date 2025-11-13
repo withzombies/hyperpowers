@@ -26,39 +26,39 @@ If you haven't run the verification command in this message, you cannot claim it
 **IMPORTANT:** If your project uses pre-commit hooks that enforce passing tests:
 
 ```
-ALL test failures are from your current changes
-ALL lint errors are from your current changes
-DO NOT check if errors were "pre-existing"
+All test failures are from your current changes
+All lint errors are from your current changes
+Never check if errors were "pre-existing"
 ```
 
-**Why:** Pre-commit hooks guarantee the previous commit passed all checks. If a test fails now, it's because of changes made since the last commit.
+**Why:** Pre-commit hooks guarantee the previous commit passed all checks. If a test fails now, it's from changes since last commit.
 
-**Never do this:**
-- ❌ Check out previous commits to see if errors existed before
-- ❌ Run `git checkout <sha> && pytest` to verify errors are new
-- ❌ Claim errors are "pre-existing" when pre-commit hooks enforce quality
+**Never:**
+- Check out previous commits to see if errors existed before
+- Run `git checkout <sha> && pytest` to verify errors are new
+- Claim errors are "pre-existing" when hooks enforce quality
 
-**Always do this:**
-- ✅ Read the error message
-- ✅ Fix the error directly
-- ✅ Run tests to verify the fix
+**Always:**
+- Read the error message
+- Fix the error directly
+- Run tests to verify the fix
 
-Checking git history for errors wastes time when pre-commit hooks enforce quality standards.
+Checking git history for errors wastes time when pre-commit hooks enforce quality.
 
 ## The Gate Function
 
 ```
-BEFORE claiming any status or expressing satisfaction:
+Before claiming any status or expressing satisfaction:
 
-1. IDENTIFY: What command proves this claim?
-2. RUN: Execute the FULL command (fresh, complete)
+1. Identify: What command proves this claim?
+2. Run: Execute the full command (fresh, complete)
    - For tests/pre-commit/commits: Use hyperpowers:test-runner agent to avoid context pollution
    - Agent captures verbose output, returns only summary + failures
-3. READ: Full output, check exit code, count failures
-4. VERIFY: Does output confirm the claim?
-   - If NO: State actual status with evidence
-   - IF YES: State claim WITH evidence
-5. ONLY THEN: Make the claim
+3. Read: Full output, check exit code, count failures
+4. Verify: Does output confirm the claim?
+   - If no: State actual status with evidence
+   - If yes: State claim with evidence
+5. Only then: Make the claim
 
 Skip any step = lying, not verifying
 ```
@@ -81,16 +81,16 @@ Skip any step = lying, not verifying
 | Agent completed | VCS diff shows changes | Agent reports "success" |
 | Requirements met | Line-by-line checklist | Tests passing |
 
-## Red Flags - STOP
+## Red Flags
 
 - Using "should", "probably", "seems to"
-- Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
+- Expressing satisfaction before verification ("Great!", "Perfect!", "Done!")
 - About to commit/push/PR without verification
 - Trusting agent success reports
 - Relying on partial verification
 - Thinking "just this once"
 - Tired and wanting work over
-- **ANY wording implying success without having run verification**
+- **Any wording implying success without verification**
 
 ## Rationalization Prevention
 
@@ -186,7 +186,7 @@ cargo fmt --check && cargo clippy && cargo test
 
 2. **THEN close task**:
 ```bash
-bd status bd-3 --status closed
+bd close bd-3
 ```
 
 ### Before Closing an Epic
@@ -202,7 +202,7 @@ bd dep tree bd-1
 
 **THEN close epic**:
 ```bash
-bd status bd-1 --status closed
+bd close bd-1
 ```
 
 ## Why This Matters

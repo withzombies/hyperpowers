@@ -40,15 +40,15 @@ You MUST complete each phase before proceeding to the next.
 
 #### 1. Read Error Messages Completely
 
-**Don't skip past errors:**
-- Read entire error message, not just first line
-- Read complete stack trace, all frames
-- Note line numbers, file paths, error codes
-- Stack traces show the exact execution path
+**Read complete errors:**
+- Entire error message, not just first line
+- Complete stack trace, all frames
+- Line numbers, file paths, error codes
+- Stack traces show exact execution path
 
 #### 2. Search the Internet FIRST
 
-**When error message is unclear or unfamiliar:**
+**When error is unclear:**
 
 **Dispatch hyperpowers:internet-researcher agent with:**
 - "Search for this error: [exact error message]"
@@ -221,13 +221,13 @@ Dispatch hyperpowers:codebase-investigator:
 - Add more logging
 - Check for race conditions
 - Look for environmental differences
-- DON'T guess at fixes
+- Wait until reproducible before fixing
 
 #### 6. Check Recent Changes
 
-**IMPORTANT:** If your project uses pre-commit hooks that enforce passing tests, **skip this step for test failures**. All test failures are from your current changes because pre-commit hooks prevent commits with failures.
+**IMPORTANT:** Skip this step for test failures if pre-commit hooks enforce passing tests. All test failures are from your current changes.
 
-**Only when pre-commit hooks are NOT enforcing tests, or for non-test issues:**
+**For non-test issues, or when pre-commit hooks don't enforce tests:**
 
 **What changed that could cause this?**
 ```bash
@@ -290,7 +290,7 @@ Fix location: Add validation at API handler, not database layer
 - Are there multiple explanations for this error?
 - Is this a known bug in your version?
 
-#### 4. Form Single Hypothesis
+#### 4. Form Hypothesis
 
 **State clearly:**
 - "I think X is the root cause because Y"
@@ -382,14 +382,14 @@ Agent returns:
 
 **Did it work?**
 - YES → Proceed to Phase 4 (Implementation)
-- NO → Form NEW hypothesis, return to Phase 2
-- DON'T add more fixes on top
+- NO → Form new hypothesis, return to Phase 2
+- Never add more fixes on top
 
 **If you don't understand:**
 - Say "I don't understand X"
-- Don't pretend to know
 - Dispatch hyperpowers:internet-researcher for more research
 - Ask human partner for help
+- Never pretend to know
 
 ### Phase 4: Proper Implementation
 
@@ -447,7 +447,7 @@ References:
 "
 
 # Close issue
-bd status bd-123 --status closed
+bd close bd-123
 ```
 
 #### 5. If Fix Doesn't Work
@@ -491,21 +491,21 @@ This is NOT a failed hypothesis - this is wrong architecture.
 - **User must use:** Interactive debuggers (lldb/gdb/DevTools when stepping through)
 - **Prefer:** Automated tools (lldb batch, strace, instrumentation) over asking user
 
-## Red Flags - STOP and Follow Process
+## Red Flags
 
 If you catch yourself thinking:
 - "Quick fix for now, investigate later"
 - "Just try changing X and see if it works"
 - "Skip the debugger, print statements are faster"
 - "Skip the test, I'll manually verify"
-- "Don't need to search, I know the answer"
+- "I know the answer, don't need to search"
 - "It's probably X, let me fix that"
 - "Add multiple changes, run tests"
-- Proposing solutions before using debugger
+- Proposing solutions before debugger
 - Proposing solutions before internet research
 - **"One more fix attempt" (when already tried 2+)**
 
-**ALL of these mean: STOP. Return to Phase 1.**
+**All of these mean: Stop. Return to Phase 1.**
 
 ## Common Rationalizations - STOP
 

@@ -40,12 +40,12 @@ Cannot close epic bd-1: N tasks still open:
 Complete all tasks before finishing.
 ```
 
-Stop. Don't proceed to Step 2.
+Stop. Do not proceed to Step 2.
 
 **If all tasks closed, close the epic:**
 
 ```bash
-bd status bd-1 --status closed
+bd close bd-1
 ```
 
 ### Step 2: Verify Tests
@@ -71,7 +71,7 @@ Tests failing (<N> failures). Must fix before completing:
 Cannot proceed with merge/PR until tests pass.
 ```
 
-Stop. Don't proceed to Step 3.
+Stop. Do not proceed to Step 3.
 
 **If tests pass:** Continue to Step 3.
 

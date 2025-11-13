@@ -22,7 +22,7 @@ Use when you discover a bug:
 - Regression from recent change
 - Production issue (for non-emergencies)
 
-**For production emergencies:** This workflow is for thorough debugging and testing. For time-critical production issues, you may need to skip some steps (like full investigation before hotfix), but still track in bd and add regression tests afterward.
+**Production emergencies:** Time-critical issues may require abbreviated workflow (hotfix first, full investigation after), but still track in bd and add regression tests afterward.
 
 ## The Complete Workflow
 
@@ -64,7 +64,7 @@ Returns 500 from database
 
 **Mark as in-progress:**
 ```bash
-bd status bd-123 --status in-progress
+bd update bd-123 --status in_progress
 ```
 
 ### Step 2: Systematic Debugging
@@ -184,12 +184,11 @@ Dispatch hyperpowers:test-runner agent:
 - Verify: All tests pass, no new failures
 - Exit code: 0
 
-**If regressions found:**
-- STOP
-- Analyze why fix broke other tests
+**If regressions:**
+- Stop and analyze why fix broke other tests
 - Adjust fix
 - Re-run test suite
-- Don't proceed until all tests pass
+- Wait until all tests pass before proceeding
 
 ### Step 6: Refactor if Needed (Still GREEN)
 
@@ -244,9 +243,9 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
    - Dispatch hyperpowers:test-runner agent: "Run: cargo fmt --check"
    - Confirm: No new warnings
 
-3. **Manual verification if applicable:**
-   - Test the actual behavior manually if needed
-   - Especially for UI bugs or integration issues
+3. **Manual verification (if needed):**
+   - Test actual behavior manually
+   - Essential for UI bugs or integration issues
 
 ### Step 9: Update and Close bd Issue
 
@@ -275,7 +274,7 @@ References:
 
 **Close the issue:**
 ```bash
-bd status bd-123 --status closed
+bd close bd-123
 ```
 
 ### Step 10: Optional Code Review
@@ -319,20 +318,20 @@ When you encounter a bug, follow this checklist:
 | "Small bug, don't need full workflow" | Process is same regardless of bug size. |
 | "Just need quick fix, will do it right later" | "Later" never comes. Do it right now. |
 
-## Red Flags - STOP
+## Red Flags
 
 **Never:**
-- Fix bugs without creating bd issue
-- Fix bugs without writing regression test
-- Skip the debugging phase
-- Commit fixes without running full test suite
-- Close bd issue without verification evidence
+- Fix bugs without bd issue
+- Fix bugs without regression test
+- Skip debugging phase
+- Commit without running full test suite
+- Close bd issue without verification
 
 **Always:**
 - Track every bug in bd
 - Write failing test first
-- Use hyperpowers:debugging-with-tools systematically
-- Verify no regressions via hyperpowers:test-runner agent
+- Use hyperpowers:debugging-with-tools
+- Verify no regressions via test-runner agent
 - Document root cause in bd
 
 ## Integration with Other Skills
@@ -360,7 +359,7 @@ When you encounter a bug, follow this checklist:
 ```bash
 bd create "Bug: 500 error on empty email" --type bug --priority P1
 # Returns: bd-123
-bd status bd-123 --status in-progress
+bd update bd-123 --status in_progress
 ```
 
 ### Minutes 5-20: Investigation
@@ -407,8 +406,8 @@ Dispatch hyperpowers:test-runner: "Run: git add src/api/users.rs && git commit -
 
 ### Minutes 35-40: Close
 ```bash
-bd edit bd-123 --design "Solution: Added validation..."
-bd status bd-123 --status closed
+bd update bd-123 --design "Solution: Added validation..."
+bd close bd-123
 ```
 
 ### Minutes 40-45: PR (optional)
@@ -426,11 +425,11 @@ Use hyperpowers:finishing-a-development-branch to create PR
 - Time wasted on rework
 
 **With this workflow:**
-- Bug can't return (regression test catches it)
-- No new bugs introduced (full test suite verified)
-- Work tracked in bd (clear history)
+- Bug can't return (regression test)
+- No new bugs (full test suite verified)
+- Work tracked (clear history)
 - Root cause fixed (systematic investigation)
 - Fixed once, fixed forever
 
 **Investment:** 30-45 minutes
-**Return:** Bug stays fixed, no rework needed
+**Return:** Bug stays fixed, no rework

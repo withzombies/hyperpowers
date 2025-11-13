@@ -67,14 +67,37 @@ EOF
 
 ```bash
 # Start working on task
-bd status bd-3 --status in_progress
+bd update bd-3 --status in_progress
 
 # Complete task
-bd status bd-3 --status closed
+bd close bd-3
 
 # Reopen task
-bd status bd-3 --status open
+bd update bd-3 --status open
 ```
+
+**Common Mistakes:**
+```bash
+# ❌ WRONG - bd status shows database overview, doesn't change status
+bd status bd-3 --status in_progress
+
+# ✅ CORRECT - use bd update to change status
+bd update bd-3 --status in_progress
+
+# ❌ WRONG - using hyphens in status values
+bd update bd-3 --status in-progress
+
+# ✅ CORRECT - use underscores in status values
+bd update bd-3 --status in_progress
+
+# ❌ WRONG - 'done' is not a valid status
+bd update bd-3 --status done
+
+# ✅ CORRECT - use bd close to complete
+bd close bd-3
+```
+
+**Valid status values:** `open`, `in_progress`, `blocked`, `closed`
 
 ## Managing Dependencies
 

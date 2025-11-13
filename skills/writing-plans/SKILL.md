@@ -420,7 +420,7 @@ EOF
 )"
 ```
 
-## Common Rationalizations - STOP
+## Common Rationalizations
 
 These are violations of the skill requirements:
 

@@ -52,7 +52,7 @@ The entire skill creation process follows RED-GREEN-REFACTOR.
 - Pattern applies broadly (not project-specific)
 - Others would benefit
 
-**Don't create for:**
+**Never create for:**
 - One-off solutions
 - Standard practices well-documented elsewhere
 - Project-specific conventions (put in CLAUDE.md)
@@ -115,7 +115,7 @@ What is this? Core principle in 1-2 sentences.
 [Small inline flowchart IF decision non-obvious]
 
 Bullet list with SYMPTOMS and use cases
-When NOT to use
+When to avoid
 
 ## Core Pattern (for techniques/patterns)
 Before/after code comparison

@@ -50,7 +50,7 @@ Result: ✓ All tests pass
 3. Verification: Tests pass
 4. Update bd:
    ```bash
-   bd status bd-123 --status closed
+   bd close bd-123
    ```
 
 **Time:** 15 minutes systematic vs. 2+ hours guessing

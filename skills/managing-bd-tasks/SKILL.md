@@ -31,7 +31,7 @@ Use this skill when you need to:
 
 **When:** Task is in-progress but turns out too large for one sitting.
 
-**Example scenario:**
+**Example:**
 ```
 Started bd-5: "Implement user authentication"
 Realize it needs:
@@ -130,7 +130,7 @@ Implement user authentication.
 "
 
 # Close bd-5 since remaining work is tracked in subtasks
-bd status bd-5 --status closed
+bd close bd-5 --reason "Split into subtasks bd-10, bd-11"
 ```
 
 #### Step 4: Work on subtasks in order
@@ -140,12 +140,12 @@ bd status bd-5 --status closed
 bd ready
 
 # Start with bd-14 (no dependencies)
-bd status bd-14 --status in-progress
+bd update bd-14 --status in_progress
 # Complete bd-14...
-bd status bd-14 --status closed
+bd close bd-14
 
 # Now bd-12 is unblocked
-bd status bd-12 --status in-progress
+bd update bd-12 --status in_progress
 # etc.
 ```
 
@@ -217,7 +217,7 @@ DUPLICATE: Merged into bd-7
 This task was a duplicate of bd-7. All work is tracked there.
 "
 
-bd status bd-9 --status closed
+bd close bd-9
 ```
 
 ### Operation 3: Changing Dependencies After Work Started
@@ -261,10 +261,10 @@ bd show bd-10 | grep "Blocking"
 bd list --parent bd-1 --status open
 # Output: [empty] = all tasks closed
 
-# Archive the epic
-bd status bd-1 --status archived
+# Archive the epic by closing with a reason
+bd close bd-1 --reason "Archived - no longer relevant"
 
-# Archived epics don't show in normal listings
+# Closed epics don't show in open listings
 bd list --status open
 # bd-1 won't appear
 
@@ -273,20 +273,22 @@ bd show bd-1
 # Still shows full epic
 ```
 
-**Use archived status for:**
+**Use archived for:**
 - Completed epics (not actively working on)
 - Old features (shipped to production)
 - Historical reference (keep for learning)
 
-**Don't use archived for:**
-- Active work (use open/in-progress)
-- Cancelled work (use closed with note explaining why)
+**Use open/in-progress for:**
+- Active work
+
+**Use closed with note for:**
+- Cancelled work (explain why)
 
 ### Operation 5: Querying bd for Metrics
 
 **Common queries:**
 
-#### Velocity (tasks completed per time period)
+#### Velocity
 
 ```bash
 # Tasks closed this week
@@ -387,7 +389,7 @@ cat test-tasks.txt
 
 # Update each one
 while read task_id; do
-  bd status "$task_id" --status closed
+  bd close "$task_id"
 done < test-tasks.txt
 
 # Verify
@@ -400,7 +402,7 @@ bd list --parent bd-1 --status open | grep "test:"
 - Reopening related tasks
 - Updating priorities for sprint
 
-**Don't use for:**
+**Never use bulk updates for:**
 - Thoughtless status changes
 - Hiding problems (closing tasks that aren't done)
 
@@ -410,10 +412,10 @@ bd list --parent bd-1 --status open | grep "test:"
 
 ```bash
 # Reopen it
-bd status bd-15 --status open
+bd update bd-15 --status open
 
 # Or if work in progress
-bd status bd-15 --status in-progress
+bd update bd-15 --status in_progress
 ```
 
 #### Wrong Dependency Added
@@ -494,20 +496,20 @@ bd edit bd-10 --design "
 | Split task | Create subtasks, add dependencies, close parent | Keep parent as summary |
 | Merge duplicates | Combine designs, move deps, close duplicate | Document merge in both |
 | Change dependency | `bd dep remove`, then `bd dep add` | Update both tasks |
-| Archive epic | `bd status bd-X --status archived` | All tasks must be closed first |
+| Archive epic | `bd close bd-X --reason "Archived"` | All tasks must be closed first |
 | Count progress | `bd list --parent bd-X` + `wc -l` | Compare open vs closed |
 | Find bottlenecks | List deps, count blockers | Tasks blocking most others |
 | Cross-epic dep | `bd dep add` works across epics | Document clearly |
 | Bulk update | Loop with `bd status` | Review list first |
 | Undo mistake | `bd status` to reopen/reclose | No built-in undo |
 
-## Remember
+## Summary
 
 - **bd is single source of truth** - Keep it accurate
-- **Split large tasks** before they become blocking
-- **Merge duplicates** don't just close
-- **Dependencies enable flow** - Use them correctly
+- **Split large tasks** - Before they become blocking
+- **Merge duplicates** - Never just close
+- **Use dependencies** - They enable flow
 - **Track all work** - No exceptions
-- **Update as you go** - Don't batch updates
+- **Update as you go** - Never batch updates
 
 Advanced bd operations keep your workflow organized and transparent.

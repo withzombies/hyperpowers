@@ -427,7 +427,7 @@ Combine all guidelines into CLAUDE.md instead of separate skills:
 
 **Recommendation:** Use hook system (Level 3) if working on large projects with established patterns. Use official solutions (Level 1) for smaller projects or when starting out.
 
-## Common Rationalizations - STOP
+## Common Rationalizations
 
 | Excuse | Reality |
 |--------|---------|
@@ -437,7 +437,7 @@ Combine all guidelines into CLAUDE.md instead of separate skills:
 | "Improving descriptions will fix it" | Helps, but not deterministic. Hook makes it deterministic. |
 | "This is overkill for my project" | Maybe. Start with Level 1, upgrade if needed. |
 
-## Red Flags - STOP
+## Red Flags
 
 **Watch for these patterns:**
 - Building hook without testing Level 1 solutions first

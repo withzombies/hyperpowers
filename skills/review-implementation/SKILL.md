@@ -15,9 +15,9 @@ Review completed implementation against bd epic specification to catch gaps befo
 
 **Announce at start:** "I'm using the hyperpowers:review-implementation skill to verify the implementation matches the spec. I'm reviewing this with Google Fellow-level scrutiny."
 
-**Context:** This runs after hyperpowers:executing-plans completes all tasks but before hyperpowers:finishing-a-development-branch.
+**Context:** Run this after hyperpowers:executing-plans completes all tasks but before hyperpowers:finishing-a-development-branch.
 
-**CRITICAL:** NEVER read `.beads/issues.jsonl` directly. ALWAYS use `bd show`, `bd list`, and `bd dep tree` commands to read task specifications. The bd CLI provides the correct interface.
+**CRITICAL:** Use bd commands (bd show, bd list, bd dep tree) to read task specifications. The bd CLI is the correct interface, not .beads/issues.jsonl.
 
 ## The Process
 
@@ -95,9 +95,9 @@ hyperpowers:test-runner: "Run linter: cargo clippy -- -D warnings"
 hyperpowers:test-runner: "Run pre-commit: .git/hooks/pre-commit"
 ```
 
-**3. READ Implementation Files:**
+**3. Read Implementation Files:**
 
-**CRITICAL: You MUST read the actual code, not just check git diff.**
+**CRITICAL:** Read the actual code, not just git diff.
 
 For each file in the implementation checklist:
 
@@ -348,7 +348,7 @@ For each task, verify:
 | **"Automated checks cover quality"** | **NO. Automated checks + code review both required. Read the code.** |
 | **"Success criteria passing means done"** | **NO. Also check: anti-patterns, code quality, edge cases. Read the code.** |
 
-## Red Flags - STOP
+## Red Flags
 
 **Never:**
 - Skip reviewing a task "because it's simple"
@@ -457,7 +457,7 @@ hyperpowers:executing-plans → hyperpowers:review-implementation → hyperpower
    - Result doesn't solve original problem
    - Review catches misalignment
 
-## Remember
+## Summary
 
 - Spec (bd tasks) is the contract
 - Implementation must fulfill contract completely

@@ -37,12 +37,12 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 Write code before the test? Delete it. Start over.
 
 **No exceptions:**
-- Don't keep it as "reference"
-- Don't "adapt" it while writing tests
-- Don't look at it
+- Never keep as "reference"
+- Never "adapt" while writing tests
+- Never look at it
 - Delete means delete
 
-Implement fresh from tests. Period.
+Implement fresh from tests.
 
 ## Red-Green-Refactor
 
@@ -225,7 +225,7 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 | "Manual test faster" | Manual doesn't prove edge cases. You'll re-test every change. |
 | "Existing code has no tests" | You're improving it. Add tests for existing code. |
 
-## Red Flags - STOP and Start Over
+## Red Flags
 
 - Code before test
 - Test after implementation

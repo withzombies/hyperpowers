@@ -21,10 +21,10 @@ Use hooks when you need:
 - **Error prevention** (catching issues before they compound)
 - **Consistent behavior** (formatting, conventions, standards)
 
-**Do NOT use hooks for:**
+**Never use hooks for:**
 - Complex business logic (use tools/scripts instead)
 - Slow operations that block workflow (use background jobs)
-- Anything that requires LLM reasoning (hooks are deterministic)
+- Anything requiring LLM reasoning (hooks are deterministic)
 
 ## Hook Lifecycle Events
 
@@ -331,7 +331,7 @@ if [ -f "$file" ]; then
 fi
 ```
 
-## Common Rationalizations - STOP
+## Common Rationalizations
 
 | Excuse | Reality |
 |--------|---------|

@@ -23,7 +23,7 @@ Use this skill when:
 - Simplifying complex code
 - Improving performance (while preserving behavior)
 
-**Do NOT use for:**
+**Never use for:**
 - Changing functionality (use feature development instead)
 - Fixing bugs (use hyperpowers:fixing-bugs instead)
 - Adding new features while restructuring (do separately)
@@ -60,7 +60,7 @@ Use this skill when:
 2. **Coexist:** Both systems run in parallel (façade routes requests)
 3. **Eliminate:** Retire old functionality piece by piece
 
-**Example scenario:**
+**Example:**
 ```
 Legacy: Monolithic user service with 50K LOC
 Goal: Microservices architecture
@@ -94,10 +94,10 @@ Step 3 (Eliminate):
 - Use Strangler Fig for replacing entire legacy systems
 - Combination: Refactor legacy → Strangler Fig to new architecture → Refactor new
 
-**When NOT to use:**
+**When to avoid:**
 - Simple refactoring will suffice (overhead not justified)
 - Need immediate complete replacement (regulatory, security)
-- No ability to run parallel systems (resource constraints)
+- Cannot run parallel systems (resource constraints)
 
 ## The Safe Refactoring Process
 
@@ -151,7 +151,7 @@ Extract user validation logic from UserService into separate Validator class.
 - Validator class has 100% test coverage
 "
 
-bd status bd-456 --status in-progress
+bd update bd-456 --status in_progress
 ```
 
 ### Step 3: Make ONE Small Change
@@ -165,7 +165,7 @@ bd status bd-456 --status in-progress
 - Inline one constant
 - Extract one interface
 
-**NOT small:**
+**Not small:**
 - Extracting multiple methods at once
 - Renaming + moving + restructuring
 - "While I'm here" improvements
@@ -311,7 +311,7 @@ bd edit bd-456 --design "
 Commits: 8 small transformations, each tested
 "
 
-bd status bd-456 --status closed
+bd close bd-456
 ```
 
 ## Common Refactoring Patterns
@@ -324,9 +324,9 @@ bd status bd-456 --status closed
 
 **See:** [resources/refactoring-patterns.md](resources/refactoring-patterns.md)
 
-## Refactoring Anti-Patterns - STOP
+## Refactoring Anti-Patterns
 
-**Never do these:**
+**Never:**
 
 ### Changing Behavior While Refactoring
 
@@ -437,17 +437,17 @@ Change 10 files, extract 5 classes, rename everything, THEN test
 - Git for committing each small step
 - hyperpowers:test-runner agent for verification
 
-## Red Flags - STOP
+## Red Flags
 
 If you catch yourself thinking:
-- "I'll test after refactoring" → Wrong. Test after EACH change.
+- "I'll test after refactoring" → Wrong. Test after each change.
 - "This is just refactoring" (while changing behavior) → Wrong. That's rewriting.
 - "Tests will fail temporarily" → Wrong. Tests must stay green.
 - "I'll commit when done" → Wrong. Commit each small change.
 - "While I'm here..." → Wrong. One refactoring at a time.
 - "No tests, but it's simple" → Wrong. Write tests first.
 
-**ALL of these mean: STOP. Return to the process.**
+**All of these mean: Stop. Return to the process.**
 
 ## Common Rationalizations
 
@@ -470,10 +470,10 @@ If you catch yourself thinking:
 
 **See:** [resources/example-session.md](resources/example-session.md)
 
-## Remember
+## Summary
 
-- **Tests MUST stay green** throughout refactoring
-- **Commit after EACH small change**
+- **Tests must stay green** throughout refactoring
+- **Commit after each small change**
 - **One transformation at a time**
 - **Behavior changes ≠ refactoring**
 - **3+ failures = question approach**
