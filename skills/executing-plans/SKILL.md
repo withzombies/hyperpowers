@@ -1,16 +1,16 @@
 ---
 name: executing-plans
-description: Use to execute bd tasks iteratively - reads epic, executes task, reviews learnings, creates next task, repeats until success criteria met
+description: Use to execute bd tasks iteratively - executes one task, reviews learnings, creates/refines next task, then STOPS for user review before continuing
 ---
 
 <skill_overview>
-Execute bd tasks iteratively: Load epic → Execute task → Review learnings → Create next task → Repeat until success criteria met. Epic requirements are immutable, tasks adapt to reality.
+Execute bd tasks one at a time with mandatory checkpoints: Load epic → Execute task → Review learnings → Create next task → Run SRE refinement → STOP. User clears context, reviews implementation, then runs command again to continue. Epic requirements are immutable, tasks adapt to reality.
 </skill_overview>
 
 <rigidity_level>
-LOW FREEDOM - Follow exact process: load epic, execute task, review, create next task.
+LOW FREEDOM - Follow exact process: load epic, execute ONE task, review, create next task with SRE refinement, STOP.
 
-Epic requirements are immutable. Tasks adapt to discoveries. Do not skip review or close tasks without verification.
+Epic requirements are immutable. Tasks adapt to discoveries. Do not skip checkpoints, SRE refinement, or verification. STOP after each task for user review.
 </rigidity_level>
 
 <quick_reference>
@@ -24,9 +24,11 @@ Epic requirements are immutable. Tasks adapt to discoveries. Do not skip review 
 | **Close Task** | `bd close bd-2` | Mark task complete after verification |
 | **Review** | Re-read epic, check learnings | Adapt next task to reality |
 | **Create Next** | `bd create "Task N"` | Based on learnings, not assumptions |
+| **Refine** | Use `sre-task-refinement` skill | Corner-case analysis with Opus 4.1 |
+| **STOP** | Present summary to user | User reviews, clears context, runs command again |
 | **Final Check** | Use `review-implementation` skill | Verify all success criteria before closing epic |
 
-**Critical:** Epic = contract (immutable). Tasks = discovery (adapt to reality).
+**Critical:** Epic = contract (immutable). Tasks = discovery (adapt to reality). STOP after each task for user review.
 
 </quick_reference>
 
@@ -41,6 +43,30 @@ Symptoms you need this:
 </when_to_use>
 
 <the_process>
+
+## 0. Resumption Check (Every Invocation)
+
+This skill supports explicit resumption. When invoked:
+
+```bash
+bd list --type epic --status open  # Find active epic
+bd ready                           # Check for ready tasks
+bd list --status in_progress       # Check for in-progress tasks
+```
+
+**Fresh start:** No in-progress tasks, proceed to Step 1.
+
+**Resuming:** Found ready or in-progress tasks:
+- In-progress task exists → Resume at Step 2 (continue executing)
+- Ready task exists → Resume at Step 2 (start executing)
+- All tasks closed but epic open → Resume at Step 4 (check criteria)
+
+**Why resumption matters:**
+- User cleared context between tasks (intended workflow)
+- Context limit reached mid-task
+- Previous session ended unexpectedly
+
+**Do not ask "where did we leave off?"** - bd state tells you exactly where to resume.
 
 ## 1. Load Epic Context (Once at Start)
 
@@ -141,14 +167,61 @@ bd dep add bd-N bd-1 --type parent-child
 bd dep add bd-N bd-2 --type blocks
 ```
 
-## 4. Check Epic Success Criteria
+**REQUIRED - Run SRE refinement on new task:**
+```
+Use Skill tool: hyperpowers:sre-task-refinement
+```
+
+SRE refinement will:
+- Apply 7-category corner-case analysis (Opus 4.1)
+- Identify edge cases and failure modes
+- Strengthen success criteria
+- Ensure task is ready for implementation
+
+**Do NOT skip SRE refinement.** New tasks need the same rigor as initial planning.
+
+## 4. Check Epic Success Criteria and STOP
 
 ```bash
 bd show bd-1  # Check success criteria
 ```
 
 - ALL criteria met? → Step 5 (final validation)
-- Some missing? → Step 2 (next task)
+- Some missing? → **STOP for user review**
+
+## 4a. STOP Checkpoint (Mandatory)
+
+**Present summary to user:**
+
+```markdown
+## Task bd-N Complete - Checkpoint
+
+### What Was Done
+- [Summary of implementation]
+- [Key learnings/discoveries]
+
+### Next Task Ready
+- bd-M: [Title]
+- [Brief description of what's next]
+
+### Epic Progress
+- [X/Y success criteria met]
+- [Remaining criteria]
+
+### To Continue
+Run `/hyperpowers:execute-plan` to execute the next task.
+```
+
+**Why STOP is mandatory:**
+- User can clear context (prevents context exhaustion)
+- User can review implementation before next task
+- User can adjust next task if needed
+- Prevents runaway execution without oversight
+
+**Do NOT rationalize skipping the stop:**
+- "Good context loaded" → Context reloads are cheap, wrong decisions aren't
+- "Momentum" → Checkpoints ensure quality over speed
+- "User didn't ask to stop" → Stopping is the default, continuing requires explicit command
 
 ## 5. Final Validation and Closure
 
@@ -323,37 +396,113 @@ Is there existing test DB infrastructure I should use?"
 </correction>
 </example>
 
+<example>
+<scenario>Developer skips STOP checkpoint to "maintain momentum"</scenario>
+
+<code>
+Just completed bd-2 (authentication middleware).
+Created bd-3 (rate limiting endpoint).
+Ran SRE refinement on bd-3.
+
+Developer thinks: "Good context loaded, I'll just do bd-3 quickly then stop.
+User approved the epic, they trust me to execute it.
+Stopping now is inefficient."
+
+Continues directly to execute bd-3 without STOP checkpoint.
+</code>
+
+<why_it_fails>
+**Multiple failures:**
+- User can't review bd-2 implementation before bd-3 starts
+- User can't clear context (may hit context limit mid-task)
+- User can't adjust bd-3 based on bd-2 learnings
+- No checkpoint = no oversight
+
+**The rationalization trap:**
+- "Good context" sounds efficient but prevents review
+- "User trust" misinterprets approval (one command ≠ blanket permission)
+- "Quick task" becomes long task when issues arise
+
+**What actually happens:**
+- bd-3 hits unexpected issue
+- Context exhausted trying to debug
+- User returns to find 2 half-finished tasks instead of 1 complete task
+</why_it_fails>
+
+<correction>
+**Follow the STOP checkpoint:**
+
+1. After completing bd-2 and refining bd-3:
+```markdown
+## Task bd-2 Complete - Checkpoint
+
+### What Was Done
+- Implemented JWT middleware with validation
+- Added token refresh handling
+
+### Next Task Ready
+- bd-3: Implement rate limiting
+- Adds rate limiting to auth endpoints
+
+### Epic Progress
+- 2/4 success criteria met
+- Remaining: password reset, rate limiting
+
+### To Continue
+Run `/hyperpowers:execute-plan` to execute the next task.
+```
+
+2. **STOP and wait for user**
+
+**Result:** User can review, clear context, adjust next task. Each task completes with full oversight.
+</correction>
+</example>
+
 </examples>
 
 <critical_rules>
 
 ## Rules That Have No Exceptions
 
-1. **Epic requirements are immutable** → Never water down when blocked
+1. **STOP after each task** → Present summary, wait for user to run command again
+   - User needs checkpoint to review implementation
+   - User may need to clear context
+   - Continuous execution = no oversight
+
+2. **SRE refinement for new tasks** → Never skip corner-case analysis
+   - New tasks created during execution need same rigor as initial planning
+   - Use Opus 4.1 for thorough analysis
+   - Tasks without refinement will miss edge cases
+
+3. **Epic requirements are immutable** → Never water down when blocked
    - If blocked: Research solution or ask user
    - Never violate anti-patterns to "make it easier"
 
-2. **All substeps must be completed** → Never close task with pending substeps
+4. **All substeps must be completed** → Never close task with pending substeps
    - Check TodoWrite before closing
    - "Mostly done" = incomplete = will cause issues
 
-3. **Plan invalidation is allowed** → Delete redundant tasks
+5. **Plan invalidation is allowed** → Delete redundant tasks
    - If discovered existing functionality: Delete duplicate task
    - If discovered blocker: Update or delete invalid task
    - Document what you found and why
 
-4. **Review before closing epic** → Use review-implementation skill
+6. **Review before closing epic** → Use review-implementation skill
    - Tasks done ≠ success criteria met
    - All criteria must be verified before closing
 
 ## Common Excuses
 
-All of these mean: Re-read epic, check anti-patterns, ask for help:
-- "This requirement is too hard"
-- "I'll come back to this later"
-- "Let me fake this to make tests pass"
-- "Existing task is wasteful, but it's planned"
-- "All tasks done, epic must be complete"
+All of these mean: Re-read epic, STOP as required, ask for help:
+- "Good context loaded, don't want to lose it" → STOP anyway, context reloads
+- "Just one more quick task" → STOP anyway, user needs checkpoint
+- "User didn't ask me to stop" → Stopping is default, continuing requires explicit command
+- "SRE refinement is overkill for this task" → Every task needs refinement, no exceptions
+- "This requirement is too hard" → Research or ask, don't water down
+- "I'll come back to this later" → Complete now or document why blocked
+- "Let me fake this to make tests pass" → Never, defeats purpose
+- "Existing task is wasteful, but it's planned" → Delete it, plan adapts to reality
+- "All tasks done, epic must be complete" → Verify with review-implementation
 
 </critical_rules>
 
@@ -364,6 +513,13 @@ Before closing each task:
 - [ ] Tests passing (use test-runner agent)
 - [ ] Changes committed
 - [ ] Task actually done (not "mostly")
+
+After closing each task:
+- [ ] Reviewed learnings against epic
+- [ ] Created/updated next task based on reality
+- [ ] Ran SRE refinement on any new tasks
+- [ ] Presented STOP checkpoint summary to user
+- [ ] STOPPED execution (do not continue to next task)
 
 Before closing epic:
 - [ ] ALL success criteria met (check epic)
@@ -377,6 +533,7 @@ Before closing epic:
 
 **This skill calls:**
 - writing-plans (creates epic and first task before this runs)
+- sre-task-refinement (REQUIRED for new tasks created during execution)
 - test-driven-development (when implementing features)
 - test-runner (for running tests without output pollution)
 - review-implementation (final validation before closing epic)
@@ -385,9 +542,18 @@ Before closing epic:
 **This skill is called by:**
 - User (via /hyperpowers:execute-plan command)
 - After writing-plans creates epic
+- Explicitly to resume after checkpoint (user runs command again)
 
 **Agents used:**
 - hyperpowers:test-runner (run tests, return summary only)
+
+**Workflow pattern:**
+```
+/hyperpowers:execute-plan → Execute task → STOP
+[User clears context, reviews]
+/hyperpowers:execute-plan → Execute next task → STOP
+[Repeat until epic complete]
+```
 
 </integration>
 

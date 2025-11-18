@@ -782,11 +782,18 @@ Before completing SRE review:
 **This skill is used before:**
 - hyperpowers:executing-plans (implements tasks)
 
-**Call chain:**
+**This skill is also called by:**
+- hyperpowers:executing-plans (REQUIRED for new tasks created during execution)
+
+**Call chains:**
 ```
+Initial planning:
 hyperpowers:brainstorming → hyperpowers:writing-plans → hyperpowers:sre-task-refinement → hyperpowers:executing-plans
                                                     ↓
                                             (if gaps: revise and re-review)
+
+During execution (for new tasks):
+hyperpowers:executing-plans → creates new task → hyperpowers:sre-task-refinement → STOP checkpoint
 ```
 
 **This skill uses:**
