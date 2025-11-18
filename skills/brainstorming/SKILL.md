@@ -49,10 +49,14 @@ HIGH FREEDOM - Adapt Socratic questioning to context, but always create immutabl
 - Dispatch `hyperpowers:codebase-investigator` for existing patterns
 - Dispatch `hyperpowers:internet-researcher` for external APIs/libraries
 
-**Ask questions one at a time:**
-- Prefer multiple choice (easier to answer)
+**REQUIRED: Use AskUserQuestion tool for all questions**
+- One question at a time (don't batch multiple questions)
+- Prefer multiple choice options (easier to answer)
+- Wait for response before asking next question
 - Focus on: purpose, constraints, success criteria
 - Gather enough context to propose approaches
+
+**Do NOT just print questions and wait for "yes"** - use the AskUserQuestion tool.
 
 **Example questions:**
 - "What problem does this solve for users?"
@@ -194,13 +198,29 @@ bd dep add bd-2 bd-1 --type parent-child  # Link to epic
 
 ---
 
-## 6. Handoff to Execution
+## 6. SRE Refinement and Handoff
 
 After epic and first task created:
 
+**REQUIRED: Run SRE refinement before handoff**
+
+```
+Use Skill tool: hyperpowers:sre-task-refinement
+```
+
+SRE refinement will:
+- Apply 7-category corner-case analysis (Opus 4.1)
+- Strengthen success criteria
+- Identify edge cases and failure modes
+- Ensure task is ready for implementation
+
+**Do NOT skip SRE refinement.** The first task sets the pattern for the entire epic.
+
+**After refinement approved, present handoff:**
+
 ```
 "Epic bd-1 is ready with immutable requirements and success criteria.
-First task bd-2 is ready to execute.
+First task bd-2 has been refined and is ready to execute.
 
 Ready to start implementation? I'll use executing-plans to work through this iteratively.
 
@@ -208,7 +228,8 @@ The executing-plans skill will:
 1. Execute the current task
 2. Review what was learned against epic requirements
 3. Create next task based on current reality
-4. Repeat until all epic success criteria met
+4. Run SRE refinement on new tasks
+5. Repeat until all epic success criteria met
 
 This approach avoids brittle upfront planning - each task adapts to what we learn."
 ```
@@ -428,11 +449,13 @@ bd create "Epic: OAuth Authentication" --design "
 <critical_rules>
 ## Rules That Have No Exceptions
 
-1. **Research BEFORE proposing** → Use agents to understand context
-2. **Propose 2-3 approaches** → Don't jump to single solution
-3. **Epic requirements IMMUTABLE** → Tasks adapt, requirements don't
-4. **Include anti-patterns section** → Prevents watering down requirements
-5. **Create ONLY first task** → Subsequent tasks created iteratively
+1. **Use AskUserQuestion tool** → Don't just print questions and wait
+2. **Research BEFORE proposing** → Use agents to understand context
+3. **Propose 2-3 approaches** → Don't jump to single solution
+4. **Epic requirements IMMUTABLE** → Tasks adapt, requirements don't
+5. **Include anti-patterns section** → Prevents watering down requirements
+6. **Create ONLY first task** → Subsequent tasks created iteratively
+7. **Run SRE refinement** → Before handoff to executing-plans
 
 ## Common Excuses
 
@@ -443,12 +466,15 @@ All of these mean: **STOP. Follow the process.**
 - "Can plan all tasks upfront" (Plans become brittle, tasks adapt as you learn)
 - "Anti-patterns section overkill" (Prevents rationalization under pressure)
 - "Epic can evolve" (Requirements contract, tasks evolve)
+- "Can just print questions" (Use AskUserQuestion tool - it's more interactive)
+- "SRE refinement overkill for first task" (First task sets pattern for entire epic)
+- "User said yes, design is done" (Still need SRE refinement before execution)
 </critical_rules>
 
 <verification_checklist>
 Before handing off to executing-plans:
 
-- [ ] Asked clarifying questions (one at a time)
+- [ ] Used AskUserQuestion tool for clarifying questions (one at a time)
 - [ ] Researched codebase patterns (if applicable)
 - [ ] Researched external docs/libraries (if applicable)
 - [ ] Proposed 2-3 approaches with trade-offs
@@ -458,7 +484,8 @@ Before handing off to executing-plans:
 - [ ] Anti-patterns section prevents shortcuts
 - [ ] Created ONLY first task (not full tree)
 - [ ] First task has detailed implementation checklist
-- [ ] Announced handoff to executing-plans
+- [ ] Ran SRE refinement on first task (hyperpowers:sre-task-refinement)
+- [ ] Announced handoff to executing-plans after refinement approved
 
 **Can't check all boxes?** Return to process and complete missing steps.
 </verification_checklist>
@@ -467,7 +494,13 @@ Before handing off to executing-plans:
 **This skill calls:**
 - hyperpowers:codebase-investigator (for finding existing patterns)
 - hyperpowers:internet-researcher (for external documentation)
-- hyperpowers:executing-plans (handoff after design complete)
+- hyperpowers:sre-task-refinement (REQUIRED before handoff to executing-plans)
+- hyperpowers:executing-plans (handoff after refinement approved)
+
+**Call chain:**
+```
+brainstorming → sre-task-refinement → executing-plans
+```
 
 **This skill is called by:**
 - hyperpowers:using-hyper (mandatory before writing code)
@@ -477,6 +510,9 @@ Before handing off to executing-plans:
 **Agents used:**
 - codebase-investigator (understand existing code)
 - internet-researcher (find external documentation)
+
+**Tools required:**
+- AskUserQuestion (for all clarifying questions)
 </integration>
 
 <resources>
