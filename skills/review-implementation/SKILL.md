@@ -1,258 +1,289 @@
 ---
 name: review-implementation
-description: Use after hyperpowers:executing-plans completes all tasks to review implementation against bd spec - verifies all success criteria met, anti-patterns avoided, and nothing missed before declaring work complete
+description: Use after hyperpowers:executing-plans completes all tasks - verifies implementation against bd spec, all success criteria met, anti-patterns avoided
 ---
 
-# Review Implementation
+<skill_overview>
+Review completed implementation against bd epic to catch gaps before claiming completion; spec is contract, implementation must fulfill contract completely.
+</skill_overview>
 
-## Overview
+<rigidity_level>
+LOW FREEDOM - Follow the 4-step review process exactly. Review with Google Fellow-level scrutiny. Never skip automated checks, quality gates, or code reading. No approval without evidence for every criterion.
+</rigidity_level>
 
-Review completed implementation against bd epic specification to catch gaps before claiming completion.
+<quick_reference>
+| Step | Action | Deliverable |
+|------|--------|-------------|
+| 1 | Load bd epic + all tasks | TodoWrite with tasks to review |
+| 2 | Review each task (automated checks, quality gates, read code, verify criteria) | Findings per task |
+| 3 | Report findings (approved / gaps found) | Review decision |
+| 4 | Gate: If approved → finishing-a-development-branch, If gaps → STOP | Next action |
 
-**Review Perspective:** You are a **Google Fellow-level SRE with 20+ years of production experience** reviewing code written by a **junior engineer**. Apply rigorous production standards.
+**Review Perspective:** Google Fellow-level SRE with 20+ years experience reviewing junior engineer code.
+</quick_reference>
 
-**Core principle:** Implementation must match spec. Success criteria are the contract.
+<when_to_use>
+- hyperpowers:executing-plans completed all tasks
+- Before claiming work is complete
+- Before hyperpowers:finishing-a-development-branch
+- Want to verify implementation matches spec
 
-**Announce at start:** "I'm using the hyperpowers:review-implementation skill to verify the implementation matches the spec. I'm reviewing this with Google Fellow-level scrutiny."
+**Don't use for:**
+- Mid-implementation (use hyperpowers:executing-plans)
+- Before all tasks done
+- Code reviews of external PRs (this is self-review)
+</when_to_use>
 
-**Context:** Run this after hyperpowers:executing-plans completes all tasks but before hyperpowers:finishing-a-development-branch.
+<the_process>
+## Step 1: Load Epic Specification
 
-**CRITICAL:** Use bd commands (bd show, bd list, bd dep tree) to read task specifications. The bd CLI is the correct interface, not .beads/issues.jsonl.
+**Announce:** "I'm using hyperpowers:review-implementation to verify implementation matches spec. Reviewing with Google Fellow-level scrutiny."
 
-## The Process
-
-### Step 1: Load Epic Specification from bd
-
-**Get the epic and all tasks:**
+**Get epic and tasks:**
 
 ```bash
-# Show epic
-bd show bd-1
-
-# Get all tasks in epic
-bd dep tree bd-1
-
-# List all tasks for detailed review
-bd list --parent bd-1
+bd show bd-1          # Epic specification
+bd dep tree bd-1      # Task tree
+bd list --parent bd-1 # All tasks
 ```
 
-**Create TodoWrite tracker with all task IDs to review.**
+**Create TodoWrite tracker:**
 
-### Step 2: Review Each Task Against Implementation
+```
+TodoWrite todos:
+- Review bd-2: Task Name
+- Review bd-3: Task Name
+- Review bd-4: Task Name
+- Compile findings and make decision
+```
 
-For each task in the epic:
+---
 
-**A. Read task specification:**
+## Step 2: Review Each Task
+
+For each task:
+
+### A. Read Task Specification
 
 ```bash
 bd show bd-3
 ```
 
-**B. Identify what was supposed to be delivered:**
-- Goal (what problem does this solve?)
-- Success criteria (how do we know it's done?)
-- Implementation checklist (what files/functions/tests?)
-- Key considerations (what edge cases matter?)
-- Anti-patterns (what must be avoided?)
+Extract:
+- Goal (what problem solved?)
+- Success criteria (how verify done?)
+- Implementation checklist (files/functions/tests)
+- Key considerations (edge cases)
+- Anti-patterns (prohibited patterns)
 
-**C. Review actual implementation:**
+---
 
-**1. Run Automated Code Completeness Checks:**
+### B. Run Automated Code Completeness Checks
 
 ```bash
-# Check for TODOs/FIXMEs without issue numbers
-echo "🔍 Checking for TODOs/FIXMEs..."
-rg -i "todo|fixme" src/ tests/ || echo "✅ No TODOs/FIXMEs found"
+# TODOs/FIXMEs without issue numbers
+rg -i "todo|fixme" src/ tests/ || echo "✅ None"
 
-# Check for stub implementations
-echo "🔧 Checking for stub implementations..."
-rg "unimplemented!|todo!|unreachable!|panic!\(\"not implemented" src/ || echo "✅ No stubs found"
+# Stub implementations
+rg "unimplemented!|todo!|unreachable!|panic!\(\"not implemented" src/ || echo "✅ None"
 
-# Check for unsafe error handling in production code
-echo "⚠️  Checking for unsafe patterns in production..."
-rg "\.unwrap\(\)|\.expect\(" src/ | grep -v "/tests/" || echo "✅ No unsafe patterns in production"
+# Unsafe patterns in production
+rg "\.unwrap\(\)|\.expect\(" src/ | grep -v "/tests/" || echo "✅ None"
 
-# Check for ignored/skipped tests
-echo "🚫 Checking for ignored/skipped tests..."
-rg "#\[ignore\]|#\[skip\]|\.skip\(\)" tests/ src/ || echo "✅ No ignored tests"
+# Ignored/skipped tests
+rg "#\[ignore\]|#\[skip\]|\.skip\(\)" tests/ src/ || echo "✅ None"
 ```
 
-**2. Run Quality Gate Checks:**
+---
 
-Dispatch **hyperpowers:test-runner agent** for each quality gate:
+### C. Run Quality Gates (via test-runner agent)
 
-```bash
-# Run tests via agent
-hyperpowers:test-runner: "Run all tests: cargo test"
+**IMPORTANT:** Use hyperpowers:test-runner agent to avoid context pollution.
 
-# Run formatter check via agent
-hyperpowers:test-runner: "Check formatting: cargo fmt --check"
-
-# Run linter via agent
-hyperpowers:test-runner: "Run linter: cargo clippy -- -D warnings"
-
-# Run pre-commit hook via agent
-hyperpowers:test-runner: "Run pre-commit: .git/hooks/pre-commit"
+```
+Dispatch hyperpowers:test-runner: "Run: cargo test"
+Dispatch hyperpowers:test-runner: "Run: cargo fmt --check"
+Dispatch hyperpowers:test-runner: "Run: cargo clippy -- -D warnings"
+Dispatch hyperpowers:test-runner: "Run: .git/hooks/pre-commit"
 ```
 
-**3. Read Implementation Files:**
+---
 
-**CRITICAL:** Read the actual code, not just git diff.
+### D. Read Implementation Files
 
-For each file in the implementation checklist:
+**CRITICAL:** READ actual files, not just git diff.
 
 ```bash
-# First see what changed
+# See changes
 git diff main...HEAD -- src/auth/jwt.ts
 
-# THEN READ THE ACTUAL FILE
-# Use Read tool to read: src/auth/jwt.ts
+# THEN READ FULL FILE
+Read tool: src/auth/jwt.ts
 ```
 
 **While reading, check:**
-- ✅ Is the code actually implementing what the checklist says?
-- ✅ Are functions/methods actually complete (not stubs)?
-- ✅ Does error handling use proper patterns (Result, try/catch)?
-- ✅ Are edge cases from "Key Considerations" handled in the code?
-- ✅ Is the code clear and maintainable?
-- ✅ Are there any anti-patterns present?
+- ✅ Code implements checklist items (not stubs)
+- ✅ Error handling uses proper patterns (Result, try/catch)
+- ✅ Edge cases from "Key Considerations" handled
+- ✅ Code is clear and maintainable
+- ✅ No anti-patterns present
 
-**4. Code Quality Review (Google Fellow Perspective):**
+---
 
-**CRITICAL: Assume this code was written by a junior engineer. Review with production-grade scrutiny.**
+### E. Code Quality Review (Google Fellow Perspective)
 
-For each implementation file, assess with Google Fellow standards:
+**Assume code written by junior engineer. Apply production-grade scrutiny.**
 
 **Error Handling:**
-- Proper use of Result/Option types (Rust) or try/catch (JS/TS)?
-- Error messages helpful for debugging production issues?
-- No unwrap/expect in production code?
-- Errors propagate correctly with context?
-- Failure modes handled gracefully?
+- Proper use of Result/Option or try/catch?
+- Error messages helpful for production debugging?
+- No unwrap/expect in production?
+- Errors propagate with context?
+- Failure modes graceful?
 
 **Safety:**
-- No unsafe code blocks without justification and thorough comments?
-- Proper bounds checking on arrays/slices?
-- No potential panics or crashes?
-- No data races or concurrency issues?
-- No SQL injection, XSS, or security vulnerabilities?
+- No unsafe blocks without justification?
+- Proper bounds checking?
+- No potential panics?
+- No data races?
+- No SQL injection, XSS vulnerabilities?
 
 **Clarity:**
-- Would a junior engineer understand this code in 6 months?
-- Functions have single responsibility?
-- Variable names descriptive and unambiguous?
-- Complex logic explained with comments?
-- No clever tricks - is the code obvious and boring?
+- Would junior understand in 6 months?
+- Single responsibility per function?
+- Descriptive variable names?
+- Complex logic explained?
+- No clever tricks - obvious and boring?
 
 **Testing:**
-- Edge cases covered (empty input, max values, Unicode, etc.)?
-- Tests are meaningful, not just for coverage numbers?
-- Test names clearly describe what they verify?
-- Tests actually test behavior, not implementation details?
-- Failure scenarios tested (error paths)?
+- Edge cases covered (empty, max, Unicode)?
+- Tests meaningful, not just coverage?
+- Test names describe what verified?
+- Tests test behavior, not implementation?
+- Failure scenarios tested?
 
 **Production Readiness:**
-- Would you be comfortable deploying this to production?
-- Could this cause an outage or data loss?
-- Is performance acceptable under load?
-- Are there obvious optimization opportunities missed?
-- Logging/observability sufficient for debugging production issues?
+- Comfortable deploying to production?
+- Could cause outage or data loss?
+- Performance acceptable under load?
+- Logging sufficient for debugging?
 
-**5. Verify Success Criteria with Evidence:**
+---
 
-For each success criterion:
-- Run verification commands
+### F. Verify Success Criteria with Evidence
+
+For EACH criterion in bd task:
+- Run verification command
 - Check actual output
 - Don't assume - verify with evidence
-- Use hyperpowers:test-runner agent for tests/lints/builds
+- Use hyperpowers:test-runner for tests/lints
 
-**6. Check Anti-Patterns:**
+**Example:**
+
+```
+Criterion: "All tests passing"
+Command: cargo test
+Evidence: "127 tests passed, 0 failures"
+Result: ✅ Met
+
+Criterion: "No unwrap in production"
+Command: rg "\.unwrap\(\)" src/
+Evidence: "No matches"
+Result: ✅ Met
+```
+
+---
+
+### G. Check Anti-Patterns
 
 Search for each prohibited pattern from bd task:
-- Unwrap/expect in production
-- TODOs without issue numbers
-- Stub implementations
-- Ignored tests without justification
-- Task-specific anti-patterns
 
-**7. Verify Key Considerations:**
+```bash
+# Example anti-patterns from task
+rg "\.unwrap\(\)" src/  # If task prohibits unwrap
+rg "TODO" src/          # If task prohibits untracked TODOs
+rg "\.skip\(\)" tests/  # If task prohibits skipped tests
+```
 
-Read code to confirm edge cases were handled:
+---
+
+### H. Verify Key Considerations
+
+Read code to confirm edge cases handled:
 - Empty input validation
 - Unicode handling
 - Concurrent access
 - Failure modes
 - Performance concerns
 
-**D. Record findings for this task:**
+**Example:** Task says "Must handle empty payload" → Find validation code for empty payload.
+
+---
+
+### I. Record Findings
 
 ```markdown
-### Task: [Name] (bd-N)
+### Task: bd-3 - Implement JWT authentication
 
 #### Automated Checks
-- TODOs/FIXMEs: [✅ None / ❌ Found at: file:line]
-- Stubs: [✅ None / ❌ Found at: file:line]
-- Unsafe patterns: [✅ None / ❌ Found at: file:line]
-- Ignored tests: [✅ None / ❌ Found at: file:line]
+- TODOs: ✅ None
+- Stubs: ✅ None
+- Unsafe patterns: ❌ Found `.unwrap()` at src/auth/jwt.ts:45
+- Ignored tests: ✅ None
 
 #### Quality Gates
-- Tests: [✅ Pass (N tests) / ❌ Fail (N failures)]
-- Formatting: [✅ Pass / ❌ Fail]
-- Linting: [✅ Pass / ❌ Warnings found]
-- Pre-commit: [✅ Pass / ❌ Fail]
+- Tests: ✅ Pass (127 tests)
+- Formatting: ✅ Pass
+- Linting: ❌ 3 warnings
+- Pre-commit: ❌ Fails due to linting
 
 #### Files Reviewed
-- src/file1.rs: [✅ Implements checklist / ❌ Issues: ...]
-- src/file2.rs: [✅ Implements checklist / ❌ Issues: ...]
-- tests/file1_test.rs: [✅ Complete / ❌ Issues: ...]
+- src/auth/jwt.ts: ⚠️ Contains `.unwrap()` at line 45
+- tests/auth/jwt_test.rs: ✅ Complete
 
-#### Code Quality (Google Fellow Review)
-- Error Handling: [✅ Good / ⚠️ Concerns: ... / ❌ Issues: ...]
-- Safety: [✅ Good / ⚠️ Concerns: ... / ❌ Issues: ...]
-- Clarity: [✅ Good / ⚠️ Concerns: ... / ❌ Issues: ...]
-- Testing: [✅ Good / ⚠️ Concerns: ... / ❌ Issues: ...]
+#### Code Quality
+- Error Handling: ⚠️ Uses unwrap instead of proper error propagation
+- Safety: ✅ Good
+- Clarity: ✅ Good
+- Testing: ✅ Good
 
-#### Success Criteria (from bd issue)
-1. [Criterion 1]: [✅ Met / ❌ Not met] - Evidence: [how verified]
-2. [Criterion 2]: [✅ Met / ❌ Not met] - Evidence: [how verified]
+#### Success Criteria
+1. "All tests pass": ✅ Met - Evidence: 127 tests passed
+2. "Pre-commit passes": ❌ Not met - Evidence: clippy warnings
+3. "No unwrap in production": ❌ Not met - Evidence: Found at jwt.ts:45
 
-#### Anti-Patterns Check
-- [Anti-pattern 1]: [✅ Avoided / ❌ Violated at: file:line]
-- [Anti-pattern 2]: [✅ Avoided / ❌ Violated at: file:line]
+#### Anti-Patterns
+- "NO unwrap in production": ❌ Violated at src/auth/jwt.ts:45
 
-#### Key Considerations Check
-- [Edge case 1]: [✅ Handled at file:line / ❌ Not addressed]
-- [Edge case 2]: [✅ Handled at file:line / ❌ Not addressed]
+#### Issues
+**Critical:**
+1. unwrap() at jwt.ts:45 - violates anti-pattern, must use proper error handling
 
-#### Issues Found
-**Critical** (must fix):
-1. [Issue] - file:line - [Why critical]
-
-**Important** (should fix):
-1. [Issue] - file:line - [Impact]
-
-**Minor** (nice to have):
-1. [Issue] - file:line - [Suggestion]
+**Important:**
+2. 3 clippy warnings block pre-commit hook
 ```
 
-**E. Mark task review as completed in TodoWrite**
+---
 
-### Step 3: Report Findings
+### J. Mark Task Reviewed (TodoWrite)
 
-After reviewing all tasks, compile findings:
+---
 
-**If NO gaps found:**
+## Step 3: Report Findings
+
+After reviewing ALL tasks:
+
+**If NO gaps:**
 
 ```markdown
 ## Implementation Review: APPROVED ✅
 
-Reviewed bd-1 (<epic name>) against implementation.
+Reviewed bd-1 (OAuth Authentication) against implementation.
 
 ### Tasks Reviewed
-- bd-2: <Task Name> ✅
-- bd-3: <Task Name> ✅
-- bd-4: <Task Name> ✅
-- bd-5: <Task Name> ✅
+- bd-2: Configure OAuth provider ✅
+- bd-3: Implement token exchange ✅
+- bd-4: Add refresh logic ✅
 
 ### Verification Summary
 - All success criteria verified
@@ -261,7 +292,10 @@ Reviewed bd-1 (<epic name>) against implementation.
 - All files implemented per spec
 
 ### Evidence
-[Show key verification command outputs]
+- Tests: 127 passed, 0 failures (2.3s)
+- Linting: No warnings
+- Pre-commit: Pass
+- Code review: Production-ready
 
 Ready to proceed to hyperpowers:finishing-a-development-branch.
 ```
@@ -271,197 +305,342 @@ Ready to proceed to hyperpowers:finishing-a-development-branch.
 ```markdown
 ## Implementation Review: GAPS FOUND ❌
 
-Reviewed bd-1 (<epic name>) against implementation.
+Reviewed bd-1 (OAuth Authentication) against implementation.
 
 ### Tasks with Gaps
 
-#### bd-3: <Task Name>
+#### bd-3: Implement token exchange
 **Gaps:**
 - ❌ Success criterion not met: "Pre-commit hooks pass"
-  - Evidence: `cargo clippy` shows 3 warnings
-- ❌ Anti-pattern violation: Found `unwrap()` in src/auth/jwt.ts:45
-- ⚠️ Key consideration not addressed: "Empty input validation"
+  - Evidence: cargo clippy shows 3 warnings
+- ❌ Anti-pattern violation: Found `.unwrap()` at src/auth/jwt.ts:45
+- ⚠️ Key consideration not addressed: "Empty payload validation"
   - No check for empty payload in generateToken()
 
-#### bd-5: <Task Name>
+#### bd-4: Add refresh logic
 **Gaps:**
 - ❌ Success criterion not met: "All tests passing"
-  - Evidence: test_verify_expired_token is failing
+  - Evidence: test_verify_expired_token failing
 
 ### Cannot Proceed
 Implementation does not match spec. Fix gaps before completing.
 ```
 
-### Step 4: Gate Decision
+---
+
+## Step 4: Gate Decision
 
 **If APPROVED:**
-- Announce: "I'm using the hyperpowers:finishing-a-development-branch skill to complete this work."
-- **REQUIRED: Use Skill tool to invoke:** `hyperpowers:finishing-a-development-branch`
+```
+Announce: "I'm using hyperpowers:finishing-a-development-branch to complete this work."
+
+Use Skill tool: hyperpowers:finishing-a-development-branch
+```
 
 **If GAPS FOUND:**
-- STOP. Do not proceed to hyperpowers:finishing-a-development-branch
-- Fix gaps or discuss with partner
-- Re-run review after fixes
+```
+STOP. Do not proceed to finishing-a-development-branch.
+Fix gaps or discuss with partner.
+Re-run review after fixes.
+```
+</the_process>
 
-## Review Checklist (per task)
+<examples>
+<example>
+<scenario>Developer only checks git diff, doesn't read actual files</scenario>
 
-For each task, verify:
+<code>
+# Review process
+git diff main...HEAD  # Shows changes
 
-### Success Criteria
-- [ ] Every success criterion listed in bd task is verifiable
-- [ ] Each criterion has been verified with evidence (command output)
-- [ ] No criteria were skipped or assumed
+# Developer sees:
++ function generateToken(payload) {
++   return jwt.sign(payload, secret);
++ }
 
-### Implementation Checklist
-- [ ] Every file in checklist was created/modified
-- [ ] Every function in checklist exists and is implemented (not stubbed)
-- [ ] Every test in checklist exists and passes
+# Approves based on diff
+"Looks good, token generation implemented ✅"
 
-### Anti-Patterns
-- [ ] Searched for each prohibited pattern listed in task
-- [ ] No violations found
-- [ ] If violations found: documented as gap
+# Misses: Full context shows no validation
+function generateToken(payload) {
+  // No validation of payload!
+  // No check for empty payload (key consideration)
+  // No error handling if jwt.sign fails
+  return jwt.sign(payload, secret);
+}
+</code>
 
-### Key Considerations
-- [ ] Each edge case mentioned has corresponding code
-- [ ] Error handling for failure modes exists
-- [ ] Performance/security concerns addressed
+<why_it_fails>
+- Git diff shows additions, not full context
+- Missed that empty payload not validated (key consideration)
+- Missed that error handling missing (quality issue)
+- False approval - gaps exist but not caught
+- Will fail in production when empty payload passed
+</why_it_fails>
 
-### Code Quality
-- [ ] No TODOs without issue numbers
-- [ ] No commented-out code
-- [ ] No debug print statements
-- [ ] Follows project style/conventions
-
-## Common Rationalizations - STOP
-
-| Excuse | Reality |
-|--------|---------|
-| "Tests pass, must be complete" | Tests ≠ spec. Check every success criterion. |
-| "I implemented it, it's done" | Implementation ≠ spec compliance. Review evidence. |
-| "No time for thorough review" | Gaps found later cost more time than review now. |
-| "Looks good to me" | Your opinion ≠ evidence. Run verifications. |
-| "Small gaps don't matter" | Spec is contract. All criteria must be met. |
-| "Will fix in next PR" | This PR should complete this epic. Fix now. |
-| "Partner will review" | You review first. Don't delegate your quality check. |
-| **"Can check git diff instead of reading files"** | **NO. Git diff shows changes, not full context. READ the actual files.** |
-| **"Automated checks cover quality"** | **NO. Automated checks + code review both required. Read the code.** |
-| **"Success criteria passing means done"** | **NO. Also check: anti-patterns, code quality, edge cases. Read the code.** |
-
-## Red Flags
-
-**Never:**
-- Skip reviewing a task "because it's simple"
-- Approve without verifying every success criterion
-- Ignore anti-pattern violations
-- Assume key considerations were addressed
-- Trust that "tests passing" means spec is met
-- **Only check git diff without reading actual files**
-- **Skip automated checks (TODOs, stubs, unwrap)**
-- **Skip code quality review (error handling, safety, clarity)**
-
-**Always:**
-- Review every task, no exceptions
-- Verify with commands and evidence
-- Document gaps explicitly
-- Check for anti-patterns from hyperpowers:sre-task-refinement
-- **READ the actual implementation files with Read tool**
-- **Run automated checks for TODOs, stubs, unsafe patterns**
-- **Run quality gates with hyperpowers:test-runner agent**
-- **Assess code quality with Google Fellow perspective**
-
-## Working with bd
-
-### Reading Task Specifications
+<correction>
+**Correct review process:**
 
 ```bash
-# Show task with full design
-bd show bd-3
+# See changes
+git diff main...HEAD -- src/auth/jwt.ts
 
-# The design contains:
-# - Goal
-# - Success Criteria (your checklist)
-# - Implementation Steps (what you executed)
-# - Key Considerations (edge cases to check)
-# - Anti-patterns (what to search for)
+# THEN READ FULL FILE
+Read tool: src/auth/jwt.ts
 ```
 
-### Verification Pattern
-
-For each task:
-
-1. **Read success criteria from bd:**
-```bash
-bd show bd-3 | grep -A 20 "Success Criteria"
+**Reading full file reveals:**
+```javascript
+function generateToken(payload) {
+  // Missing: empty payload check (key consideration from bd task)
+  // Missing: error handling for jwt.sign failure
+  return jwt.sign(payload, secret);
+}
 ```
 
-2. **Run each verification:**
+**Record in findings:**
+```
+⚠️ Key consideration not addressed: "Empty payload validation"
+- No check for empty payload in generateToken()
+- Code at src/auth/jwt.ts:15-17
 
-**For test commands (use hyperpowers:test-runner agent):**
-- Dispatch hyperpowers:test-runner agent with: "Run: cargo test"
-- Dispatch hyperpowers:test-runner agent with: "Run: cargo clippy"
+⚠️ Error handling: jwt.sign can throw, not handled
+```
 
-**For search/analysis commands (use Bash/Grep):**
+**What you gain:**
+- Caught gaps that git diff missed
+- Full context reveals missing validation
+- Quality issues identified before production
+- Spec compliance verified, not assumed
+</correction>
+</example>
+
+<example>
+<scenario>Developer assumes tests passing means done</scenario>
+
+<code>
+# Run tests
+cargo test
+# Output: 127 tests passed
+
+# Developer concludes
+"Tests pass, implementation complete ✅"
+
+# Proceeds to finishing-a-development-branch
+
+# Misses:
+- bd task has 5 success criteria
+- Only checked 1 (tests pass)
+- Anti-pattern: unwrap() present (prohibited)
+- Key consideration: Unicode handling not tested
+- Linter has warnings (blocks pre-commit)
+</code>
+
+<why_it_fails>
+- Tests passing ≠ spec compliance
+- Didn't verify all success criteria
+- Didn't check anti-patterns
+- Didn't verify key considerations
+- Pre-commit will fail (blocks merge)
+- Ships code violating anti-patterns
+</why_it_fails>
+
+<correction>
+**Correct review checks ALL criteria:**
+
+```markdown
+bd task has 5 success criteria:
+1. "All tests pass" ✅ - Evidence: 127 passed
+2. "Pre-commit passes" ❌ - Evidence: clippy warns (3 warnings)
+3. "No unwrap in production" ❌ - Evidence: Found at jwt.ts:45
+4. "Unicode handling tested" ⚠️ - Need to verify test exists
+5. "Rate limiting implemented" ⚠️ - Need to check code
+
+Result: 1/5 criteria verified met. GAPS EXIST.
+```
+
+**Run additional checks:**
 ```bash
-# Example criteria: "No unwrap in production code"
+# Check criterion 2
+cargo clippy
+# 3 warnings found ❌
+
+# Check criterion 3
 rg "\.unwrap\(\)" src/
+# src/auth/jwt.ts:45 ❌
+
+# Check criterion 4
+rg "unicode" tests/
+# No matches ⚠️ Need to verify
 ```
 
-3. **Record results:**
-   - ✅ If verification passes
-   - ❌ If verification fails (document what failed)
+**Decision: GAPS FOUND, cannot proceed**
 
-## Integration
+**What you gain:**
+- Verified ALL criteria, not just tests
+- Caught anti-pattern violations
+- Caught pre-commit blockers
+- Prevented shipping non-compliant code
+- Spec contract honored completely
+</correction>
+</example>
 
-**Called by:**
-- **hyperpowers:executing-plans** (Step 5) - After all tasks executed, before finishing
+<example>
+<scenario>Developer rationalizes skipping rigor for "simple" task</scenario>
 
-**Calls:**
-- **hyperpowers:finishing-a-development-branch** - If review approves, hand off to finish
+<code>
+bd task: "Add logging to error paths"
 
-**Uses:**
-- **hyperpowers:verification-before-completion** - All verifications follow its "evidence before claims" principle; no completion claims without fresh verification evidence
+# Developer thinks: "Simple task, just added console.log"
+# Skips:
+- Automated checks (assumes no issues)
+- Code quality review (seems obvious)
+- Full success criteria verification
 
-**Order:**
+# Approves quickly:
+"Logging added ✅"
+
+# Misses:
+- console.log used instead of proper logger (anti-pattern)
+- Only added to 2 of 5 error paths (incomplete)
+- No test verifying logs actually output (criterion)
+- Logs contain sensitive data (security issue)
+</code>
+
+<why_it_fails>
+- "Simple" tasks have hidden complexity
+- Skipped rigor catches exactly these issues
+- Incomplete implementation (2/5 paths)
+- Security vulnerability shipped
+- Anti-pattern not caught
+- Failed success criterion (test logs)
+</why_it_fails>
+
+<correction>
+**Follow full review process:**
+
+```bash
+# Automated checks
+rg "console\.log" src/
+# Found at error-handler.ts:12, 15 ⚠️
+
+# Read bd task
+bd show bd-5
+
+# Success criteria:
+# 1. "All error paths logged"
+# 2. "No sensitive data in logs"
+# 3. "Test verifies log output"
+
+# Check criterion 1
+grep -n "throw new Error" src/
+# 5 locations found
+# Only 2 have logging ❌ Incomplete
+
+# Check criterion 2
+Read tool: src/error-handler.ts
+# Logs contain password field ❌ Security issue
+
+# Check criterion 3
+rg "test.*log" tests/
+# No matches ❌ Test missing
+```
+
+**Decision: GAPS FOUND**
+- Incomplete (3/5 error paths missing logs)
+- Security issue (logs password)
+- Anti-pattern (console.log instead of logger)
+- Missing test
+
+**What you gain:**
+- "Simple" task revealed multiple gaps
+- Security vulnerability caught pre-production
+- Rigor prevents incomplete work shipping
+- All criteria must be met, no exceptions
+</correction>
+</example>
+</examples>
+
+<critical_rules>
+## Rules That Have No Exceptions
+
+1. **Review every task** → No skipping "simple" tasks
+2. **Run all automated checks** → TODOs, stubs, unwrap, ignored tests
+3. **Read actual files with Read tool** → Not just git diff
+4. **Verify every success criterion** → With evidence, not assumptions
+5. **Check all anti-patterns** → Search for prohibited patterns
+6. **Apply Google Fellow scrutiny** → Production-grade code review
+7. **If gaps found → STOP** → Don't proceed to finishing-a-development-branch
+
+## Common Excuses
+
+All of these mean: **STOP. Follow full review process.**
+
+- "Tests pass, must be complete" (Tests ≠ spec, check all criteria)
+- "I implemented it, it's done" (Implementation ≠ compliance, verify)
+- "No time for thorough review" (Gaps later cost more than review now)
+- "Looks good to me" (Opinion ≠ evidence, run verifications)
+- "Small gaps don't matter" (Spec is contract, all criteria matter)
+- "Will fix in next PR" (This PR completes this epic, fix now)
+- "Can check diff instead of files" (Diff shows changes, not context)
+- "Automated checks cover it" (Checks + code review both required)
+- "Success criteria passing means done" (Also check anti-patterns, quality, edge cases)
+
+</critical_rules>
+
+<verification_checklist>
+Before approving implementation:
+
+**Per task:**
+- [ ] Read bd task specification completely
+- [ ] Ran all automated checks (TODOs, stubs, unwrap, ignored tests)
+- [ ] Ran all quality gates via test-runner agent (tests, format, lint, pre-commit)
+- [ ] Read actual implementation files with Read tool (not just diff)
+- [ ] Reviewed code quality with Google Fellow perspective
+- [ ] Verified every success criterion with evidence
+- [ ] Checked every anti-pattern (searched for prohibited patterns)
+- [ ] Verified every key consideration addressed in code
+
+**Overall:**
+- [ ] Reviewed ALL tasks (no exceptions)
+- [ ] TodoWrite tracker shows all tasks reviewed
+- [ ] Compiled findings (approved or gaps)
+- [ ] If approved: all criteria met for all tasks
+- [ ] If gaps: documented exactly what missing
+
+**Can't check all boxes?** Return to Step 2 and complete review.
+</verification_checklist>
+
+<integration>
+**This skill is called by:**
+- hyperpowers:executing-plans (Step 5, after all tasks executed)
+
+**This skill calls:**
+- hyperpowers:finishing-a-development-branch (if approved)
+- hyperpowers:test-runner agent (for quality gates)
+
+**This skill uses:**
+- hyperpowers:verification-before-completion principles (evidence before claims)
+
+**Call chain:**
 ```
 hyperpowers:executing-plans → hyperpowers:review-implementation → hyperpowers:finishing-a-development-branch
-                        ↓
-                  (if gaps found: STOP)
+                         ↓
+                   (if gaps: STOP)
 ```
 
-## Why This Matters
+**CRITICAL:** Use bd commands (bd show, bd list, bd dep tree), never read `.beads/issues.jsonl` directly.
+</integration>
 
-**Common scenarios this prevents:**
+<resources>
+**Detailed guides:**
+- [Code quality standards by language](resources/quality-standards.md)
+- [Common anti-patterns to check](resources/anti-patterns-reference.md)
+- [Production readiness checklist](resources/production-checklist.md)
 
-1. **Incomplete implementation:**
-   - Developer executes 80% of task
-   - Tests pass for implemented parts
-   - Success criteria includes the missing 20%
-   - Review catches gap
-
-2. **Anti-pattern violations:**
-   - Code works but uses prohibited patterns
-   - Would fail code review later
-   - Wastes PR review time
-   - Review catches early
-
-3. **Edge cases missed:**
-   - hyperpowers:sre-task-refinement identified edge cases
-   - Developer focused on happy path
-   - Edge cases untested
-   - Review catches before PR
-
-4. **Spec drift:**
-   - Implementation evolved during development
-   - Original spec goals forgotten
-   - Result doesn't solve original problem
-   - Review catches misalignment
-
-## Summary
-
-- Spec (bd tasks) is the contract
-- Implementation must fulfill contract completely
-- "Working code" ≠ "spec-compliant code"
-- Evidence-based review, not opinion
-- Every success criterion matters
-- Better to find gaps now than in PR review
+**When stuck:**
+- Unsure if gap critical → If violates criterion, it's a gap
+- Criteria ambiguous → Ask user for clarification before approving
+- Anti-pattern unclear → Search for it, document if found
+- Quality concern → Document as gap, don't rationalize away
+</resources>

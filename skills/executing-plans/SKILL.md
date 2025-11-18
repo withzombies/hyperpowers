@@ -1,46 +1,54 @@
 ---
 name: executing-plans
-description: Use to execute bd tasks iteratively - reads epic requirements, executes ready task, reviews learnings, creates next task based on reality, repeats until epic success criteria met
+description: Use to execute bd tasks iteratively - reads epic, executes task, reviews learnings, creates next task, repeats until success criteria met
 ---
 
-# Executing Plans (Iterative)
+<skill_overview>
+Execute bd tasks iteratively: Load epic → Execute task → Review learnings → Create next task → Repeat until success criteria met. Epic requirements are immutable, tasks adapt to reality.
+</skill_overview>
 
-## Overview
+<rigidity_level>
+LOW FREEDOM - Follow exact process: load epic, execute task, review, create next task.
 
-Execute bd tasks iteratively: Load epic → Execute task → Review learnings → Create next task → Repeat until success criteria met.
+Epic requirements are immutable. Tasks adapt to discoveries. Do not skip review or close tasks without verification.
+</rigidity_level>
 
-**Core principle:** Epic requirements are immutable. Tasks adapt to reality discovered during execution.
+<quick_reference>
 
-**Announce at start:** "I'm using the executing-plans skill to implement this epic iteratively."
+| Step | Command | Purpose |
+|------|---------|---------|
+| **Load Epic** | `bd show bd-1` | Read immutable requirements once at start |
+| **Find Task** | `bd ready` | Get next ready task to execute |
+| **Start Task** | `bd update bd-2 --status in_progress` | Mark task active |
+| **Track Substeps** | TodoWrite for each implementation step | Prevent incomplete execution |
+| **Close Task** | `bd close bd-2` | Mark task complete after verification |
+| **Review** | Re-read epic, check learnings | Adapt next task to reality |
+| **Create Next** | `bd create "Task N"` | Based on learnings, not assumptions |
+| **Final Check** | Use `review-implementation` skill | Verify all success criteria before closing epic |
 
-**Context:** Run this after hyperpowers:writing-plans creates epic and first task.
+**Critical:** Epic = contract (immutable). Tasks = discovery (adapt to reality).
 
-**CRITICAL:** Use bd commands (bd show, bd ready, bd list, bd update, bd close) to interact with tasks.
+</quick_reference>
 
-## Epic = Contract, Tasks = Discovery
+<when_to_use>
+**Use after hyperpowers:writing-plans creates epic and first task.**
 
-**Epic (immutable):**
-- Requirements that MUST be met
-- Success criteria that validate completion
-- Anti-patterns that are FORBIDDEN
+Symptoms you need this:
+- bd epic exists with tasks ready to execute
+- Need to implement features iteratively
+- Requirements clear, but implementation path will adapt
+- Want continuous learning between tasks
+</when_to_use>
 
-**Tasks (iterative):**
-- Created one at a time based on current reality
-- Each task reflects learnings from previous tasks
-- Epic success criteria determine when done
+<the_process>
 
-## The Process
-
-### Step 1: Load Epic Context (Once at Start)
+## 1. Load Epic Context (Once at Start)
 
 Before executing ANY task, load the epic into context:
 
 ```bash
-# Find the epic
-bd list --type epic --status open
-
-# Load epic details
-bd show bd-1
+bd list --type epic --status open  # Find epic
+bd show bd-1                       # Load epic details
 ```
 
 **Extract and keep in mind:**
@@ -49,262 +57,349 @@ bd show bd-1
 - Anti-patterns (FORBIDDEN shortcuts)
 - Approach (high-level strategy)
 
-**Why:** You need to remember the contract throughout execution. Requirements prevent watering down when blocked.
+**Why:** Requirements prevent watering down when blocked.
 
-### Step 2: Execute Current Ready Task
+## 2. Execute Current Ready Task
 
-1. **Find next ready task:**
 ```bash
-bd ready
+bd ready                           # Find next task
+bd update bd-2 --status in_progress # Start it
+bd show bd-2                       # Read details
 ```
 
-2. **Start task:**
-```bash
-bd update bd-2 --status in_progress
-bd show bd-2
+**CRITICAL - Create TodoWrite for ALL substeps:**
+
+Tasks contain 4-8 implementation steps. Create TodoWrite todos for each to prevent incomplete execution:
+
+```
+- bd-2 Step 1: Write test (pending)
+- bd-2 Step 2: Run test RED (pending)
+- bd-2 Step 3: Implement function (pending)
+- bd-2 Step 4: Run test GREEN (pending)
+- bd-2 Step 5: Refactor (pending)
+- bd-2 Step 6: Commit (pending)
 ```
 
-3. **Create substep TodoWrite todos:**
+**Execute steps:**
+- Use `test-driven-development` when implementing features
+- Mark each substep completed immediately after finishing
+- Use `test-runner` agent for verifications
 
-   **CRITICAL:** Tasks contain 4-8 implementation steps. Create TodoWrite todos for ALL steps to prevent incomplete execution.
+**Pre-close verification:**
+- Check TodoWrite: All substeps completed?
+- If incomplete: Continue with remaining substeps
+- If complete: Close task and commit
 
-   Example - if bd-2 has steps:
-   ```
-   1. Write test for validation function
-   2. Run test (RED phase)
-   3. Implement validation function
-   4. Run test (GREEN phase)
-   5. Refactor for clarity
-   6. Commit changes
-   ```
-
-   Create TodoWrite:
-   ```
-   - bd-2 Step 1: Write test (pending)
-   - bd-2 Step 2: Run test RED (pending)
-   - bd-2 Step 3: Implement function (pending)
-   - bd-2 Step 4: Run test GREEN (pending)
-   - bd-2 Step 5: Refactor (pending)
-   - bd-2 Step 6: Commit (pending)
-   ```
-
-4. **Follow each step exactly:**
-   - Use hyperpowers:test-driven-development when implementing new functionality
-   - Mark each substep completed immediately after finishing
-   - Run verifications using hyperpowers:test-runner agent
-
-5. **Pre-close verification checkpoint:**
-
-   Before marking task complete, verify ALL substeps done:
-   - Check TodoWrite: All substeps completed?
-   - If incomplete: Continue with remaining substeps
-   - If complete: Proceed to step 6
-
-6. **Complete task:**
 ```bash
-bd close bd-2
+bd close bd-2  # After ALL substeps done
 ```
 
-7. **Commit changes** (use hyperpowers:test-runner agent):
-```bash
-# Via test-runner agent to avoid hook pollution
-Run: git add <files> && git commit -m "feat(bd-2): implement feature
+## 3. Review Against Epic and Create Next Task
 
-Completes bd-2: Task Name"
-```
-
-### Step 3: Review Against Epic and Create Next Task
-
-**CRITICAL:** After each task completion, adapt the plan based on reality.
+**CRITICAL:** After each task, adapt plan based on reality.
 
 **Review questions:**
-1. What did we learn executing this task?
-2. Did we discover any blockers, existing functionality, or limitations?
+1. What did we learn?
+2. Discovered any blockers, existing functionality, limitations?
 3. Does this move us toward epic success criteria?
-4. What's the next logical step to meet epic requirements?
-5. Are there any epic anti-patterns we need to avoid in next task?
+4. What's next logical step?
+5. Any epic anti-patterns to avoid?
 
-**Re-read the epic** to keep requirements fresh:
+**Re-read epic:**
 ```bash
-bd show bd-1
+bd show bd-1  # Keep requirements fresh
 ```
-
-**Check for plan invalidation discoveries:**
-
-If you discovered:
-- **Existing functionality** that makes next planned task redundant
-- **Blocker** that requires different approach
-- **Architectural mismatch** that invalidates assumptions
-
-Then you must adapt the plan, NOT execute wasteful/invalid tasks.
 
 **Three cases:**
 
-#### Case A: Next Task Still Valid
+**A) Next task still valid** → Proceed to Step 2
 
-If `bd ready` shows a task that's still valid given learnings:
-- Proceed to Step 2 with that task
-- Example: Planned task matches current reality
-
-#### Case B: Next Task Now Redundant (Plan Invalidation)
-
-If you discover planned task is redundant:
-
-**Example:**
-- bd-4 says "implement token refresh middleware"
-- You discover during bd-2: refresh middleware already exists
-- bd-4 is feasible but wasteful (duplicates existing code)
-
-**Action:**
-1. Verify the discovery (check existing code)
-2. Delete or update the redundant task:
+**B) Next task now redundant** (plan invalidation allowed):
 ```bash
-bd delete bd-4
-# Or update to different work:
-bd update bd-4 --title "Verify token refresh integration" --design "..."
+bd delete bd-4  # Remove wasteful task
+# Or update: bd update bd-4 --title "New work" --design "..."
 ```
-3. Create new task if needed based on actual requirements
-4. Document what you found and why task changed
 
-**Do NOT:**
-- Execute wasteful duplicate code
-- Assume planned task must be done because it exists
-- Skip without documenting
-
-#### Case C: Need New Task Based on Learnings
-
-If no ready task exists, or existing tasks need context from learnings:
-
-**Create next task** based on:
-- Learnings from task just completed
-- Current state of codebase
-- What's still needed to meet epic success criteria
-- Epic anti-patterns (what to avoid)
-
+**C) Need new task** based on learnings:
 ```bash
-bd create "Task N: [Next Logical Step]" \
+bd create "Task N: [Next Step Based on Reality]" \
   --type feature \
-  --priority [match-epic] \
   --design "## Goal
-[Specific deliverable based on current reality]
+[Deliverable based on what we learned]
 
 ## Context
-Completed bd-2: [what we learned]
-[What changed from original assumptions]
+Completed bd-2: [discoveries]
 
 ## Implementation
-[Detailed steps reflecting current state]
-
-## Tests (TDD)
-[Test cases based on actual implementation]
+[Steps reflecting current state, not assumptions]
 
 ## Success Criteria
-- [ ] [Specific outcomes]
-- [ ] Tests passing
-- [ ] Pre-commit hooks passing"
+- [ ] Specific outcomes
+- [ ] Tests passing"
 
-bd dep add bd-N bd-1 --type parent-child  # Link to epic
-bd dep add bd-N bd-[prev] --type blocks   # Sequence after previous
+bd dep add bd-N bd-1 --type parent-child
+bd dep add bd-N bd-2 --type blocks
 ```
 
-**Key:** This task reflects reality, not outdated assumptions.
-
-### Step 4: Check Epic Success Criteria
-
-After each task, check if epic is complete:
+## 4. Check Epic Success Criteria
 
 ```bash
-bd show bd-1
+bd show bd-1  # Check success criteria
 ```
 
-**Are ALL success criteria met?**
-- If NO → Return to Step 2 (next task)
-- If YES → Proceed to Step 5 (final validation)
+- ALL criteria met? → Step 5 (final validation)
+- Some missing? → Step 2 (next task)
 
-### Step 5: Final Validation and Closure
+## 5. Final Validation and Closure
 
-When all epic success criteria appear met:
+When all success criteria appear met:
 
-1. **Run full verification:**
-   - All tests passing
-   - Pre-commit hooks passing
-   - Manual testing of success criteria
+1. **Run full verification** (tests, hooks, manual checks)
 
-2. **Review against epic:**
-   - Announce: "I'm using the hyperpowers:review-implementation skill to verify the implementation matches the spec."
-   - **REQUIRED: Use Skill tool to invoke:** `hyperpowers:review-implementation`
-   - hyperpowers:review-implementation will:
-     - Check each requirement (IMMUTABLE) is met
-     - Verify each success criterion (MUST ALL BE TRUE) is satisfied
-     - Confirm no anti-patterns (FORBIDDEN) were used
-   - If approved, hyperpowers:review-implementation calls hyperpowers:finishing-a-development-branch
-   - If gaps found, create tasks to fix them and return to Step 2
+2. **REQUIRED - Use review-implementation skill:**
+```
+Use Skill tool: hyperpowers:review-implementation
+```
+
+Review-implementation will:
+- Check each requirement met
+- Verify each success criterion satisfied
+- Confirm no anti-patterns used
+- If approved: Calls `finishing-a-development-branch`
+- If gaps: Create tasks, return to Step 2
 
 3. **Only close epic after review approves**
 
-## Handling Blockers
+</the_process>
 
-**When you hit a blocker:**
+<examples>
 
-1. **Re-read epic requirements and anti-patterns:**
+<example>
+<scenario>Developer closes task without completing all substeps, claims "mostly done"</scenario>
+
+<code>
+bd-2 has 6 implementation steps.
+
+TodoWrite shows:
+- ✅ bd-2 Step 1: Write test
+- ✅ bd-2 Step 2: Run test RED
+- ✅ bd-2 Step 3: Implement function
+- ⏸️ bd-2 Step 4: Run test GREEN (pending)
+- ⏸️ bd-2 Step 5: Refactor (pending)
+- ⏸️ bd-2 Step 6: Commit (pending)
+
+Developer thinks: "Function works, I'll close bd-2 and move on"
+Runs: bd close bd-2
+</code>
+
+<why_it_fails>
+Steps 4-6 skipped:
+- Tests not verified GREEN (might have broken other tests)
+- Code not refactored (leaves technical debt)
+- Changes not committed (work could be lost)
+
+"Mostly done" = incomplete task = will cause issues later.
+</why_it_fails>
+
+<correction>
+**Pre-close verification checkpoint:**
+
+Before closing ANY task:
+1. Check TodoWrite: All substeps completed?
+2. If incomplete: Continue with remaining substeps
+3. Only when ALL ✅: bd close bd-2
+
+**Result:** Task actually complete, tests passing, code committed.
+</correction>
+</example>
+
+<example>
+<scenario>Developer discovers planned task is redundant, executes it anyway "because it's in the plan"</scenario>
+
+<code>
+bd-4 says: "Implement token refresh middleware"
+
+While executing bd-2, developer discovers:
+- Token refresh middleware already exists in auth/middleware/refresh.ts
+- Works correctly, has tests
+- bd-4 would duplicate existing code
+
+Developer thinks: "bd-4 is in the plan, I should do it anyway"
+Proceeds to implement duplicate middleware
+</code>
+
+<why_it_fails>
+**Wasteful execution:**
+- Duplicates existing functionality
+- Creates maintenance burden (two implementations to keep in sync)
+- Violates DRY principle
+- Wastes time on redundant work
+
+**Why it happens:** Treating tasks as immutable instead of epic.
+</why_it_fails>
+
+<correction>
+**Plan invalidation is allowed:**
+
+1. Verify the discovery:
+```bash
+# Check existing code
+cat auth/middleware/refresh.ts
+# Confirm it works
+npm test -- refresh.spec.ts
+```
+
+2. Delete redundant task:
+```bash
+bd delete bd-4
+```
+
+3. Document why:
+```
+bd update bd-2 --design "...
+
+Discovery: Token refresh middleware already exists (auth/middleware/refresh.ts).
+Verified working with tests. bd-4 deleted as redundant."
+```
+
+4. Create new task if needed (maybe "Integrate existing refresh middleware" instead)
+
+**Result:** Plan adapts to reality. No wasted work.
+</correction>
+</example>
+
+<example>
+<scenario>Developer hits blocker, waters down epic requirement to "make it easier"</scenario>
+
+<code>
+Epic bd-1 anti-patterns say:
+"FORBIDDEN: Using mocks for database integration tests. Must use real test database."
+
+Developer encounters:
+- Real database setup is complex
+- Mocking would make tests pass quickly
+
+Developer thinks: "This is too hard, I'll use mocks just for now and refactor later"
+
+Adds TODO: // TODO: Replace mocks with real DB later
+</code>
+
+<why_it_fails>
+**Violates epic anti-pattern:**
+- Epic explicitly forbids mocks for integration tests
+- "Later" never happens (TODO remains forever)
+- Tests don't verify actual integration
+- Defeats purpose of integration testing
+
+**Why it happens:** Rationalizing around blockers instead of solving them.
+</why_it_fails>
+
+<correction>
+**When blocked, re-read epic:**
+
+1. Re-read epic requirements and anti-patterns:
 ```bash
 bd show bd-1
 ```
 
-2. **Check if your solution violates any anti-pattern:**
+2. Check if solution violates anti-pattern:
+- Using mocks? YES, explicitly forbidden
 
-3. **If yes:**
-   - Do NOT rationalize or work around
-   - Create task: "Research solution for [blocker] that meets [requirement]"
-   - OR ask user: "Blocker [X] prevents requirement [Y]. Is there flexibility here?"
+3. Don't rationalize. Instead:
 
-4. **If no:**
-   - Document blocker in current task
-   - Mark task as blocked
-   - Stop and ask for help
+**Option A - Research:**
+```bash
+bd create "Research: Real DB test setup for [project]" \
+  --design "Find how this project sets up test databases.
+Check existing test files for patterns.
+Document setup process that meets anti-pattern requirements."
+```
 
-**NEVER:**
-- Force through blockers
-- Water down epic requirements to make task easier
-- Violate anti-patterns because "it's too hard"
+**Option B - Ask user:**
+"Blocker: Test DB setup complex. Epic forbids mocks for integration.
+Is there existing test DB infrastructure I should use?"
 
-## Maintaining Epic Requirements (Anti-Rationalization)
+**Result:** Epic requirements maintained. Blocker solved properly.
+</correction>
+</example>
 
-**Common rationalization patterns when hitting blockers:**
+</examples>
 
-| Rationalization | Prevention |
-|-----------------|------------|
-| "This requirement is too hard" | Re-read anti-patterns. Is your shortcut forbidden? |
-| "I'll come back to this later" | Epic requires it NOW. TODOs for core integration forbidden. |
-| "Let me fake this to make tests pass" | Check anti-patterns. Mocking often forbidden for integration. |
-| "Existing task is wasteful, but it's planned" | Plan invalidation is allowed. Delete redundant tasks. |
-| "All tasks done, epic must be complete" | Tasks done ≠ success criteria met. Run review-implementation. |
+<critical_rules>
 
-**Enforcement:**
-- When blocked, re-read epic BEFORE deciding approach
-- Check if solution violates anti-patterns
-- If yes: Research/ask, do NOT rationalize
-- If no: Document and escalate
+## Rules That Have No Exceptions
 
-## When to Stop and Ask
+1. **Epic requirements are immutable** → Never water down when blocked
+   - If blocked: Research solution or ask user
+   - Never violate anti-patterns to "make it easier"
 
-**Stop immediately when:**
-- Hit blocker preventing task completion
-- Discover requirements conflict
-- Don't understand an instruction
-- Verification fails repeatedly
-- Tempted to violate epic anti-pattern
+2. **All substeps must be completed** → Never close task with pending substeps
+   - Check TodoWrite before closing
+   - "Mostly done" = incomplete = will cause issues
 
-**Ask for clarification. Never guess.**
+3. **Plan invalidation is allowed** → Delete redundant tasks
+   - If discovered existing functionality: Delete duplicate task
+   - If discovered blocker: Update or delete invalid task
+   - Document what you found and why
 
-## Summary
+4. **Review before closing epic** → Use review-implementation skill
+   - Tasks done ≠ success criteria met
+   - All criteria must be verified before closing
 
-- Load epic requirements once (immutable contract)
-- Execute tasks one at a time (iterative)
-- After each task: Review learnings, check epic, create next task
-- Delete redundant tasks (plan invalidation allowed)
-- Maintain epic requirements (no watering down)
-- Stop when blocked (ask for help)
-- Only close epic after review-implementation approves
+## Common Excuses
 
-**Key difference from batch:** Tasks adapt to reality. Epic stays constant.
+All of these mean: Re-read epic, check anti-patterns, ask for help:
+- "This requirement is too hard"
+- "I'll come back to this later"
+- "Let me fake this to make tests pass"
+- "Existing task is wasteful, but it's planned"
+- "All tasks done, epic must be complete"
+
+</critical_rules>
+
+<verification_checklist>
+
+Before closing each task:
+- [ ] ALL TodoWrite substeps completed (no pending)
+- [ ] Tests passing (use test-runner agent)
+- [ ] Changes committed
+- [ ] Task actually done (not "mostly")
+
+Before closing epic:
+- [ ] ALL success criteria met (check epic)
+- [ ] review-implementation skill used and approved
+- [ ] No anti-patterns violated
+- [ ] All tasks closed
+
+</verification_checklist>
+
+<integration>
+
+**This skill calls:**
+- writing-plans (creates epic and first task before this runs)
+- test-driven-development (when implementing features)
+- test-runner (for running tests without output pollution)
+- review-implementation (final validation before closing epic)
+- finishing-a-development-branch (after review approves)
+
+**This skill is called by:**
+- User (via /hyperpowers:execute-plan command)
+- After writing-plans creates epic
+
+**Agents used:**
+- hyperpowers:test-runner (run tests, return summary only)
+
+</integration>
+
+<resources>
+
+**bd command reference:**
+- See [bd commands](../common-patterns/bd-commands.md) for complete command list
+
+**When stuck:**
+- Hit blocker → Re-read epic, check anti-patterns, research or ask
+- Don't understand instruction → Stop and ask (never guess)
+- Verification fails repeatedly → Check epic anti-patterns, ask for help
+- Tempted to skip steps → Check TodoWrite, complete all substeps
+
+</resources>

@@ -1,21 +1,39 @@
 ---
 name: debugging-with-tools
-description: Use when encountering any bug, test failure, or unexpected behavior - systematic debugging using debuggers, internet research, and agents to find root cause before proposing fixes; never fix symptoms without understanding the problem
+description: Use when encountering bugs or test failures - systematic debugging using debuggers, internet research, and agents to find root cause before fixing
 ---
 
-# Debugging With Tools
+<skill_overview>
+Random fixes waste time and create new bugs. Always use tools to understand root cause BEFORE attempting fixes. Symptom fixes are failure.
+</skill_overview>
 
-## Overview
+<rigidity_level>
+MEDIUM FREEDOM - Must complete investigation phases (tools → hypothesis → test) before fixing.
 
-Random fixes waste time and create new bugs. The fastest path to a working solution is systematic investigation using the right tools.
+Can adapt tool choice to language/context. Never skip investigation or guess at fixes.
+</rigidity_level>
 
-**Core principle:** ALWAYS use tools to understand root cause BEFORE attempting fixes. Symptom fixes are failure.
+<quick_reference>
 
-**Violating the letter of this process is violating the spirit of debugging.**
+| Phase | Tools to Use | Output |
+|-------|--------------|--------|
+| **1. Investigate** | Error messages, internet-researcher agent, debugger, codebase-investigator | Root cause understanding |
+| **2. Hypothesize** | Form theory based on evidence (not guesses) | Testable hypothesis |
+| **3. Test** | Validate hypothesis with minimal change | Confirms or rejects theory |
+| **4. Fix** | Implement proper fix for root cause | Problem solved permanently |
 
-## When to Use
+**FORBIDDEN:** Skip investigation → guess at fix → hope it works
+**REQUIRED:** Tools → evidence → hypothesis → test → fix
 
-Use for ANY technical issue:
+**Key agents:**
+- `internet-researcher` - Search error messages, known bugs, solutions
+- `codebase-investigator` - Understand code structure, find related code
+- `test-runner` - Run tests without output pollution
+
+</quick_reference>
+
+<when_to_use>
+**Use for ANY technical issue:**
 - Test failures
 - Bugs in production or development
 - Unexpected behavior
@@ -23,525 +41,453 @@ Use for ANY technical issue:
 - Integration issues
 - Performance problems
 
-**Use this ESPECIALLY when:**
+**ESPECIALLY when:**
 - "Just one quick fix" seems obvious
 - Under time pressure (emergencies make guessing tempting)
-- Error message is unclear or cryptic
-- You don't fully understand the issue
+- Error message is unclear
 - Previous fix didn't work
+</when_to_use>
 
-## The Four Phases
+<the_process>
 
-You MUST complete each phase before proceeding to the next.
+## Phase 1: Tool-Assisted Investigation
 
-### Phase 1: Tool-Assisted Investigation
+**BEFORE attempting ANY fix, gather evidence with tools:**
 
-**BEFORE attempting ANY fix, use tools to gather evidence:**
+### 1. Read Complete Error Messages
 
-#### 1. Read Error Messages Completely
-
-**Read complete errors:**
-- Entire error message, not just first line
-- Complete stack trace, all frames
+- Entire error message (not just first line)
+- Complete stack trace (all frames)
 - Line numbers, file paths, error codes
 - Stack traces show exact execution path
 
-#### 2. Search the Internet FIRST
+### 2. Search Internet FIRST (Use internet-researcher Agent)
 
-**When error is unclear:**
-
-**Dispatch hyperpowers:internet-researcher agent with:**
-- "Search for this error: [exact error message]"
-- "Find Stack Overflow discussions about: [error]"
-- "Search for GitHub issues related to: [library name] + [error]"
-- "Check if this is a known bug in: [dependency] version [X]"
-
-**What to look for in results:**
-- Exact match to your error
-- Similar symptoms
-- Known bugs in your dependency versions
-- Official documentation explaining the error
-- Workarounds or fixes that worked for others
-
-**Example delegation:**
+**Dispatch internet-researcher with:**
 ```
-Error: "dyld: Symbol not found: _OBJC_CLASS_$_WKWebView"
-
-Dispatch hyperpowers:internet-researcher with:
-"Search for 'dyld Symbol not found _OBJC_CLASS_$_WKWebView'
+"Search for error: [exact error message]
 - Check Stack Overflow solutions
-- Look for iOS/macOS framework linking issues
-- Find Xcode project configuration fixes"
+- Look for GitHub issues in [library] version [X]
+- Find official documentation explaining this error
+- Check if this is a known bug"
 ```
 
-#### 3. Use Debugger to Inspect State
+**What agent should find:**
+- Exact matches to your error
+- Similar symptoms and solutions
+- Known bugs in your dependency versions
+- Workarounds that worked for others
 
-**Before adding print statements, recommend user runs debugger:**
+### 3. Use Debugger to Inspect State
 
-**IMPORTANT:** Claude cannot run interactive debuggers (lldb/gdb/DevTools) directly. Instead:
-1. Guide user to run debugger with specific commands
-2. OR add instrumentation that Claude CAN add (logging, assertions)
-3. Ask user to share debugger output
+**Claude cannot run debuggers directly. Instead:**
 
-**Recommend debugger to user:**
-
-**For compiled languages (Rust, Swift, C++):**
+**Option A - Recommend debugger to user:**
 ```
-"Let's use lldb to inspect the state at the error location.
-
-Please run these commands:
-  lldb target/debug/myapp
-  (lldb) breakpoint set --file main.rs --line 42
-  (lldb) run
-
-When the breakpoint hits, run:
-  (lldb) frame variable          # Shows all local variables
-  (lldb) print my_variable       # Inspects specific variable
-  (lldb) bt                      # Shows stack trace
-  (lldb) up                      # Moves up stack frame
-
-Please share the output, especially the values of: [list variables]"
+"Let's use lldb/gdb/DevTools to inspect state at error location.
+Please run: [specific commands]
+When breakpoint hits: [what to inspect]
+Share output with me."
 ```
 
-**For browser JavaScript:**
-```
-"Let's use browser DevTools to inspect the state.
-
-Please:
-1. Open DevTools (F12)
-2. Go to Sources tab
-3. Set breakpoint at file.js:line 42
-4. Refresh the page
-5. When debugger pauses, check these variables in the Scope panel:
-   - [variable names]
-6. Share the values you see"
-```
-
-**Alternative: Automated debugging tools Claude CAN use:**
-
-#### Option A: lldb Batch Mode (Claude can run this)
-
-```bash
-# Create lldb script
-cat > debug-script.lldb <<'EOF'
-breakpoint set --file main.rs --line 42
-run
-frame variable
-bt
-quit
-EOF
-
-# Run non-interactively
-lldb -s debug-script.lldb target/debug/myapp 2>&1
-```
-
-**Or single command:**
-```bash
-lldb -o "breakpoint set --file main.rs --line 42" \
-     -o "run" \
-     -o "frame variable" \
-     -o "bt" \
-     -o "quit" \
-     -- target/debug/myapp 2>&1
-```
-
-#### Option B: strace (Linux - system call tracing)
-
-```bash
-# Trace specific system calls
-strace -e trace=open,read,write cargo test 2>&1
-
-# Find which files are opened
-strace -e trace=open cargo test 2>&1 | grep "\.env"
-
-# See all syscalls with timestamps
-strace -tt cargo test 2>&1
-```
-
-#### Option C: Add instrumentation (simplest)
-
+**Option B - Add instrumentation Claude can add:**
 ```rust
-// Claude can add this logging directly
-fn process_request(request: &Request) {
-    eprintln!("DEBUG process_request:");
-    eprintln!("  request.email: {:?}", request.email);
-    eprintln!("  request.name: {:?}", request.name);
-    eprintln!("  is_empty: {}", request.email.is_empty());
-    eprintln!("  stack: {:?}", std::backtrace::Backtrace::capture());
+// Add logging
+println!("DEBUG: var = {:?}, state = {:?}", var, state);
 
-    // Existing code...
-}
+// Add assertions
+assert!(condition, "Expected X but got {:?}", actual);
 ```
 
-**Run with instrumentation:**
-```bash
-cargo test 2>&1 | grep "DEBUG process_request" -A 10
+### 4. Investigate Codebase (Use codebase-investigator Agent)
+
+**Dispatch codebase-investigator with:**
+```
+"Error occurs in function X at line Y.
+Find:
+- How is X called? What are the callers?
+- What does variable Z contain at this point?
+- Are there similar functions that work correctly?
+- What changed recently in this area?"
 ```
 
-**When to use each approach:**
-- **lldb batch**: Need to inspect variables at specific breakpoint
-- **strace**: File access, network, process issues
-- **Instrumentation**: Most flexible, Claude can add/remove easily
+## Phase 2: Form Hypothesis
 
-#### 4. Find Working Examples
+**Based on evidence (not guesses):**
 
-**Dispatch hyperpowers:codebase-investigator to find patterns:**
-
-```
-"Find similar code that handles [feature] successfully"
-"Locate working examples of [pattern] in this codebase"
-"Show me how [similar component] implements [behavior]"
-```
-
-**What investigator should find:**
-- Similar working code in same codebase
-- How other parts handle similar situations
-- Existing patterns you should follow
-- Dependencies/imports/config the working code uses
+1. **State what you know** (from investigation)
+2. **Propose theory** explaining the evidence
+3. **Make prediction** that tests the theory
 
 **Example:**
 ```
-Problem: WebSocket connection failing
-
-Dispatch hyperpowers:codebase-investigator:
-"Find existing WebSocket connections that work
-- What configuration do they use?
-- How do they handle connection errors?
-- What libraries/versions do they use?"
+Known: Error "null pointer" at auth.rs:45 when email is empty
+Theory: Empty email bypasses validation, passes null to login()
+Prediction: Adding validation before login() will prevent error
+Test: Add validation, verify error doesn't occur with empty email
 ```
 
-#### 5. Reproduce Consistently
+**NEVER:**
+- Guess without evidence
+- Propose fix without hypothesis
+- Skip to "try this and see"
 
-**Can you trigger it reliably?**
-- What are the exact steps?
-- Does it happen every time?
-- What conditions must be present?
+## Phase 3: Test Hypothesis
 
-**If not reproducible:**
-- Add more logging
-- Check for race conditions
-- Look for environmental differences
-- Wait until reproducible before fixing
+**Minimal change to validate theory:**
 
-#### 6. Check Recent Changes
+1. Make smallest change that tests hypothesis
+2. Run test/reproduction case
+3. Observe result
 
-**IMPORTANT:** Skip this step for test failures if pre-commit hooks enforce passing tests. All test failures are from your current changes.
+**If confirmed:** Proceed to Phase 4
+**If rejected:** Return to Phase 1 with new information
 
-**For non-test issues, or when pre-commit hooks don't enforce tests:**
+## Phase 4: Implement Fix
 
-**What changed that could cause this?**
-```bash
-# See recent commits
-git log --oneline -20
+**After understanding root cause:**
 
-# See what changed in relevant files
-git log -p -- path/to/file.rs
+1. Write test reproducing bug (RED phase - use test-driven-development skill)
+2. Implement proper fix addressing root cause
+3. Verify test passes (GREEN phase)
+4. Run full test suite (regression check)
+5. Commit fix
 
-# Compare working branch to broken
-git diff working-branch...current-branch
+**The fix should:**
+- Address root cause (not symptom)
+- Be minimal and focused
+- Include test preventing regression
+
+</the_process>
+
+<examples>
+
+<example>
+<scenario>Developer encounters test failure, immediately tries "obvious" fix without investigation</scenario>
+
+<code>
+Test error:
+```
+FAIL: test_login_expired_token
+AssertionError: Expected Err(TokenExpired), got Ok(User)
 ```
 
-**Also check:**
-- New dependencies added
-- Config file changes
-- Environment variable changes
-- System updates
+Developer thinks: "Obviously the token expiration check is wrong"
 
-### Phase 2: Root Cause Analysis
-
-**Synthesize evidence from tools to understand the problem:**
-
-#### 1. Trace Backward Through Call Stack
-
-**When error is deep in execution:**
-
-Use debugger or stack trace to trace backward:
-- Where does invalid data originate?
-- What called this with bad value?
-- Keep tracing up until you find the source
-- Fix at source, not at symptom
-
-**Example stack trace analysis:**
-```
-Error in: database.execute()
-  called by: UserRepository.save()
-  called by: UserService.createUser()
-  called by: API handler
-  called with: email = ""  ← FOUND IT
-
-Root cause: API handler not validating empty email
-Symptom: Database complaining about empty string
-Fix location: Add validation at API handler, not database layer
-```
-
-#### 2. Compare Working vs. Broken
-
-**Use hyperpowers:codebase-investigator results:**
-- What's different between working and broken?
-- List every difference, however small
-- Don't assume "that can't matter"
-- Check configuration, imports, versions
-
-#### 3. Review Internet Research
-
-**From hyperpowers:internet-researcher findings:**
-- Do solutions match your situation exactly?
-- What root causes do others identify?
-- Are there multiple explanations for this error?
-- Is this a known bug in your version?
-
-#### 4. Form Hypothesis
-
-**State clearly:**
-- "I think X is the root cause because Y"
-- Write it down
-- Be specific, not vague
-
-**Example:**
-- ❌ "Something wrong with networking"
-- ✅ "WebSocket fails because WKWebView framework not linked in Xcode project, based on symbol error and Stack Overflow matches"
-
-### Phase 3: Hypothesis Testing
-
-**Scientific method with minimal changes:**
-
-#### 1. Test Minimally
-
-**Make the SMALLEST possible change to test hypothesis:**
-- One variable at a time
-- Don't fix multiple things at once
-- Use debugger to verify intermediate state
-
-**Example:**
-```
-Hypothesis: Missing framework link
-
-Minimal test:
-1. Add framework to Xcode "Link Binary with Libraries"
-2. Clean build
-3. Run in debugger
-4. Check if symbol error gone
-
-Don't also:
-- Update other dependencies
-- Change code
-- Modify configuration
-```
-
-#### 2. Verify with Testing
-
-**Option A: Ask user to verify with debugger (if interactive verification needed):**
-```
-"To confirm this fix works, please run the debugger:
-  lldb target/debug/myapp
-  (lldb) breakpoint set --file file.rs --line 42
-  (lldb) run
-
-When it hits the breakpoint, verify:
-  - [Variable X] should now be [expected value]
-  - [Behavior Y] should happen
-
-Does the debugger show the fix working?"
-```
-
-**Option B: Add verification instrumentation (Claude can do this):**
+Makes change without investigation:
 ```rust
-fn fixed_function() {
-    eprintln!("DEBUG: Entering fixed_function");
-    eprintln!("  variable value: {:?}", variable);
-    assert!(!variable.is_empty(), "Fix: variable should not be empty");
-
-    // Fixed code...
+// "Fix" - just check if token is expired
+if token.expires_at < now() {
+    return Err(AuthError::TokenExpired);
 }
 ```
 
-**Option C: Write a test (preferred - Claude can do this):**
+Commits without testing other cases.
+</code>
+
+<why_it_fails>
+**No investigation:**
+- Didn't read error completely
+- Didn't check what `expires_at` contains
+- Didn't debug to see token state
+- Didn't search for similar issues
+
+**What actually happened:** Token `expires_at` was being parsed incorrectly, always showing future date. The "fix" adds dead code that never runs.
+
+**Result:** Bug not fixed, new dead code added, time wasted.
+</why_it_fails>
+
+<correction>
+**Phase 1 - Investigate with tools:**
+
+```bash
+# 1. Read complete error
+FAIL: test_login_expired_token at line 45
+Expected: Err(TokenExpired)
+Got: Ok(User { id: 123 })
+Token: { expires_at: "2099-01-01", ... }
+```
+
+**Dispatch internet-researcher:**
+```
+"Search for: token expiration always showing future date
+- Check date parsing bugs
+- Look for timezone issues
+- Find JWT expiration handling"
+```
+
+**Add instrumentation:**
 ```rust
-#[test]
-fn test_fix_works() {
-    let result = fixed_function();
-    assert!(result.is_ok());
+println!("DEBUG: expires_at = {:?}, now = {:?}, expired = {:?}",
+         token.expires_at, now(), token.expires_at < now());
+```
+
+**Run test again:**
+```
+DEBUG: expires_at = 2099-01-01T00:00:00Z, now = 2024-01-15T10:30:00Z, expired = false
+```
+
+**Phase 2 - Hypothesis:**
+"Token `expires_at` is being set to 2099, not actual expiration. Problem is in token creation, not validation."
+
+**Phase 3 - Test:**
+Check token creation code:
+```rust
+// Found the bug!
+fn create_token() -> Token {
+    Token {
+        expires_at: "2099-01-01".parse()?, // HARDCODED!
+        ...
+    }
 }
 ```
 
-#### 3. Run Tests via hyperpowers:test-runner Agent
-
-**Don't pollute context with test output:**
-
-Dispatch hyperpowers:test-runner agent:
-- "Run: cargo test"
-- "Run: npm test"
-- "Run: pytest"
-
-Agent returns:
-- ✓ Summary: X passed, Y failed
-- Complete failure details if any
-- Exit code for verification
-
-#### 4. Decision Point
-
-**Did it work?**
-- YES → Proceed to Phase 4 (Implementation)
-- NO → Form new hypothesis, return to Phase 2
-- Never add more fixes on top
-
-**If you don't understand:**
-- Say "I don't understand X"
-- Dispatch hyperpowers:internet-researcher for more research
-- Ask human partner for help
-- Never pretend to know
-
-### Phase 4: Proper Implementation
-
-**After confirming hypothesis, implement properly:**
-
-#### 1. Create Failing Test Case
-
-**REQUIRED: Write test that reproduces the bug:**
-```typescript
-// RED - This test should fail before fix
-test('rejects empty email', () => {
-  expect(() => createUser({ email: '' }))
-    .toThrow('Email cannot be empty');
-});
+**Phase 4 - Fix root cause:**
+```rust
+fn create_token(duration: Duration) -> Token {
+    Token {
+        expires_at: now() + duration,  // Correct
+        ...
+    }
+}
 ```
 
-**Run test via hyperpowers:test-runner agent to confirm it fails:**
-- Dispatch hyperpowers:test-runner: "Run: npm test -- rejects-empty-email"
-- Verify test fails with expected error
-- This proves test actually tests the bug
+**Result:** Root cause fixed, test passes, no dead code.
+</correction>
+</example>
 
-**REQUIRED: Use Skill tool to invoke:** `hyperpowers:test-driven-development` for proper test writing
+<example>
+<scenario>Developer skips internet search, reinvents solution to known problem</scenario>
 
-#### 2. Implement Minimal Fix
+<code>
+Error:
+```
+error: linking with `cc` failed: exit status: 1
+ld: symbol(s) not found for architecture arm64
+```
 
-**Fix the root cause identified:**
-- ONE change at a time
-- Address source, not symptom
-- No "while I'm here" improvements
-- No bundled refactoring
+Developer thinks: "Must be a linking issue, I'll add flags"
 
-#### 3. Verify Fix via hyperpowers:test-runner Agent
+Spends 2 hours trying different linker flags:
+```toml
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-arg=-undefined dynamic_lookup"]
+# Doesn't work, tries more flags...
+```
+</code>
 
-**Run tests without polluting context:**
+<why_it_fails>
+**Skipped internet search:**
+- This is a common error with known solutions
+- Stack Overflow has exact fix
+- Official docs explain the issue
+- Wasted 2 hours reinventing solution
 
-Dispatch hyperpowers:test-runner agent:
-- "Run full test suite: cargo test"
-- Agent reports: summary + failures only
-- Verify new test passes
-- Verify no other tests broken
+**Why it happens:** Impatience, thinking "I can figure this out faster"
+</why_it_fails>
 
-#### 4. Update bd Issue
+<correction>
+**Dispatch internet-researcher FIRST:**
 
-**Track the work:**
+```
+"Search for: 'symbol not found for architecture arm64' Rust linking
+- Check Stack Overflow solutions
+- Look for Xcode/macOS specific fixes
+- Find Cargo configuration for Apple Silicon"
+```
+
+**Agent returns (30 seconds):**
+```
+Found on Stack Overflow (2.4k upvotes):
+This occurs when Xcode Command Line Tools aren't installed or outdated.
+
+Solution:
+xcode-select --install
+
+Or update existing:
+softwareupdate --all --install --force
+```
+
+**Apply solution:**
 ```bash
-# Update with findings
-bd edit bd-123 --design "
-Root cause: Missing WKWebView framework link
-Solution: Added framework to Xcode project
-Test: Added test_webview_loads
-
-References:
-- Stack Overflow: [URL]
-- Apple docs: [URL]
-"
-
-# Close issue
-bd close bd-123
+xcode-select --install
+# Wait for installation
+cargo build
+# Success!
 ```
 
-#### 5. If Fix Doesn't Work
+**Result:** Fixed in 5 minutes, not 2 hours.
+</correction>
+</example>
 
-**STOP and count:**
-- How many fixes have you tried?
-- If < 3: Return to Phase 1 with new information
-- **If ≥ 3: STOP and question the architecture**
+<example>
+<scenario>Developer fixes symptom without understanding root cause, bug returns different way</scenario>
 
-**Pattern indicating architectural problem:**
-- Each fix reveals new coupling/shared state
-- Fixes require "massive refactoring"
-- Each fix creates new symptoms elsewhere
+<code>
+Bug: Users can delete other users' posts
 
-**STOP and discuss with human partner:**
-- Is this pattern fundamentally sound?
-- Should we refactor architecture vs. fixing symptoms?
-- Are we "sticking with it through sheer inertia"?
+Developer notices: DELETE /posts/:id doesn't check ownership
 
-This is NOT a failed hypothesis - this is wrong architecture.
-
-## Tool Usage Summary
-
-| Phase | Tools to Use | Purpose | Who Uses It |
-|-------|-------------|---------|-------------|
-| **Investigation** | hyperpowers:internet-researcher | Search error messages, find solutions | Claude (agent) |
-| | lldb batch mode | Non-interactive variable inspection | Claude (bash) |
-| | strace/dtrace | System call tracing | Claude (bash) |
-| | Instrumentation (logging) | Add debug output | Claude (adds code) |
-| | Interactive debuggers | Step through execution | User (Claude guides) |
-| | hyperpowers:codebase-investigator | Find working examples | Claude (agent) |
-| **Analysis** | Stack trace | Trace backward to root cause | Claude (reads) |
-| | Git history | Find what changed | Claude (bash) |
-| **Testing** | Test writing | Verify hypothesis with test | Claude (adds code) |
-| | hyperpowers:test-runner agent | Run tests without context pollution | Claude (agent) |
-| **Implementation** | hyperpowers:test-driven-development | Write proper failing test | Claude (skill) |
-| | hyperpowers:test-runner agent | Verify fix, check regressions | Claude (agent) |
-
-**Key distinction:**
-- **Claude can use directly:** Agents, lldb batch mode, strace, instrumentation, tests, git, grep
-- **User must use:** Interactive debuggers (lldb/gdb/DevTools when stepping through)
-- **Prefer:** Automated tools (lldb batch, strace, instrumentation) over asking user
-
-## Red Flags
-
-If you catch yourself thinking:
-- "Quick fix for now, investigate later"
-- "Just try changing X and see if it works"
-- "Skip the debugger, print statements are faster"
-- "Skip the test, I'll manually verify"
-- "I know the answer, don't need to search"
-- "It's probably X, let me fix that"
-- "Add multiple changes, run tests"
-- Proposing solutions before debugger
-- Proposing solutions before internet research
-- **"One more fix attempt" (when already tried 2+)**
-
-**All of these mean: Stop. Return to Phase 1.**
-
-## Common Rationalizations - STOP
-
-| Excuse | Reality |
-|--------|---------|
-| "Issue is simple, don't need debugger" | Debugger would show you're wrong in 30 seconds. |
-| "Print statements are faster than debugger" | Debugger shows ALL variables, not just ones you printed. |
-| "Error is obvious, don't need to search" | 5 minutes of research could save you hours. |
-| "No similar code exists" | Dispatch hyperpowers:codebase-investigator to verify. |
-| "Emergency, no time for process" | Systematic debugging is FASTER than guess-and-check. |
-| "Just try this first, then investigate" | First fix sets the pattern. Do it right from start. |
-| "I'll write test after confirming fix works" | Untested fixes don't stick. Test proves it. |
-| "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question design. |
-
-## Integration with Other Skills
-
-**This skill requires:**
-- **hyperpowers:test-driven-development** - REQUIRED for creating failing test (Phase 4, Step 1)
-- **hyperpowers:verification-before-completion** - REQUIRED before claiming success
-
-**This skill uses:**
-- **hyperpowers:internet-researcher agent** - Search errors, find solutions (Phase 1)
-- **hyperpowers:codebase-investigator agent** - Find working patterns (Phase 1)
-- **hyperpowers:test-runner agent** - Run tests without context pollution (Phase 3, Phase 4)
-
-**Complementary skills:**
-- **hyperpowers:root-cause-tracing** - Deep stack trace analysis (when needed)
-- **hyperpowers:defense-in-depth** - Add validation at multiple layers after fixing
-
-## Debugger Quick Reference
-
-**For detailed debugger commands (lldb, gdb, DevTools, strace), see:** [resources/debugger-reference.md](resources/debugger-reference.md)
-
+"Fix":
+```python
+@app.delete("/posts/{post_id}")
+def delete_post(post_id: int, user: User):
+    post = get_post(post_id)
+    if post.author_id != user.id:
+        raise Forbidden()
+    delete(post)
 ```
 
+Bug "fixed"... but bug report comes back: "Users can edit other users' posts"
+</code>
 
-## Complete Debugging Example
+<why_it_fails>
+**Symptom fix:**
+- Fixed DELETE endpoint
+- Didn't investigate root cause
+- Didn't check other endpoints
 
-**For a detailed debugging session walkthrough, see:** [resources/debugging-session-example.md](resources/debugging-session-example.md)
+**Root cause:** No authorization middleware checking ownership across ALL endpoints.
+
+**Result:** Whack-a-mole fixing symptoms, not the underlying issue.
+</why_it_fails>
+
+<correction>
+**Phase 1 - Investigate with codebase-investigator:**
+
+```
+"User can delete other users' posts. Investigate:
+- What authorization exists across all post endpoints?
+- Is there a pattern for ownership checks?
+- Which other endpoints access posts?
+- Is there middleware handling this?"
+```
+
+**Agent reports:**
+```
+Found:
+- DELETE /posts/:id - NO ownership check
+- PUT /posts/:id - NO ownership check
+- GET /posts/:id - NO ownership check (allows viewing private posts!)
+- No authorization middleware found
+- Similar pattern in comments, likes endpoints
+```
+
+**Phase 2 - Hypothesis:**
+"Missing authorization layer. Need middleware checking resource ownership across ALL endpoints."
+
+**Phase 4 - Fix root cause:**
+```python
+# Add authorization middleware
+class OwnershipMiddleware:
+    def check_ownership(self, resource, user):
+        if resource.author_id != user.id:
+            raise Forbidden()
+
+# Apply to all endpoints
+@app.delete("/posts/{post_id}")
+@require_ownership(Post)
+def delete_post(...):
+    ...
+
+@app.put("/posts/{post_id}")
+@require_ownership(Post)
+def update_post(...):
+    ...
+```
+
+**Result:** Root cause fixed, ALL endpoints secured, not just one symptom.
+</correction>
+</example>
+
+</examples>
+
+<critical_rules>
+
+## Rules That Have No Exceptions
+
+1. **Tools before fixes** → Never guess without investigation
+   - Use internet-researcher for errors
+   - Use debugger or instrumentation for state
+   - Use codebase-investigator for context
+
+2. **Evidence-based hypotheses** → Not guesses or hunches
+   - State what tools revealed
+   - Propose theory explaining evidence
+   - Make testable prediction
+
+3. **Test hypothesis before fixing** → Minimal change to validate
+   - Smallest change that tests theory
+   - Observe result
+   - If wrong, return to investigation
+
+4. **Fix root cause, not symptom** → One fix, many symptoms prevented
+   - Understand why problem occurred
+   - Fix the underlying issue
+   - Don't play whack-a-mole
+
+## Common Excuses
+
+All of these mean: Stop, use tools to investigate:
+- "The fix is obvious"
+- "I know what this is"
+- "Just a quick try"
+- "No time for debugging"
+- "Error message is clear enough"
+- "Internet search will take too long"
+
+</critical_rules>
+
+<verification_checklist>
+
+Before proposing any fix:
+- [ ] Read complete error message (not just first line)
+- [ ] Dispatched internet-researcher for unclear errors
+- [ ] Used debugger or added instrumentation to inspect state
+- [ ] Dispatched codebase-investigator to understand context
+- [ ] Formed hypothesis based on evidence (not guesses)
+- [ ] Tested hypothesis with minimal change
+- [ ] Verified hypothesis confirmed before fixing
+
+Before committing fix:
+- [ ] Written test reproducing bug (RED phase)
+- [ ] Verified test fails before fix
+- [ ] Implemented fix addressing root cause
+- [ ] Verified test passes after fix (GREEN phase)
+- [ ] Ran full test suite (regression check)
+
+</verification_checklist>
+
+<integration>
+
+**This skill calls:**
+- internet-researcher (search errors, known bugs, solutions)
+- codebase-investigator (understand code structure, find related code)
+- test-driven-development (write test for bug, implement fix)
+- test-runner (run tests without output pollution)
+
+**This skill is called by:**
+- fixing-bugs (complete bug fix workflow)
+- root-cause-tracing (deep debugging for complex issues)
+- Any skill when encountering unexpected behavior
+
+**Agents used:**
+- hyperpowers:internet-researcher (search for error solutions)
+- hyperpowers:codebase-investigator (understand codebase context)
+- hyperpowers:test-runner (run tests, return summary only)
+
+</integration>
+
+<resources>
+
+**Detailed guides:**
+- [Debugger reference](resources/debugger-reference.md) - LLDB, GDB, DevTools commands
+- [Debugging session example](resources/debugging-session-example.md) - Complete walkthrough
+
+**When stuck:**
+- Error unclear → Dispatch internet-researcher with exact error text
+- Don't understand code flow → Dispatch codebase-investigator
+- Need to inspect runtime state → Recommend debugger to user or add instrumentation
+- Tempted to guess → Stop, use tools to gather evidence first
+
+</resources>

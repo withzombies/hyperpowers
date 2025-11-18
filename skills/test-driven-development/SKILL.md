@@ -1,452 +1,336 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code - write the test first, watch it fail, write minimal code to pass; ensures tests actually verify behavior by requiring failure first
+description: Use when implementing features or fixing bugs - enforces RED-GREEN-REFACTOR cycle requiring tests to fail before writing code
 ---
 
-# Test-Driven Development (TDD)
+<skill_overview>
+Write the test first, watch it fail, write minimal code to pass. If you didn't watch the test fail, you don't know if it tests the right thing.
+</skill_overview>
 
-## Overview
+<rigidity_level>
+LOW FREEDOM - Follow these exact steps in order. Do not adapt.
 
-Write the test first. Watch it fail. Write minimal code to pass.
+Violating the letter of the rules is violating the spirit of the rules.
+</rigidity_level>
 
-**Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
+<quick_reference>
 
-**Violating the letter of the rules is violating the spirit of the rules.**
+| Phase | Action | Command Example | Expected Result |
+|-------|--------|-----------------|-----------------|
+| **RED** | Write failing test | `cargo test test_name` | FAIL (feature missing) |
+| **Verify RED** | Confirm correct failure | Check error message | "function not found" or assertion fails |
+| **GREEN** | Write minimal code | Implement feature | Test passes |
+| **Verify GREEN** | All tests pass | `cargo test` | All green, no warnings |
+| **REFACTOR** | Clean up code | Improve while green | Tests still pass |
 
-## When to Use
+**Iron Law:** NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 
-**Always:**
+</quick_reference>
+
+<when_to_use>
+**Always use for:**
 - New features
 - Bug fixes
-- Refactoring
-- Behavior changes
+- Refactoring with behavior changes
+- Any production code
 
-**Exceptions (ask your human partner):**
-- Throwaway prototypes
+**Ask your human partner for exceptions:**
+- Throwaway prototypes (will be deleted)
 - Generated code
 - Configuration files
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
+</when_to_use>
 
-## The Iron Law
+<the_process>
 
-```
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
-```
-
-Write code before the test? Delete it. Start over.
-
-**No exceptions:**
-- Never keep as "reference"
-- Never "adapt" while writing tests
-- Never look at it
-- Delete means delete
-
-Implement fresh from tests.
-
-## Red-Green-Refactor
-
-```dot
-digraph tdd_cycle {
-    rankdir=LR;
-    red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
-    verify_red [label="Verify fails\ncorrectly", shape=diamond];
-    green [label="GREEN\nMinimal code", shape=box, style=filled, fillcolor="#ccffcc"];
-    verify_green [label="Verify passes\nAll green", shape=diamond];
-    refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
-    next [label="Next", shape=ellipse];
-
-    red -> verify_red;
-    verify_red -> green [label="yes"];
-    verify_red -> red [label="wrong\nfailure"];
-    green -> verify_green;
-    verify_green -> refactor [label="yes"];
-    verify_green -> green [label="no"];
-    refactor -> verify_green [label="stay\ngreen"];
-    verify_green -> next;
-    next -> red;
-}
-```
-
-### RED - Write Failing Test
+## 1. RED - Write Failing Test
 
 Write one minimal test showing what should happen.
 
 **Requirements:**
-- One behavior
-- Clear name
-- Real code (no mocks unless unavoidable)
+- Test one behavior only ("and" in name? Split it)
+- Clear name describing behavior
+- Use real code (no mocks unless unavoidable)
 
-**For detailed examples in Rust, Swift, and TypeScript, see:** [resources/language-examples.md](resources/language-examples.md)
+See [resources/language-examples.md](resources/language-examples.md) for Rust, Swift, TypeScript examples.
 
-### Verify RED - Watch It Fail
+## 2. Verify RED - Watch It Fail
 
 **MANDATORY. Never skip.**
 
-```bash
-# Rust
-cargo test tests::retries_failed_operations_3_times
+Run the test and confirm:
+- ✓ Test **fails** (not errors with syntax issues)
+- ✓ Failure message is expected ("function not found" or assertion fails)
+- ✓ Fails because feature missing (not typos)
 
-# Swift
-swift test --filter RetryTests.testRetriesFailedOperations3Times
+**If test passes:** You're testing existing behavior. Fix the test.
+**If test errors:** Fix syntax error, re-run until it fails correctly.
 
-# TypeScript (Jest)
-npm test -- --testNamePattern="retries failed operations"
+## 3. GREEN - Write Minimal Code
 
-# TypeScript (Vitest)
-npm test -- -t "retries failed operations"
-```
+Write simplest code to pass the test. Nothing more.
 
-Confirm:
-- Test fails (not errors)
-- Failure message is expected
-- Fails because feature missing (not typos)
+**Key principle:** Don't add features the test doesn't require. Don't refactor other code. Don't "improve" beyond the test.
 
-**Test passes?** You're testing existing behavior. Fix test.
-
-**Test errors?** Fix error, re-run until it fails correctly.
-
-### GREEN - Minimal Code
-
-Write simplest code to pass the test.
-
-**Key principle:** Don't add features, refactor other code, or "improve" beyond the test.
-
-**For detailed examples showing minimal implementations, see:** [resources/language-examples.md](resources/language-examples.md)
-
-### Verify GREEN - Watch It Pass
+## 4. Verify GREEN - Watch It Pass
 
 **MANDATORY.**
 
-```bash
-# Rust
-cargo test tests::retries_failed_operations_3_times
+Run tests and confirm:
+- ✓ New test passes
+- ✓ All other tests still pass
+- ✓ No errors or warnings
 
-# Swift
-swift test --filter RetryTests.testRetriesFailedOperations3Times
+**If test fails:** Fix code, not test.
+**If other tests fail:** Fix now before proceeding.
 
-# TypeScript
-npm test -- --testNamePattern="retries failed operations"
-```
+## 5. REFACTOR - Clean Up
 
-Confirm:
-- Test passes
-- Other tests still pass
-- Output pristine (no errors, warnings)
-
-**Test fails?** Fix code, not test.
-
-**Other tests fail?** Fix now.
-
-### REFACTOR - Clean Up
-
-After green only:
+**Only after green:**
 - Remove duplication
 - Improve names
 - Extract helpers
 
 Keep tests green. Don't add behavior.
 
-### Repeat
+## 6. Repeat
 
 Next failing test for next feature.
 
-## Good Tests
+</the_process>
 
-| Quality | Good | Bad |
-|---------|------|-----|
-| **Minimal** | One thing. "and" in name? Split it. | `func testValidatesEmailAndDomainAndWhitespace()` |
-| **Clear** | Name describes behavior | `#[test] fn test1()` |
-| **Shows intent** | Demonstrates desired API | Obscures what code should do |
+<examples>
 
-## Why Order Matters
+<example>
+<scenario>Developer writes implementation first, then adds test that passes immediately</scenario>
 
-**"I'll write tests after to verify it works"**
+<code>
+// Code written FIRST
+def validate_email(email):
+    return "@" in email  # Bug: accepts "@@"
 
-Tests written after code pass immediately. Passing immediately proves nothing:
-- Might test wrong thing
-- Might test implementation, not behavior
-- Might miss edge cases you forgot
-- You never saw it catch the bug
+// Test written AFTER
+def test_validate_email():
+    assert validate_email("user@example.com")  # Passes immediately!
+    // Missing edge case: assert not validate_email("@@")
+</code>
 
-Test-first forces you to see the test fail, proving it actually tests something.
+<why_it_fails>
+When test passes immediately:
+- Never proved the test catches bugs
+- Only tested happy path you remembered
+- Forgot edge cases (like "@@")
+- Bug ships to production
 
-**"I already manually tested all the edge cases"**
+Tests written after verify remembered cases, not required behavior.
+</why_it_fails>
 
-Manual testing is ad-hoc. You think you tested everything but:
-- No record of what you tested
-- Can't re-run when code changes
-- Easy to forget cases under pressure
-- "It worked when I tried it" ≠ comprehensive
+<correction>
+**TDD approach:**
 
-Automated tests are systematic. They run the same way every time.
+1. **RED** - Write test first (including edge case):
+```python
+def test_validate_email():
+    assert validate_email("user@example.com")  # Will fail - function doesn't exist
+    assert not validate_email("@@")            # Edge case up front
+```
 
-**"Deleting X hours of work is wasteful"**
+2. **Verify RED** - Run test, watch it fail:
+```bash
+NameError: function 'validate_email' is not defined
+```
 
-Sunk cost fallacy. The time is already gone. Your choice now:
-- Delete and rewrite with TDD (X more hours, high confidence)
-- Keep it and add tests after (30 min, low confidence, likely bugs)
+3. **GREEN** - Implement to pass both cases:
+```python
+def validate_email(email):
+    return "@" in email and email.count("@") == 1
+```
 
-The "waste" is keeping code you can't trust. Working code without real tests is technical debt.
+4. **Verify GREEN** - Both assertions pass, bug prevented.
 
-**"TDD is dogmatic, being pragmatic means adapting"**
+**Result:** Test failed first, proving it works. Edge case discovered during test writing, not in production.
+</correction>
+</example>
 
-TDD IS pragmatic:
-- Finds bugs before commit (faster than debugging after)
-- Prevents regressions (tests catch breaks immediately)
-- Documents behavior (tests show how to use code)
-- Enables refactoring (change freely, tests catch breaks)
+<example>
+<scenario>Developer has already written 3 hours of code without tests. Wants to keep it as "reference" while writing tests.</scenario>
 
-"Pragmatic" shortcuts = debugging in production = slower.
+<code>
+// 200 lines of untested code exists
+// Developer thinks: "I'll keep this and write tests that match it"
+// Or: "I'll use it as reference to speed up TDD"
+</code>
 
-**"Tests after achieve the same goals - it's spirit not ritual"**
+<why_it_fails>
+**Keeping code as "reference":**
+- You'll copy it (that's testing after, with extra steps)
+- You'll adapt it (biased by implementation)
+- Tests will match code, not requirements
+- You'll justify shortcuts: "I already know this works"
 
-No. Tests-after answer "What does this do?" Tests-first answer "What should this do?"
+**Result:** All the problems of test-after, none of the benefits of TDD.
+</why_it_fails>
 
-Tests-after are biased by your implementation. You test what you built, not what's required. You verify remembered edge cases, not discovered ones.
+<correction>
+**Delete it. Completely.**
 
-Tests-first force edge case discovery before implementing. Tests-after verify you remembered everything (you didn't).
+```bash
+git stash  # Or delete the file
+```
 
-30 minutes of tests after ≠ TDD. You get coverage, lose proof tests work.
+**Then start TDD:**
+1. Write first failing test from requirements (not from code)
+2. Watch it fail
+3. Implement fresh (might be different from original, that's OK)
+4. Watch it pass
 
-## Common Rationalizations
+**Why delete:**
+- Sunk cost is already gone
+- 3 hours implementing ≠ 3 hours with TDD (TDD might be 2 hours total)
+- Code without tests is technical debt
+- Fresh implementation from tests is usually better
 
-| Excuse | Reality |
-|--------|---------|
-| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
-| "I'll test after" | Tests passing immediately prove nothing. |
-| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
-| "Already manually tested" | Ad-hoc ≠ systematic. No record, can't re-run. |
-| "Deleting X hours is wasteful" | Sunk cost fallacy. Keeping unverified code is technical debt. |
-| "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete. |
-| "Need to explore first" | Fine. Throw away exploration, start with TDD. |
-| "Test hard = design unclear" | Listen to test. Hard to test = hard to use. |
-| "TDD will slow me down" | TDD faster than debugging. Pragmatic = test-first. |
-| "Manual test faster" | Manual doesn't prove edge cases. You'll re-test every change. |
-| "Existing code has no tests" | You're improving it. Add tests for existing code. |
+**What you gain:**
+- Tests that actually verify behavior
+- Confidence code works
+- Ability to refactor safely
+- No bugs from untested edge cases
+</correction>
+</example>
 
-## Red Flags
+<example>
+<scenario>Test is hard to write. Developer thinks "design must be unclear, but I'll implement first to explore."</scenario>
 
-- Code before test
-- Test after implementation
-- Test passes immediately
-- Can't explain why test failed
-- Tests added "later"
-- Rationalizing "just this once"
-- "I already manually tested it"
-- "Tests after achieve the same purpose"
-- "It's about spirit not ritual"
-- "Keep as reference" or "adapt existing code"
-- "Already spent X hours, deleting is wasteful"
-- "TDD is dogmatic, I'm being pragmatic"
+<code>
+// Test attempt:
+func testUserServiceCreatesAccount() {
+    // Need to mock database, email service, payment gateway, logger...
+    // This is getting complicated, maybe I should just implement first
+}
+</code>
+
+<why_it_fails>
+**"Test is hard" is valuable signal:**
+- Hard to test = hard to use
+- Too many dependencies = coupling too tight
+- Complex setup = design needs simplification
+
+**Implementing first ignores this signal:**
+- Build the complex design
+- Lock in the coupling
+- Now forced to write complex tests (or skip them)
+</why_it_fails>
+
+<correction>
+**Listen to the test.**
+
+Hard to test? Simplify the interface:
+
+```swift
+// Instead of:
+class UserService {
+    init(db: Database, email: EmailService, payments: PaymentGateway, logger: Logger) { }
+    func createAccount(email: String, password: String, paymentToken: String) throws { }
+}
+
+// Make testable:
+class UserService {
+    func createAccount(request: CreateAccountRequest) -> Result<Account, Error> {
+        // Dependencies injected through request or passed separately
+    }
+}
+```
+
+**Test becomes simple:**
+```swift
+func testCreatesAccountFromRequest() {
+    let service = UserService()
+    let request = CreateAccountRequest(email: "user@example.com")
+    let result = service.createAccount(request: request)
+    XCTAssertEqual(result.email, "user@example.com")
+}
+```
+
+**TDD forces good design.** If test is hard, fix design before implementing.
+</correction>
+</example>
+
+</examples>
+
+<critical_rules>
+
+## Rules That Have No Exceptions
+
+1. **Write code before test?** → Delete it. Start over.
+   - Never keep as "reference"
+   - Never "adapt" while writing tests
+   - Delete means delete
+
+2. **Test passes immediately?** → Not TDD. Fix the test or delete the code.
+   - Passing immediately proves nothing
+   - You're testing existing behavior, not required behavior
+
+3. **Can't explain why test failed?** → Fix until failure makes sense.
+   - "function not found" = good (feature doesn't exist)
+   - Weird error = bad (fix test, re-run)
+
+4. **Want to skip "just this once"?** → That's rationalization. Stop.
+   - TDD is faster than debugging in production
+   - "Too simple to test" = test takes 30 seconds
+   - "Already manually tested" = not systematic, not repeatable
+
+## Common Excuses
+
+All of these mean: Stop, follow TDD:
 - "This is different because..."
+- "I'm being pragmatic, not dogmatic"
+- "It's about spirit not ritual"
+- "Tests after achieve the same goals"
+- "Deleting X hours of work is wasteful"
 
-**All of these mean: Delete code. Start over with TDD.**
+</critical_rules>
 
-## Example: Bug Fix
-
-**Bug:** Empty email accepted
-
-**RED (Swift)**
-```swift
-func testRejectsEmptyEmail() async throws {
-    let result = try await submitForm(FormData(email: ""))
-    XCTAssertEqual(result.error, "Email required")
-}
-```
-
-**Verify RED**
-```bash
-$ swift test --filter FormTests.testRejectsEmptyEmail
-FAIL: XCTAssertEqual failed: ("nil") is not equal to ("Optional("Email required")")
-```
-
-**GREEN**
-```swift
-struct FormResult {
-    var error: String?
-}
-
-func submitForm(_ data: FormData) async throws -> FormResult {
-    if data.email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-        return FormResult(error: "Email required")
-    }
-    // ...
-    return FormResult()
-}
-```
-
-**Verify GREEN**
-```bash
-$ swift test --filter FormTests.testRejectsEmptyEmail
-Test Case '-[FormTests testRejectsEmptyEmail]' passed
-```
-
-**REFACTOR**
-Extract validation for multiple fields if needed.
-
-## Example: Feature Addition
-
-**Feature:** Calculate average of non-empty list
-
-**RED (Rust)**
-```rust
-#[test]
-fn calculates_average_of_numbers() {
-    let numbers = vec![10.0, 20.0, 30.0];
-    let avg = calculate_average(&numbers).unwrap();
-    assert_eq!(avg, 20.0);
-}
-
-#[test]
-fn returns_error_for_empty_list() {
-    let numbers: Vec<f64> = vec![];
-    let result = calculate_average(&numbers);
-    assert!(result.is_err());
-}
-```
-
-**Verify RED**
-```bash
-$ cargo test calculate_average
-error[E0425]: cannot find function `calculate_average` in this scope
-```
-
-**GREEN**
-```rust
-fn calculate_average(numbers: &[f64]) -> Result<f64, &'static str> {
-    if numbers.is_empty() {
-        return Err("Cannot calculate average of empty list");
-    }
-    let sum: f64 = numbers.iter().sum();
-    Ok(sum / numbers.len() as f64)
-}
-```
-
-**Verify GREEN**
-```bash
-$ cargo test calculate_average
-running 2 tests
-test tests::calculates_average_of_numbers ... ok
-test tests::returns_error_for_empty_list ... ok
-```
-
-## Example: Feature Addition (TypeScript)
-
-**Feature:** Validate email format
-
-**RED**
-```typescript
-describe('validateEmail', () => {
-  it('accepts valid email addresses', () => {
-    expect(validateEmail('user@example.com')).toBe(true);
-  });
-
-  it('rejects email without @ symbol', () => {
-    expect(validateEmail('userexample.com')).toBe(false);
-  });
-
-  it('rejects empty string', () => {
-    expect(validateEmail('')).toBe(false);
-  });
-});
-```
-
-**Verify RED**
-```bash
-$ npm test -- validateEmail
-FAIL  src/validation.test.ts
-  ● Test suite failed to run
-    Cannot find module '../validation' from 'src/validation.test.ts'
-```
-
-**GREEN**
-```typescript
-export function validateEmail(email: string): boolean {
-  if (email.length === 0) {
-    return false;
-  }
-  return email.includes('@');
-}
-```
-
-**Verify GREEN**
-```bash
-$ npm test -- validateEmail
-PASS  src/validation.test.ts
-  validateEmail
-    ✓ accepts valid email addresses (2 ms)
-    ✓ rejects email without @ symbol (1 ms)
-    ✓ rejects empty string (1 ms)
-
-Tests: 3 passed, 3 total
-```
-
-**REFACTOR**
-Add more robust validation if additional tests require it.
-
-## Verification Checklist
+<verification_checklist>
 
 Before marking work complete:
 
 - [ ] Every new function/method has a test
-- [ ] Watched each test fail before implementing
+- [ ] Watched each test **fail** before implementing
 - [ ] Each test failed for expected reason (feature missing, not typo)
 - [ ] Wrote minimal code to pass each test
-- [ ] All tests pass
-- [ ] Output pristine (no errors, warnings)
+- [ ] All tests pass with no warnings
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered
 
-Can't check all boxes? You skipped TDD. Start over.
+**Can't check all boxes?** You skipped TDD. Start over.
 
-## When Stuck
+</verification_checklist>
 
-| Problem | Solution |
-|---------|----------|
-| Don't know how to test | Write wished-for API. Write assertion first. Ask your human partner. |
-| Test too complicated | Design too complicated. Simplify interface. |
-| Must mock everything | Code too coupled. Use dependency injection. |
-| Test setup huge | Extract helpers. Still complex? Simplify design. |
+<integration>
 
-## Debugging Integration
+**This skill calls:**
+- verification-before-completion (running tests to verify)
 
-Bug found? Write failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
+**This skill is called by:**
+- fixing-bugs (write failing test reproducing bug)
+- executing-plans (when implementing bd tasks)
+- refactoring-safely (keep tests green while refactoring)
 
-Never fix bugs without a test.
+**Agents used:**
+- hyperpowers:test-runner (run tests, return summary only)
 
-## Language-Specific Tips
+</integration>
 
-### Rust
-- Use `#[cfg(test)]` module for tests
-- `cargo test` runs all tests
-- `cargo test test_name` runs specific test
-- Use `Result<T, E>` for error handling in tests
-- `assert!`, `assert_eq!`, `assert_ne!` for assertions
-- `#[should_panic]` for tests expecting panics
+<resources>
 
-### Swift
-- Use `XCTest` framework
-- `swift test` runs all tests
-- `swift test --filter` for specific tests
-- `XCTAssert*` family for assertions
-- `async`/`await` for async tests
-- `XCTUnwrap` for safely unwrapping optionals in tests
+**Detailed language-specific examples:**
+- [Rust, Swift, TypeScript examples](resources/language-examples.md) - Complete RED-GREEN-REFACTOR cycles
+- [Language-specific test commands](resources/language-examples.md#verification-commands-by-language)
 
-### TypeScript
-- Common frameworks: Jest, Vitest, Mocha
-- `npm test` runs all tests (configured in package.json)
-- `describe` groups related tests
-- `it` or `test` for individual test cases
-- `expect(...).toBe/toEqual/toThrow` for assertions
-- `async`/`await` for async tests
-- Mock with `jest.fn()` or `vi.fn()` (avoid unless necessary)
+**When stuck:**
+- Test too complicated? → Design too complicated, simplify interface
+- Must mock everything? → Code too coupled, use dependency injection
+- Test setup huge? → Extract helpers, or simplify design
 
-## Final Rule
-
-```
-Production code → test exists and failed first
-Otherwise → not TDD
-```
-
-No exceptions without your human partner's permission.
+</resources>

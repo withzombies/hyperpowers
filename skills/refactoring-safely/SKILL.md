@@ -1,68 +1,453 @@
 ---
 name: refactoring-safely
-description: Use when refactoring code without breaking functionality - test-preserving transformations in small steps, running tests between each change, creating bd tasks for tracking refactoring work
+description: Use when refactoring code - test-preserving transformations in small steps, running tests between each change
 ---
 
-# Refactoring Safely
+<skill_overview>
+Refactoring changes code structure without changing behavior; tests must stay green throughout or you're rewriting, not refactoring.
+</skill_overview>
 
-## Overview
+<rigidity_level>
+MEDIUM FREEDOM - Follow the change→test→commit cycle strictly, but adapt the specific refactoring patterns to your language and codebase.
+</rigidity_level>
 
-Refactoring changes code structure without changing behavior. The danger is accidentally changing behavior while restructuring.
+<quick_reference>
+| Step | Action | Verify |
+|------|--------|--------|
+| 1 | Run full test suite | ALL pass |
+| 2 | Create bd refactoring task | Track work |
+| 3 | Make ONE small change | Compiles |
+| 4 | Run tests immediately | ALL still pass |
+| 5 | Commit with descriptive message | History clear |
+| 6 | Repeat 3-5 until complete | Each step safe |
+| 7 | Final verification & close bd | Done |
 
-**Core principle:** Tests must stay green throughout refactoring. If tests break, you changed behavior (that's rewriting, not refactoring).
+**Core cycle:** Change → Test → Commit (repeat until complete)
+</quick_reference>
 
-**Violating this rule means you're not refactoring - you're making risky changes without a safety net.**
-
-## When to Use
-
-Use this skill when:
+<when_to_use>
 - Improving code structure without changing functionality
-- Extracting duplicated code
+- Extracting duplicated code into shared utilities
 - Renaming for clarity
 - Reorganizing file/module structure
-- Simplifying complex code
-- Improving performance (while preserving behavior)
+- Simplifying complex code while preserving behavior
 
-**Never use for:**
-- Changing functionality (use feature development instead)
-- Fixing bugs (use hyperpowers:fixing-bugs instead)
-- Adding new features while restructuring (do separately)
+**Don't use for:**
+- Changing functionality (use feature development)
+- Fixing bugs (use hyperpowers:fixing-bugs)
+- Adding features while restructuring (do separately)
+- Code without tests (write tests first using hyperpowers:test-driven-development)
+</when_to_use>
 
-## When to Refactor vs. Rewrite
+<the_process>
+## 1. Verify Tests Pass
 
-### Refactor When:
+**BEFORE any refactoring:**
+
+```bash
+# Use test-runner agent to keep context clean
+Dispatch hyperpowers:test-runner agent: "Run: cargo test"
+```
+
+**Verify:** ALL tests pass. If any fail, fix them FIRST, then refactor.
+
+**Why:** Failing tests mean you can't detect if refactoring breaks things.
+
+---
+
+## 2. Create bd Task for Refactoring
+
+Track the refactoring work:
+
+```bash
+bd create "Refactor: Extract user validation logic" \
+  --type task \
+  --priority P2
+
+bd edit bd-456 --design "
+## Goal
+Extract user validation logic from UserService into separate Validator class.
+
+## Why
+- Validation duplicated across 3 services
+- Makes testing individual validations difficult
+- Violates single responsibility
+
+## Approach
+1. Create UserValidator class
+2. Extract email validation
+3. Extract name validation
+4. Extract age validation
+5. Update UserService to use validator
+6. Remove duplication from other services
+
+## Success Criteria
+- All existing tests still pass
+- No behavior changes
+- Validator has 100% test coverage
+"
+
+bd update bd-456 --status in_progress
+```
+
+---
+
+## 3. Make ONE Small Change
+
+The smallest transformation that compiles.
+
+**Examples of "small":**
+- Extract one method
+- Rename one variable
+- Move one function to different file
+- Inline one constant
+- Extract one interface
+
+**NOT small:**
+- Extracting multiple methods at once
+- Renaming + moving + restructuring
+- "While I'm here" improvements
+
+**Example:**
+
+```rust
+// Before
+fn create_user(name: &str, email: &str) -> Result<User> {
+    if email.is_empty() {
+        return Err(Error::InvalidEmail);
+    }
+    if !email.contains('@') {
+        return Err(Error::InvalidEmail);
+    }
+
+    let user = User { name, email };
+    Ok(user)
+}
+
+// After - ONE small change (extract email validation)
+fn create_user(name: &str, email: &str) -> Result<User> {
+    validate_email(email)?;
+
+    let user = User { name, email };
+    Ok(user)
+}
+
+fn validate_email(email: &str) -> Result<()> {
+    if email.is_empty() {
+        return Err(Error::InvalidEmail);
+    }
+    if !email.contains('@') {
+        return Err(Error::InvalidEmail);
+    }
+    Ok(())
+}
+```
+
+---
+
+## 4. Run Tests Immediately
+
+After EVERY small change:
+
+```bash
+Dispatch hyperpowers:test-runner agent: "Run: cargo test"
+```
+
+**Verify:** ALL tests still pass.
+
+**If tests fail:**
+1. STOP
+2. Undo the change: `git restore src/file.rs`
+3. Understand why it broke
+4. Make smaller change
+5. Try again
+
+**Never proceed with failing tests.**
+
+---
+
+## 5. Commit the Small Change
+
+Commit each safe transformation:
+
+```bash
+Dispatch hyperpowers:test-runner agent: "Run: git add src/user_service.rs && git commit -m 'refactor(bd-456): extract email validation to function
+
+No behavior change. All tests pass.
+
+Part of bd-456'"
+```
+
+**Why commit so often:**
+- Easy to undo if next step breaks
+- Clear history of transformations
+- Can review each step independently
+- Proves tests passed at each point
+
+---
+
+## 6. Repeat Until Complete
+
+Repeat steps 3-5 for each small transformation:
+
+```
+1. Extract validate_email() ✓ (committed)
+2. Extract validate_name() ✓ (committed)
+3. Extract validate_age() ✓ (committed)
+4. Create UserValidator struct ✓ (committed)
+5. Move validations into UserValidator ✓ (committed)
+6. Update UserService to use validator ✓ (committed)
+7. Remove validation from OrderService ✓ (committed)
+8. Remove validation from AccountService ✓ (committed)
+```
+
+**Pattern:** change → test → commit (repeat)
+
+---
+
+## 7. Final Verification
+
+After all transformations complete:
+
+```bash
+# Full test suite
+Dispatch hyperpowers:test-runner agent: "Run: cargo test"
+
+# Linter
+Dispatch hyperpowers:test-runner agent: "Run: cargo clippy"
+```
+
+**Review the changes:**
+
+```bash
+# See all refactoring commits
+git log --oneline | grep "bd-456"
+
+# Review full diff
+git diff main...HEAD
+```
+
+**Checklist:**
+- [ ] All tests pass
+- [ ] No new warnings
+- [ ] No behavior changes
+- [ ] Code is cleaner/simpler
+- [ ] Each commit is small and safe
+
+**Close bd task:**
+
+```bash
+bd edit bd-456 --design "
+... (append to existing design)
+
+## Completed
+- Created UserValidator class with email, name, age validation
+- Removed duplicated validation from 3 services
+- All tests pass (verified)
+- No behavior changes
+- 8 small transformations, each tested
+"
+
+bd close bd-456
+```
+</the_process>
+
+<examples>
+<example>
+<scenario>Developer changes behavior while "refactoring"</scenario>
+
+<code>
+// Original code
+fn validate_email(email: &str) -> Result<()> {
+    if email.is_empty() {
+        return Err(Error::InvalidEmail);
+    }
+    if !email.contains('@') {
+        return Err(Error::InvalidEmail);
+    }
+    Ok(())
+}
+
+// "Refactored" version
+fn validate_email(email: &str) -> Result<()> {
+    if email.is_empty() {
+        return Err(Error::InvalidEmail);
+    }
+    if !email.contains('@') {
+        return Err(Error::InvalidEmail);
+    }
+    // NEW: Added extra validation
+    if !email.contains('.') {  // BEHAVIOR CHANGE
+        return Err(Error::InvalidEmail);
+    }
+    Ok(())
+}
+</code>
+
+<why_it_fails>
+- This changes behavior (now rejects emails like "user@localhost")
+- Tests might fail, or worse, pass and ship breaking change
+- Not refactoring - this is modifying functionality
+- Users who relied on old behavior experience regression
+</why_it_fails>
+
+<correction>
+**Correct approach:**
+
+1. Extract validation (pure refactoring, no behavior change)
+2. Commit with tests passing
+3. THEN add new validation as separate feature with new tests
+4. Two clear commits: refactoring vs. feature addition
+
+**What you gain:**
+- Clear history of what changed when
+- Easy to revert feature without losing refactoring
+- Tests document exact behavior changes
+- No surprises in production
+</correction>
+</example>
+
+<example>
+<scenario>Developer does big-bang refactoring</scenario>
+
+<code>
+# Changes made all at once:
+- Renamed 15 functions across 5 files
+- Extracted 3 new classes
+- Moved code between 10 files
+- Reorganized module structure
+- Updated all import statements
+
+# Then runs tests
+$ cargo test
+... 23 test failures ...
+
+# Now what? Which change broke what?
+</code>
+
+<why_it_fails>
+- Can't identify which specific change broke tests
+- Reverting means losing ALL work
+- Fixing requires re-debugging entire refactoring
+- Wastes hours trying to untangle failures
+- Might give up and revert everything
+</why_it_fails>
+
+<correction>
+**Correct approach:**
+
+1. Rename ONE function → test → commit
+2. Extract ONE class → test → commit
+3. Move ONE file → test → commit
+4. Continue one change at a time
+
+**If test fails:**
+- Know exactly which change broke it
+- Revert ONE commit, not all work
+- Fix or make smaller change
+- Continue from known-good state
+
+**What you gain:**
+- Tests break → immediately know why
+- Each commit is reviewable independently
+- Can stop halfway with useful progress
+- Confidence from continuous green tests
+- Clear history for future developers
+</correction>
+</example>
+
+<example>
+<scenario>Developer refactors code without tests</scenario>
+
+<code>
+// Legacy code with no tests
+fn process_payment(amount: f64, user_id: i64) -> Result<PaymentId> {
+    // 200 lines of complex payment logic
+    // Multiple edge cases
+    // No tests exist
+}
+
+// Developer refactors without tests:
+// - Extracts 5 methods
+// - Renames variables
+// - Simplifies conditionals
+// - "Looks good to me!"
+
+// Deploys to production
+// 💥 Payments fail for amounts over $1000
+// Edge case handling was accidentally changed
+</code>
+
+<why_it_fails>
+- No tests to verify behavior preserved
+- Complex logic has hidden edge cases
+- Subtle behavior changes go unnoticed
+- Breaks in production, not development
+- Costs customer trust and emergency debugging
+</why_it_fails>
+
+<correction>
+**Correct approach:**
+
+1. **Write tests FIRST** (using hyperpowers:test-driven-development)
+   - Test happy path
+   - Test all edge cases (amounts over $1000, etc.)
+   - Test error conditions
+   - Run tests → all pass (documenting current behavior)
+
+2. **Then refactor with tests as safety net**
+   - Extract method → run tests → commit
+   - Rename → run tests → commit
+   - Simplify → run tests → commit
+
+3. **Tests catch any behavior changes immediately**
+
+**What you gain:**
+- Confidence behavior is preserved
+- Edge cases documented in tests
+- Catches subtle changes before production
+- Future refactoring is also safe
+- Tests serve as documentation
+</correction>
+</example>
+</examples>
+
+<refactor_vs_rewrite>
+## When to Refactor
+
 - Tests exist and pass
 - Changes are incremental
 - Business logic stays same
 - Can transform in small, safe steps
 - Each step independently valuable
 
-### Rewrite When:
+## When to Rewrite
+
 - No tests exist (write tests first, then refactor)
 - Fundamental architecture change needed
 - Easier to rebuild than modify
 - Requirements changed significantly
 - After 3+ failed refactoring attempts
 
-**Rule:** If you need to change tests (not just add tests), you're rewriting, not refactoring.
+**Rule:** If you need to change test assertions (not just add tests), you're rewriting, not refactoring.
 
-### Strangler Fig Pattern (Hybrid Approach)
+## Strangler Fig Pattern (Hybrid)
 
 **When to use:**
 - Need to replace legacy system but can't tolerate downtime
 - Want incremental migration with continuous monitoring
-- Reduce risk of big-bang replacement
 - System too large to refactor in one go
 
 **How it works:**
 
-1. **Transform:** Create modernized components alongside legacy code
+1. **Transform:** Create modernized components alongside legacy
 2. **Coexist:** Both systems run in parallel (façade routes requests)
 3. **Eliminate:** Retire old functionality piece by piece
 
 **Example:**
+
 ```
-Legacy: Monolithic user service with 50K LOC
+Legacy: Monolithic user service (50K LOC)
 Goal: Microservices architecture
 
 Step 1 (Transform):
@@ -83,400 +468,74 @@ Step 3 (Eliminate):
 ```
 
 **Benefits:**
-- Incremental replacement reduces complexity and risk
-- Constant monitoring minimizes breakage
-- Legacy system continues operating during transition
-- Each migration step is independently valuable
+- Incremental replacement reduces risk
+- Legacy continues operating during transition
 - Can pause/rollback at any point
-
-**Integration with refactoring:**
-- Use refactoring within each new component
-- Use Strangler Fig for replacing entire legacy systems
-- Combination: Refactor legacy → Strangler Fig to new architecture → Refactor new
-
-**When to avoid:**
-- Simple refactoring will suffice (overhead not justified)
-- Need immediate complete replacement (regulatory, security)
-- Cannot run parallel systems (resource constraints)
-
-## The Safe Refactoring Process
-
-### Step 1: Verify Tests Pass
-
-**BEFORE any refactoring:**
-
-```bash
-# Run full test suite via hyperpowers:test-runner agent
-Dispatch hyperpowers:test-runner agent: "Run: cargo test"
-
-# Verify: ALL tests pass
-# If any fail: Fix them first, THEN refactor
-```
-
-**Why:** Failing tests mean you don't know if refactoring breaks things.
-
-**Red flag:** "I'll fix failing tests as part of refactoring" = Wrong. Fix first, refactor second.
-
-### Step 2: Create bd Task for Refactoring
-
-**Track the refactoring work:**
-
-```bash
-# Create refactoring task
-bd create "Refactor: Extract user validation logic" \
-  --type task \
-  --priority P2
-
-# Document what and why
-bd edit bd-456 --design "
-## Refactoring Goal
-Extract user validation logic from UserService into separate Validator class.
-
-## Why
-- Validation logic duplicated across 3 services
-- Makes testing individual validations difficult
-- Violates single responsibility principle
-
-## Approach
-1. Create UserValidator class
-2. Extract email validation
-3. Extract name validation
-4. Extract age validation
-5. Update UserService to use validator
-6. Remove duplicated code from other services
-
-## Success Criteria
-- All existing tests still pass
-- No behavior changes
-- Validator class has 100% test coverage
-"
-
-bd update bd-456 --status in_progress
-```
-
-### Step 3: Make ONE Small Change
-
-**The smallest transformation that compiles:**
-
-**Examples of small refactorings:**
-- Extract one method
-- Rename one variable
-- Move one function to different file
-- Inline one constant
-- Extract one interface
-
-**Not small:**
-- Extracting multiple methods at once
-- Renaming + moving + restructuring
-- "While I'm here" improvements
-
-**Example - Extract Method:**
-
-```rust
-// Before
-fn create_user(name: &str, email: &str) -> Result<User> {
-    // Validation (to be extracted)
-    if email.is_empty() {
-        return Err(Error::InvalidEmail);
-    }
-    if !email.contains('@') {
-        return Err(Error::InvalidEmail);
-    }
-
-    // Creation logic
-    let user = User { name, email };
-    Ok(user)
-}
-
-// After - ONE small change
-fn create_user(name: &str, email: &str) -> Result<User> {
-    validate_email(email)?;  // EXTRACTED
-
-    let user = User { name, email };
-    Ok(user)
-}
-
-fn validate_email(email: &str) -> Result<()> {
-    if email.is_empty() {
-        return Err(Error::InvalidEmail);
-    }
-    if !email.contains('@') {
-        return Err(Error::InvalidEmail);
-    }
-    Ok(())
-}
-```
-
-**ONE change:** Extract email validation to separate function. Nothing else.
-
-### Step 4: Run Tests Immediately
-
-**After EVERY small change:**
-
-```bash
-# Run via hyperpowers:test-runner agent
-Dispatch hyperpowers:test-runner agent: "Run: cargo test"
-
-# Verify: ALL tests still pass
-# Exit code: 0
-```
-
-**If tests fail:**
-1. STOP
-2. Undo the change (git restore)
-3. Understand why it broke
-4. Make smaller change
-5. Try again
-
-**Never proceed with failing tests.**
-
-### Step 5: Commit the Small Change
-
-**Commit each safe transformation using hyperpowers:test-runner agent:**
-
-```bash
-# Use test-runner agent to avoid pre-commit hook pollution
-Dispatch hyperpowers:test-runner agent: "Run: git add src/user_service.rs && git commit -m 'refactor(bd-456): extract email validation to function
-
-No behavior change. All tests pass.
-
-Part of bd-456'"
-```
-
-**Why commit so often:**
-- Easy to undo if next step breaks
-- Clear history of transformations
-- Can review each step independently
-- Proves tests passed at each point
-
-### Step 6: Repeat Until Complete
-
-**Repeat steps 3-5 for each small transformation:**
-
-```
-1. Extract validate_email() ✓ (committed)
-2. Extract validate_name() ✓ (committed)
-3. Extract validate_age() ✓ (committed)
-4. Create UserValidator struct ✓ (committed)
-5. Move validations into UserValidator ✓ (committed)
-6. Update UserService to use validator ✓ (committed)
-7. Remove validation from OrderService ✓ (committed)
-8. Remove validation from AccountService ✓ (committed)
-```
-
-Each step: change → test → commit
-
-### Step 7: Final Verification
-
-**After all transformations complete:**
-
-```bash
-# Run full test suite one more time
-Dispatch hyperpowers:test-runner agent: "Run: cargo test"
-
-# Run linter
-Dispatch hyperpowers:test-runner agent: "Run: cargo clippy"
-
-# Verify no warnings introduced
-```
-
-**Review the changes:**
-```bash
-# See all refactoring commits
-git log --oneline | grep "bd-456"
-
-# Review full diff
-git diff main...HEAD
-```
-
-**Checklist:**
-- [ ] All tests pass
-- [ ] No new warnings
-- [ ] No behavior changes
-- [ ] Code is cleaner/simpler
-- [ ] Each commit is small and safe
-
-### Step 8: Close bd Task
-
-```bash
-bd edit bd-456 --design "
-... (previous content)
-
-## Completed Refactoring
-- Created UserValidator class with email, name, age validation
-- Removed duplicated validation from UserService, OrderService, AccountService
-- All tests pass (verified)
-- No behavior changes
-
-Commits: 8 small transformations, each tested
-"
-
-bd close bd-456
-```
-
-## Common Refactoring Patterns
-
-**For detailed refactoring patterns with code examples:**
-- Extract Method
-- Rename Variable/Function
-- Extract Class/Struct
-- Inline Unnecessary Abstraction
-
-**See:** [resources/refactoring-patterns.md](resources/refactoring-patterns.md)
-
-## Refactoring Anti-Patterns
-
-**Never:**
-
-### Changing Behavior While Refactoring
-
-❌ **Wrong:**
-```rust
-// "Refactoring" that changes behavior
-fn validate_email(email: &str) -> Result<()> {
-    if email.is_empty() {
-        return Err(Error::InvalidEmail);
-    }
-    // NEW: Added extra validation
-    if !email.contains('.') {  // BEHAVIOR CHANGE
-        return Err(Error::InvalidEmail);
-    }
-    Ok(())
-}
-```
-
-✓ **Right:** Refactor first (extract), THEN add new validation as separate change.
-
-### Breaking Tests During Refactoring
-
-❌ **Wrong:**
-```
-Test fails → "I'll fix tests as part of refactoring" → More changes → More failures
-```
-
-✓ **Right:** Test fails → STOP, undo, make smaller change
-
-### Big Bang Refactoring
-
-❌ **Wrong:**
-```
-Change 10 files, extract 5 classes, rename everything, THEN test
-```
-
-✓ **Right:** Change one thing, test, commit. Repeat.
-
-### Refactoring Without Tests
-
-❌ **Wrong:**
-```
-"No tests, but I'll be careful"
-```
-
-✓ **Right:** Write tests first, THEN refactor
-
-### "While I'm Here" Improvements
-
-❌ **Wrong:**
-```
-// Extracting validation AND fixing bug AND renaming AND...
-```
-
-✓ **Right:** One refactoring at a time. Improvements come AFTER refactoring complete.
-
-## When Refactoring Goes Wrong
-
-### If Tests Fail After Refactoring
-
-**STOP immediately:**
-
-1. **Undo the change:**
-   ```bash
-   git restore src/file.rs
-   ```
-
-2. **Understand why:**
-   - Did I change behavior accidentally?
-   - Was my transformation incorrect?
-   - Are tests flaky?
-
-3. **Make smaller change:**
-   - Break into smaller steps
-   - Add intermediate state
-   - Verify assumptions
-
-4. **Try again with smaller step**
-
-### If Refactoring Seems Impossible
-
-**After 3 failed attempts:**
-
-1. **Question the approach:**
-   - Is refactoring the right solution?
-   - Should I rewrite instead?
-   - Do I need tests first?
-
-2. **Consider alternatives:**
-   - Write tests first
-   - Refactor smaller piece
-   - Extract interface before implementing
-
-3. **Discuss with human partner:**
-   - Maybe architecture needs bigger change
-   - Maybe not worth refactoring
-   - Maybe rewrite is better
-
-## Integration with Other Skills
-
+- Each migration step is independently valuable
+
+**Use refactoring within components, Strangler Fig for replacing systems.**
+</refactor_vs_rewrite>
+
+<critical_rules>
+## Rules That Have No Exceptions
+
+1. **Tests must stay green** throughout refactoring → If they fail, you changed behavior (stop and undo)
+2. **Commit after each small change** → Large commits hide which change broke what
+3. **One transformation at a time** → Multiple changes = impossible to debug failures
+4. **Run tests after EVERY change** → Delayed testing doesn't tell you which change broke it
+5. **If tests fail 3+ times, question approach** → Might need to rewrite instead, or add tests first
+
+## Common Excuses
+
+All of these mean: **Stop and return to the change→test→commit cycle**
+
+- "Small refactoring, don't need tests between steps"
+- "I'll test at the end"
+- "Tests are slow, I'll run once at the end"
+- "Just fixing bugs while refactoring" (bug fixes = behavior changes = not refactoring)
+- "Easier to do all at once"
+- "I know it works without tests"
+- "While I'm here, I'll also..." (scope creep during refactoring)
+- "Tests will fail temporarily but I'll fix them" (tests must stay green)
+</critical_rules>
+
+<verification_checklist>
+Before marking refactoring complete:
+
+- [ ] All tests pass (verified with hyperpowers:test-runner agent)
+- [ ] No new linter warnings
+- [ ] No behavior changes introduced
+- [ ] Code is cleaner/simpler than before
+- [ ] Each commit in history is small and safe
+- [ ] bd task documents what was done and why
+- [ ] Can explain what each transformation did
+
+**Can't check all boxes?** Return to process and fix before closing bd task.
+</verification_checklist>
+
+<integration>
 **This skill requires:**
-- **hyperpowers:test-driven-development** - For writing tests before refactoring (if none exist)
-- **hyperpowers:verification-before-completion** - For final verification
-- **hyperpowers:test-runner agent** - For running tests without context pollution
+- hyperpowers:test-driven-development (for writing tests before refactoring if none exist)
+- hyperpowers:verification-before-completion (for final verification)
+- hyperpowers:test-runner agent (for running tests without context pollution)
 
-**This skill uses:**
-- bd for tracking refactoring work
-- Git for committing each small step
-- hyperpowers:test-runner agent for verification
+**This skill is called by:**
+- General development workflows when improving code structure
+- After features are complete and working
+- When preparing code for new features
 
-## Red Flags
+**Agents used:**
+- test-runner (runs tests/commits without polluting main context)
+</integration>
 
-If you catch yourself thinking:
-- "I'll test after refactoring" → Wrong. Test after each change.
-- "This is just refactoring" (while changing behavior) → Wrong. That's rewriting.
-- "Tests will fail temporarily" → Wrong. Tests must stay green.
-- "I'll commit when done" → Wrong. Commit each small change.
-- "While I'm here..." → Wrong. One refactoring at a time.
-- "No tests, but it's simple" → Wrong. Write tests first.
+<resources>
+**Detailed guides:**
+- [Common refactoring patterns](resources/refactoring-patterns.md) - Extract Method, Extract Class, Inline, etc.
+- [Complete refactoring session example](resources/example-session.md) - Minute-by-minute walkthrough
 
-**All of these mean: Stop. Return to the process.**
-
-## Common Rationalizations
-
-| Excuse | Reality |
-|--------|---------|
-| "Small refactoring, don't need tests" | All refactorings need tests to verify no behavior change. |
-| "I'll test at the end" | Tests prove each step safe. End-only testing misses where it broke. |
-| "Tests are slow, I'll run once" | Slow tests reveal bad design. Fix tests, then refactor. |
-| "Just fixing bugs while refactoring" | Bug fixes are behavior changes. Do separately. |
-| "Easier to do all at once" | Easier to break. Small steps safer. |
-| "I know it works" | Your confidence ≠ proof. Tests prove it. |
-
-## Complete Refactoring Example
-
-**For a detailed minute-by-minute refactoring session showing:**
-- Creating bd task
-- Incremental steps with test/commit cycles
-- Using hyperpowers:test-runner agent
-- Final verification
-
-**See:** [resources/example-session.md](resources/example-session.md)
-
-## Summary
-
-- **Tests must stay green** throughout refactoring
-- **Commit after each small change**
-- **One transformation at a time**
-- **Behavior changes ≠ refactoring**
-- **3+ failures = question approach**
-- **Track work in bd**
-
-Refactoring is safe when done in small, tested steps. Rushing creates bugs.
+**When stuck:**
+- Tests fail after change → Undo (git restore), make smaller change
+- 3+ failures → Question if refactoring is right approach, consider rewrite
+- No tests exist → Use hyperpowers:test-driven-development to write tests first
+- Unsure how small → If it touches more than one function/file, it's too big
+</resources>

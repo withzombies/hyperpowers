@@ -1,95 +1,126 @@
 ---
 name: brainstorming
-description: Use when creating or developing anything, before writing code - refines rough ideas into bd epics with immutable requirements and first task ready for iterative execution
+description: Use when creating or developing anything, before writing code - refines rough ideas into bd epics with immutable requirements
 ---
 
-# Brainstorming Ideas Into bd Plans
+<skill_overview>
+Turn rough ideas into validated designs stored as bd epics with immutable requirements; tasks created iteratively as you learn, not upfront.
+</skill_overview>
 
-## Overview
+<rigidity_level>
+HIGH FREEDOM - Adapt Socratic questioning to context, but always create immutable epic before code and only create first task (not full tree).
+</rigidity_level>
 
-Turn rough ideas into validated designs stored as bd epics with immutable requirements.
+<quick_reference>
+| Step | Action | Deliverable |
+|------|--------|-------------|
+| 1 | Ask questions (one at a time) | Understanding of requirements |
+| 2 | Research (agents for codebase/internet) | Existing patterns and approaches |
+| 3 | Propose 2-3 approaches with trade-offs | Recommended option |
+| 4 | Present design in sections (200-300 words) | Validated architecture |
+| 5 | Create bd epic with IMMUTABLE requirements | Epic with anti-patterns |
+| 6 | Create ONLY first task | Ready for executing-plans |
+| 7 | Hand off to executing-plans | Iterative implementation begins |
 
-The epic becomes your contract - requirements and success criteria that guide execution. Tasks are created iteratively as you learn, not upfront.
+**Key:** Epic = contract (immutable), Tasks = adaptive (created as you learn)
+</quick_reference>
 
-**Announce at start:** "I'm using the brainstorming skill to refine your idea into a design."
+<when_to_use>
+- User describes new feature to implement
+- User has rough idea that needs refinement
+- About to write code without clear requirements
+- Need to explore approaches before committing
+- Requirements exist but architecture unclear
 
-## The Process
+**Don't use for:**
+- Executing existing plans (use hyperpowers:executing-plans)
+- Fixing bugs (use hyperpowers:fixing-bugs)
+- Refactoring (use hyperpowers:refactoring-safely)
+- Requirements already crystal clear and epic exists
+</when_to_use>
 
-### 1. Understanding the Idea
+<the_process>
+## 1. Understanding the Idea
 
-**Check current project state first:**
+**Announce:** "I'm using the brainstorming skill to refine your idea into a design."
+
+**Check current state:**
 - Recent commits, existing docs, codebase structure
-- Use `hyperpowers:codebase-investigator` to understand existing patterns
-- Use `hyperpowers:internet-researcher` for external API/library documentation
+- Dispatch `hyperpowers:codebase-investigator` for existing patterns
+- Dispatch `hyperpowers:internet-researcher` for external APIs/libraries
 
-**Ask questions one at a time to refine the idea:**
-- Prefer multiple choice questions when possible (easier to answer)
-- Focus on understanding: purpose, constraints, success criteria
+**Ask questions one at a time:**
+- Prefer multiple choice (easier to answer)
+- Focus on: purpose, constraints, success criteria
 - Gather enough context to propose approaches
 
 **Example questions:**
 - "What problem does this solve for users?"
 - "Are there existing implementations we should follow?"
 - "What's the most important success criterion?"
+- "Token storage: cookies, localStorage, or sessionStorage?"
 
-### 2. Exploring Approaches
+---
+
+## 2. Exploring Approaches
 
 **Research first:**
-- If similar feature exists: dispatch `hyperpowers:codebase-investigator` to find patterns
-- If new integration: dispatch `hyperpowers:internet-researcher` for best practices
-- Review research findings before proposing
+- Similar feature exists → dispatch codebase-investigator
+- New integration → dispatch internet-researcher
+- Review findings before proposing
 
-**Propose 2-3 different approaches with trade-offs:**
-- At least one approach should follow codebase patterns (if they exist)
-- For each: core architecture, trade-offs, complexity assessment
-- Lead with your recommended option and explain why
-- Present conversationally or use AskUserQuestion for structured choice
+**Propose 2-3 approaches with trade-offs:**
 
-**Example:**
 ```
-Based on the existing auth/ pattern, I recommend:
+Based on [research findings], I recommend:
 
-1. **OAuth via passport.js** (matches existing pattern in auth/passport-config.ts)
-   - Pros: Consistent with codebase, well-tested library
-   - Cons: Requires OAuth provider setup
+1. **[Approach A]** (recommended)
+   - Pros: [benefits, especially "matches existing pattern"]
+   - Cons: [drawbacks]
 
-2. **Custom JWT implementation**
-   - Pros: Full control, lightweight
-   - Cons: Security complexity, no existing pattern
+2. **[Approach B]**
+   - Pros: [benefits]
+   - Cons: [drawbacks]
 
-3. **Auth0 integration**
-   - Pros: Managed service, easy setup
-   - Cons: External dependency, cost
+3. **[Approach C]**
+   - Pros: [benefits]
+   - Cons: [drawbacks]
 
-I recommend option 1 (passport.js) because it follows the existing pattern and is already partially set up.
+I recommend option 1 because [specific reason, especially codebase consistency].
 ```
 
-### 3. Presenting the Design
+**Lead with recommended option and explain why.**
 
-**Once you understand what you're building, present the design:**
-- Break it into sections of 200-300 words
-- Ask after each section: "Does this look right so far?"
+---
+
+## 3. Presenting the Design
+
+**Once approach is chosen, present design in sections:**
+- Break into 200-300 word chunks
+- Ask after each: "Does this look right so far?"
 - Cover: architecture, components, data flow, error handling, testing
-- Be ready to go back and clarify if something doesn't make sense
+- Be ready to go back and clarify
 
-**Present findings from research:**
+**Show research findings:**
 - "Based on codebase investigation: auth/ uses passport.js..."
-- "API docs show the OAuth flow requires..."
-- Show how design builds on existing code
+- "API docs show OAuth flow requires..."
+- Demonstrate how design builds on existing code
 
-## Creating the bd Epic
+---
 
-**After design is validated**, create bd epic as immutable contract:
+## 4. Creating the bd Epic
+
+**After design validated, create epic as immutable contract:**
 
 ```bash
 bd create "Feature: [Feature Name]" \
   --type epic \
   --priority [0-4] \
   --design "## Requirements (IMMUTABLE)
-[What MUST be true when complete - be specific]
-- Requirement 1: [concrete, testable requirement]
-- Requirement 2: [concrete, testable requirement]
-- Requirement 3: [concrete, testable requirement]
+[What MUST be true when complete - specific, testable]
+- Requirement 1: [concrete requirement]
+- Requirement 2: [concrete requirement]
+- Requirement 3: [concrete requirement]
 
 ## Success Criteria (MUST ALL BE TRUE)
 - [ ] Criterion 1 (objective, testable - e.g., 'Integration tests pass')
@@ -99,11 +130,11 @@ bd create "Feature: [Feature Name]" \
 
 ## Anti-Patterns (FORBIDDEN)
 - ❌ [Specific shortcut that violates requirements]
-- ❌ [Rationalization to prevent - e.g., 'NO mocking core behavior in tests']
-- ❌ [Pattern to avoid - e.g., 'NO localStorage for tokens (violates security)']
+- ❌ [Rationalization to prevent - e.g., 'NO mocking core behavior']
+- ❌ [Pattern to avoid - e.g., 'NO localStorage for tokens']
 
 ## Approach
-[2-3 paragraph summary of chosen approach from exploration]
+[2-3 paragraph summary of chosen approach]
 
 ## Architecture
 [Key components, data flow, integration points]
@@ -114,7 +145,7 @@ bd create "Feature: [Feature Name]" \
 [Agent research findings]"
 ```
 
-**Key: The anti-patterns section prevents watering down requirements when blockers occur.**
+**Critical:** Anti-patterns section prevents watering down requirements when blockers occur.
 
 **Example anti-patterns:**
 - ❌ NO localStorage tokens (violates httpOnly security requirement)
@@ -122,9 +153,11 @@ bd create "Feature: [Feature Name]" \
 - ❌ NO mocking OAuth in integration tests (defeats validation)
 - ❌ NO TODO stubs for core authentication flow
 
-## Creating First Task Only
+---
 
-**Create ONLY the first actionable task, not full task tree:**
+## 5. Creating ONLY First Task
+
+**Create one task, not full tree:**
 
 ```bash
 bd create "Task 1: [Specific Deliverable]" \
@@ -137,7 +170,7 @@ bd create "Task 1: [Specific Deliverable]" \
 [Detailed step-by-step for this task]
 
 1. Study existing code
-   [Point to 2-3 similar implementations]
+   [Point to 2-3 similar implementations: file.ts:line]
 
 2. Write tests first (TDD)
    [Specific test cases for this task]
@@ -155,13 +188,15 @@ bd dep add bd-2 bd-1 --type parent-child  # Link to epic
 ```
 
 **Why only one task?**
-- Subsequent tasks are created iteratively by executing-plans
-- Each new task reflects learnings from previous task
+- Subsequent tasks created iteratively by executing-plans
+- Each task reflects learnings from previous
 - Avoids brittle task trees that break when assumptions change
 
-## Handoff to Execution
+---
 
-After epic and first task are created:
+## 6. Handoff to Execution
+
+After epic and first task created:
 
 ```
 "Epic bd-1 is ready with immutable requirements and success criteria.
@@ -171,176 +206,288 @@ Ready to start implementation? I'll use executing-plans to work through this ite
 
 The executing-plans skill will:
 1. Execute the current task
-2. Review what was learned against the epic requirements
-3. Create the next task based on current reality
-4. Repeat until all epic success criteria are met
+2. Review what was learned against epic requirements
+3. Create next task based on current reality
+4. Repeat until all epic success criteria met
 
 This approach avoids brittle upfront planning - each task adapts to what we learn."
 ```
+</the_process>
 
-## Key Principles
+<examples>
+<example>
+<scenario>Developer skips research, proposes approach without checking codebase</scenario>
 
-- **One question at a time** - Don't overwhelm with multiple questions
-- **Multiple choice preferred** - Easier to answer than open-ended when possible
-- **Delegate research** - Use agents for codebase and internet research
-- **YAGNI ruthlessly** - Remove unnecessary features from all designs
-- **Explore alternatives** - Propose 2-3 approaches before settling
-- **Incremental validation** - Present design in sections, validate each
-- **Be flexible** - Go back and clarify when something doesn't make sense
-- **Epic is contract** - Requirements are immutable, tasks adapt to reality
-- **Anti-patterns prevent shortcuts** - Explicit forbidden patterns stop rationalization
+<code>
+User: "Add OAuth authentication"
 
-## When to Use Research Agents
+Claude (without brainstorming):
+"I'll implement OAuth with Auth0..."
+[Proposes approach without checking if auth exists]
+[Doesn't research existing patterns]
+[Misses that passport.js already set up]
+</code>
 
-**Use hyperpowers:codebase-investigator when:**
-- Understanding how existing features work
-- Finding where specific functionality lives
-- Identifying patterns to follow
-- Verifying assumptions about codebase structure
-- Checking if feature already exists
+<why_it_fails>
+- Proposes Auth0 when passport.js already exists in codebase
+- Creates inconsistent architecture (two auth systems)
+- Wastes time implementing when partial solution exists
+- Doesn't leverage existing code
+- User has to redirect to existing pattern
+</why_it_fails>
 
-**Use hyperpowers:internet-researcher when:**
-- Finding current API documentation
-- Researching library capabilities and best practices
-- Comparing technology options
-- Understanding community recommendations
-- Finding code examples from official docs
+<correction>
+**Correct approach:**
 
-**Research protocol:**
-1. If codebase pattern exists → Use it (unless clearly unwise)
-2. If no codebase pattern → Research external patterns
-3. If research yields nothing → Ask user for direction
+1. **Research first:**
+   - Dispatch codebase-investigator: "Find existing auth implementation"
+   - Findings: passport.js at auth/passport-config.ts
+   - Dispatch internet-researcher: "Passport OAuth2 strategies"
 
-## Handling Additional Context
+2. **Propose approaches building on findings:**
+   ```
+   Based on codebase showing passport.js at auth/passport-config.ts:
 
-**If user provides additional context mid-brainstorming:**
+   1. Extend existing passport setup (recommended)
+      - Add google-oauth20 strategy
+      - Matches codebase pattern
+      - Pros: Consistent, tested library
+      - Cons: Requires OAuth provider setup
 
-1. Acknowledge: "Thanks for the additional context about [X]"
-2. Determine impact:
-   - Changes requirements? → Return to understanding
-   - Changes approach? → Return to exploring
-   - Just clarification? → Continue current step
-3. Continue naturally from there
+   2. Custom JWT implementation
+      - Pros: Full control
+      - Cons: Security complexity, breaks pattern
 
-**No need for complex phase tracking** - trust the flow.
+   I recommend option 1 because it builds on existing auth/ setup.
+   ```
 
-## Example: OAuth Authentication
+**What you gain:**
+- Leverages existing code (faster)
+- Consistent architecture (maintainable)
+- Research informs design (correct)
+- User sees you understand codebase (trust)
+</correction>
+</example>
 
-### Understanding (Questions)
-- "What OAuth provider: Google, Microsoft, both?"
-- "Token storage: cookies, localStorage, sessionStorage?"
-- "Session duration requirement?"
+<example>
+<scenario>Developer creates full task tree upfront</scenario>
 
-**Research:**
-- Dispatch codebase-investigator: "Find existing auth implementation"
-- Findings: Passport.js already in use at auth/passport-config.ts
+<code>
+bd create "Epic: Add OAuth"
+bd create "Task 1: Configure OAuth provider"
+bd create "Task 2: Implement token exchange"
+bd create "Task 3: Add refresh token logic"
+bd create "Task 4: Create middleware"
+bd create "Task 5: Add UI components"
+bd create "Task 6: Write integration tests"
 
-### Exploring (Approaches)
+# Starts implementing Task 1
+# Discovers OAuth library handles refresh automatically
+# Now Task 3 is wrong, needs deletion
+# Discovers middleware already exists
+# Now Task 4 is wrong
+# Task tree brittle to reality
+</code>
 
-"Based on codebase investigation showing passport.js, I recommend:
+<why_it_fails>
+- Assumptions about implementation prove wrong
+- Task tree becomes incorrect as you learn
+- Wastes time updating/deleting wrong tasks
+- Rigid plan fights with reality
+- Context switching between fixing plan and implementing
+</why_it_fails>
 
-1. **Extend existing passport setup** (recommended)
-   - Add google-oauth20 strategy to auth/passport-config.ts
-   - Use existing cookie-session middleware
-   - Matches codebase pattern
-
-2. **Custom OAuth implementation**
-   - Direct OAuth2 calls
-   - Full control but more complex
-
-I recommend option 1 because it leverages existing auth/ setup."
-
-### Design Presentation
-
-"Here's the authentication flow architecture:
-
-1. User clicks 'Login with Google'
-2. Redirect to Google OAuth consent
-3. Callback to /auth/google/callback with auth code
-4. Exchange code for tokens via passport
-5. Store encrypted in httpOnly cookies
-6. Set 24h expiry with refresh
-
-Does this look right so far?"
-
-[Continue with components, error handling, testing...]
-
-### Epic Creation
+<correction>
+**Correct approach (iterative):**
 
 ```bash
-bd create "Feature: OAuth2 Authentication" --type epic --design "
-## Requirements (IMMUTABLE)
+bd create "Epic: Add OAuth" [with immutable requirements]
+bd create "Task 1: Configure OAuth provider"
+
+# Execute Task 1
+# Learn: OAuth library handles refresh, middleware exists
+
+bd create "Task 2: Integrate with existing middleware"
+# [Created AFTER learning from Task 1]
+
+# Execute Task 2
+# Learn: UI needs OAuth button component
+
+bd create "Task 3: Add OAuth button to login UI"
+# [Created AFTER learning from Task 2]
+```
+
+**What you gain:**
+- Tasks reflect current reality (accurate)
+- No wasted time fixing wrong plans (efficient)
+- Each task informed by previous learnings (adaptive)
+- Plan evolves with understanding (flexible)
+- Epic requirements stay immutable (contract preserved)
+</correction>
+</example>
+
+<example>
+<scenario>Epic created without anti-patterns section</scenario>
+
+<code>
+bd create "Epic: OAuth Authentication" --design "
+## Requirements
 - Users authenticate via Google OAuth2
-- Tokens stored in httpOnly cookies
-- Session expires after 24h inactivity
-- Integrates with existing User model in db/models/user.ts
+- Tokens stored securely
+- Session management
 
 ## Success Criteria
-- [ ] Login flow redirects to Google and back
-- [ ] Access tokens stored in httpOnly cookies
+- [ ] Login flow works
+- [ ] Tokens secured
+- [ ] All tests pass
+"
+
+# During implementation, hits blocker:
+# "Integration tests for OAuth are complex, I'll mock it..."
+# [No anti-pattern preventing this]
+# Ships with mocked OAuth (defeats validation)
+</code>
+
+<why_it_fails>
+- No explicit forbidden patterns
+- Agent rationalizes shortcuts when blocked
+- "Tokens stored securely" too vague (localStorage? cookies?)
+- Requirements can be "met" without meeting intent
+- Mocking defeats the purpose of integration tests
+</why_it_fails>
+
+<correction>
+**Correct approach with anti-patterns:**
+
+```bash
+bd create "Epic: OAuth Authentication" --design "
+## Requirements (IMMUTABLE)
+- Users authenticate via Google OAuth2
+- Tokens stored in httpOnly cookies (NOT localStorage)
+- Session expires after 24h inactivity
+- Integrates with existing User model at db/models/user.ts
+
+## Success Criteria
+- [ ] Login redirects to Google and back
+- [ ] Tokens in httpOnly cookies
 - [ ] Token refresh works automatically
-- [ ] Integration tests pass without mocking OAuth
-- [ ] Works with existing /api/me endpoint
+- [ ] Integration tests pass WITHOUT mocking OAuth
 - [ ] All tests passing
-- [ ] Pre-commit hooks passing
 
 ## Anti-Patterns (FORBIDDEN)
 - ❌ NO localStorage tokens (violates httpOnly requirement)
 - ❌ NO new user model (must use existing)
-- ❌ NO mocking OAuth in integration tests
+- ❌ NO mocking OAuth in integration tests (defeats validation)
 - ❌ NO skipping token refresh (explicit requirement)
-
-## Approach
-Extend existing passport.js setup in auth/passport-config.ts...
-
-## Architecture
-- passport-google-oauth20 strategy
-- cookie-session middleware for token storage
-- Auto-refresh middleware for 24h sessions
-
-## Context
-- Existing pattern: auth/passport-config.ts
-- API docs: https://developers.google.com/identity/protocols/oauth2
 "
-# Returns bd-1
 ```
 
-### First Task
+**What you gain:**
+- Requirements concrete and specific (testable)
+- Forbidden patterns explicit (prevents shortcuts)
+- Agent can't rationalize away requirements (contract enforced)
+- Success criteria unambiguous (clear done state)
+- Anti-patterns prevent "letter not spirit" compliance
+</correction>
+</example>
+</examples>
 
-```bash
-bd create "Setup OAuth provider configuration" --type feature --design "
-## Goal
-Configure Google OAuth2 credentials and passport strategy
+<key_principles>
+- **One question at a time** - Don't overwhelm
+- **Multiple choice preferred** - Easier to answer when possible
+- **Delegate research** - Use codebase-investigator and internet-researcher agents
+- **YAGNI ruthlessly** - Remove unnecessary features from all designs
+- **Explore alternatives** - Propose 2-3 approaches before settling
+- **Incremental validation** - Present design in sections, validate each
+- **Epic is contract** - Requirements immutable, tasks adapt
+- **Anti-patterns prevent shortcuts** - Explicit forbidden patterns stop rationalization
+- **One task only** - Subsequent tasks created iteratively (not upfront)
+</key_principles>
 
-## Implementation
-1. Study auth/passport-config.ts for existing pattern
-2. Add google-oauth20 strategy configuration
-3. Store client ID/secret in .env (no secrets in code)
-4. Configure callback URL (needs HTTPS for production)
+<research_agents>
+## Use codebase-investigator when:
+- Understanding how existing features work
+- Finding where specific functionality lives
+- Identifying patterns to follow
+- Verifying assumptions about structure
+- Checking if feature already exists
 
-## Tests (TDD)
-- test/auth/oauth-provider.test.ts
-  - Can redirect to Google consent screen
-  - Callback receives authorization code
-  - No secrets exposed in client code
+## Use internet-researcher when:
+- Finding current API documentation
+- Researching library capabilities
+- Comparing technology options
+- Understanding community recommendations
+- Finding official code examples
 
-## Success Criteria
-- [ ] OAuth redirect works to Google
-- [ ] Callback configured correctly
-- [ ] No secrets in code (all in .env)
-- [ ] Tests passing
-"
-# Returns bd-2
+## Research protocol:
+1. Codebase pattern exists → Use it (unless clearly unwise)
+2. No codebase pattern → Research external patterns
+3. Research yields nothing → Ask user for direction
+</research_agents>
 
-bd dep add bd-2 bd-1 --type parent-child
-```
+<critical_rules>
+## Rules That Have No Exceptions
 
-### Handoff
+1. **Research BEFORE proposing** → Use agents to understand context
+2. **Propose 2-3 approaches** → Don't jump to single solution
+3. **Epic requirements IMMUTABLE** → Tasks adapt, requirements don't
+4. **Include anti-patterns section** → Prevents watering down requirements
+5. **Create ONLY first task** → Subsequent tasks created iteratively
 
-"Epic bd-1 ready with immutable requirements. First task bd-2 ready.
+## Common Excuses
 
-Ready to start? I'll use executing-plans to work iteratively - it will execute bd-2, then create the next task based on what we learn."
+All of these mean: **STOP. Follow the process.**
 
----
+- "Requirements obvious, don't need questions" (Questions reveal hidden complexity)
+- "I know this pattern, don't need research" (Research might show better way)
+- "Can plan all tasks upfront" (Plans become brittle, tasks adapt as you learn)
+- "Anti-patterns section overkill" (Prevents rationalization under pressure)
+- "Epic can evolve" (Requirements contract, tasks evolve)
+</critical_rules>
 
-**This skill creates the design and structure. The executing-plans skill handles iterative implementation.**
+<verification_checklist>
+Before handing off to executing-plans:
+
+- [ ] Asked clarifying questions (one at a time)
+- [ ] Researched codebase patterns (if applicable)
+- [ ] Researched external docs/libraries (if applicable)
+- [ ] Proposed 2-3 approaches with trade-offs
+- [ ] Presented design in sections, validated each
+- [ ] Created bd epic with all sections (requirements, success criteria, anti-patterns, approach, architecture)
+- [ ] Requirements are IMMUTABLE and specific
+- [ ] Anti-patterns section prevents shortcuts
+- [ ] Created ONLY first task (not full tree)
+- [ ] First task has detailed implementation checklist
+- [ ] Announced handoff to executing-plans
+
+**Can't check all boxes?** Return to process and complete missing steps.
+</verification_checklist>
+
+<integration>
+**This skill calls:**
+- hyperpowers:codebase-investigator (for finding existing patterns)
+- hyperpowers:internet-researcher (for external documentation)
+- hyperpowers:executing-plans (handoff after design complete)
+
+**This skill is called by:**
+- hyperpowers:using-hyper (mandatory before writing code)
+- User requests for new features
+- Beginning of greenfield development
+
+**Agents used:**
+- codebase-investigator (understand existing code)
+- internet-researcher (find external documentation)
+</integration>
+
+<resources>
+**Detailed guides:**
+- [bd epic template examples](resources/epic-templates.md)
+- [Socratic questioning patterns](resources/questioning-patterns.md)
+- [Anti-pattern examples by domain](resources/anti-patterns.md)
+
+**When stuck:**
+- User gives vague answer → Ask follow-up multiple choice question
+- Research yields nothing → Ask user for direction explicitly
+- Too many approaches → Narrow to top 2-3, explain why others eliminated
+- User changes requirements mid-design → Acknowledge, return to understanding phase
+</resources>

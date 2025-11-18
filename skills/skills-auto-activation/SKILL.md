@@ -1,140 +1,121 @@
 ---
 name: skills-auto-activation
-description: Use when skills aren't activating reliably - covers official solutions (better descriptions, explicit requests) and advanced custom hook system for forcing skill activation based on prompt analysis
+description: Use when skills aren't activating reliably - covers official solutions (better descriptions) and custom hook system for deterministic skill activation
 ---
 
-# Skills Auto-Activation
+<skill_overview>
+Skills often don't activate despite keywords; make activation reliable through better descriptions, explicit triggers, or custom hooks.
+</skill_overview>
 
-> **Note:** Hyperpowers now includes automatic skill activation via the hooks system.
-> The `UserPromptSubmit` hook (at `hooks/user-prompt-submit/10-skill-activator.js`) analyzes your prompts and suggests relevant skills before Claude responds.
-> See [HOOKS.md](../../HOOKS.md) for configuration and customization.
->
-> This skill documents the underlying techniques and how to extend the system for custom skills.
+<rigidity_level>
+HIGH FREEDOM - Choose solution level based on project needs (Level 1 for simple, Level 3 for complex). Hook implementation is flexible pattern, not rigid process.
+</rigidity_level>
 
-## Overview
+<quick_reference>
+| Level | Solution | Effort | Reliability | When to Use |
+|-------|----------|--------|-------------|-------------|
+| 1 | Better descriptions + explicit requests | Low | Moderate | Small projects, starting out |
+| 2 | CLAUDE.md references | Low | Moderate | Document patterns |
+| 3 | Custom hook system | High | Very High | Large projects, established patterns |
 
-Skills often don't activate automatically despite relevant keywords and context. This is a known issue in Claude Code.
+**Hyperpowers includes:** Auto-activation hook at `hooks/user-prompt-submit/10-skill-activator.js`
+</quick_reference>
 
-**Core principle:** Make skills activate reliably through better descriptions, explicit triggers, or custom automation.
-
-**The problem:** You've written comprehensive skills, but Claude sits there like they don't exist. Keywords match perfectly. Files are relevant. Nothing happens.
-
-## The Problem
-
-### What Users Experience
-
-**Symptoms:**
-- "I use the exact keywords from skill descriptions. Nothing."
-- "Claude works on files that should trigger skills. Nothing."
-- "Skills just sit there like expensive decorations."
-
-**Confirmed by community:**
-- GitHub Issue #9954: "Built-in skills not available, even if explicitly enabled"
-- Multiple reports: "Claude knows it's supposed to use skills, but it's not reliable"
-- Search results: Skills activation is "not reliable yet"
-
-### Why It Happens
-
-**According to Anthropic:**
-1. **Vague descriptions** - "Helps with documents" won't activate
-2. **Missing when-to-use context** - Description should include both "what" and "when"
-3. **Settings disabled** - Code execution or Skills disabled at org level
-4. **Model variability** - Stochastic nature means varying outputs
-
-**Real cause:** Skills system relies on Claude recognizing relevance. That's not deterministic.
-
-## When to Use
-
+<when_to_use>
 Use this skill when:
 - Skills you created aren't being used automatically
-- You need consistent skill activation across sessions
-- You're working on large codebases with established patterns
+- Need consistent skill activation across sessions
+- Large codebases with established patterns
 - Manual "/use skill-name" gets tedious
 
 **Prerequisites:**
-- Skills are properly configured (name, description, SKILL.md)
-- Code execution is enabled (Settings > Capabilities)
-- Skills are toggled on (Settings > Capabilities)
+- Skills properly configured (name, description, SKILL.md)
+- Code execution enabled (Settings > Capabilities)
+- Skills toggled on (Settings > Capabilities)
+</when_to_use>
 
-## Solution Levels
+<the_problem>
+## What Users Experience
 
-### Level 1: Official Solutions (Start Here)
+**Symptoms:**
+- Keywords from skill descriptions present → skill not used
+- Working on files that should trigger skills → nothing
+- Skills exist but sit unused
 
-These are Anthropic's recommended approaches:
+**Community reports:**
+- GitHub Issue #9954: "Skills not available even if explicitly enabled"
+- "Claude knows it should use skills, but it's not reliable"
+- Skills activation is "not reliable yet"
 
-#### 1. Improve Skill Descriptions
+**Root cause:** Skills rely on Claude recognizing relevance (not deterministic)
+</the_problem>
 
-**Bad description:**
+<solution_levels>
+## Level 1: Official Solutions (Start Here)
+
+### 1. Improve Skill Descriptions
+
+❌ **Bad:**
 ```yaml
 name: backend-dev
 description: Helps with backend development
 ```
 
-**Good description:**
+✅ **Good:**
 ```yaml
 name: backend-dev-guidelines
 description: Use when creating API routes, controllers, services, or repositories in backend - enforces TypeScript patterns, error handling with Sentry, and Prisma repository pattern
 ```
 
 **Key elements:**
-- **Specific keywords:** "API routes", "controllers", "services"
-- **When to use:** "Use when creating..."
-- **What it enforces:** Patterns, error handling, etc.
+- Specific keywords: "API routes", "controllers", "services"
+- When to use: "Use when creating..."
+- What it enforces: Patterns, error handling
 
-#### 2. Be Explicit in Requests
+### 2. Be Explicit in Requests
 
-Instead of:
-```
-How do I create an endpoint?
-```
+Instead of: "How do I create an endpoint?"
 
-Try:
-```
-Use my backend-dev-guidelines skill to create an endpoint
-```
+Try: "Use my backend-dev-guidelines skill to create an endpoint"
 
-**Result:** Works, but tedious for every request.
+**Result:** Works, but tedious
 
-#### 3. Check Settings
+### 3. Check Settings
 
 - Settings > Capabilities > Enable code execution
 - Settings > Capabilities > Toggle Skills on
-- For Team/Enterprise: Check org-level settings
-- Verify Skills aren't greyed out
+- Team/Enterprise: Check org-level settings
 
-### Level 2: Skill References (Moderate Effort)
+---
 
-Reference skills in your CLAUDE.md file:
+## Level 2: Skill References (Moderate)
+
+Reference skills in CLAUDE.md:
 
 ```markdown
 ## When Working on Backend
 
-Before making changes to backend code:
+Before making changes:
 1. Check `/skills/backend-dev-guidelines` for patterns
-2. Follow the repository pattern for database access
-3. Use Sentry for error capturing
+2. Follow repository pattern for database access
 
-The backend-dev-guidelines skill contains complete examples and patterns.
+The backend-dev-guidelines skill contains complete examples.
 ```
 
-**Pros:** No custom code required
-**Cons:** Claude still might not check the skill
+**Pros:** No custom code
+**Cons:** Claude still might not check
 
-### Level 3: Custom Hook System (Advanced)
+---
 
-Build a deterministic activation system using hooks.
+## Level 3: Custom Hook System (Advanced)
 
 **How it works:**
 1. UserPromptSubmit hook analyzes prompt before Claude sees it
 2. Matches keywords, intent patterns, file paths
 3. Injects skill activation reminder into context
-4. Claude sees "🎯 USE backend-dev-guidelines" before processing
+4. Claude sees "🎯 USE these skills" before processing
 
-**Result:** "Night and day difference" - skills go from unused to consistently used.
-
-**For complete implementation:** See [resources/hook-implementation.md](resources/hook-implementation.md)
-
-## The Hook-Based Solution
+**Result:** "Night and day difference" - skills consistently used
 
 ### Architecture
 
@@ -156,8 +137,6 @@ Claude loads and uses relevant skills
 
 ### Configuration: skill-rules.json
 
-Define triggers for each skill:
-
 ```json
 {
   "backend-dev-guidelines": {
@@ -165,32 +144,15 @@ Define triggers for each skill:
     "enforcement": "suggest",
     "priority": "high",
     "promptTriggers": {
-      "keywords": ["backend", "controller", "service", "API", "endpoint", "route"],
+      "keywords": ["backend", "controller", "service", "API", "endpoint"],
       "intentPatterns": [
         "(create|add|build).*?(route|endpoint|controller|service)",
-        "(how to|best practice|pattern).*?(backend|API|database)",
-        "implement.*?(authentication|authorization)"
+        "(how to|pattern).*?(backend|API)"
       ]
     },
     "fileTriggers": {
       "pathPatterns": ["backend/src/**/*.ts", "server/**/*.ts"],
-      "contentPatterns": ["express\\.Router", "export.*Controller", "prisma\\."]
-    }
-  },
-  "frontend-dev-guidelines": {
-    "type": "domain",
-    "enforcement": "suggest",
-    "priority": "high",
-    "promptTriggers": {
-      "keywords": ["frontend", "component", "react", "UI", "layout", "page"],
-      "intentPatterns": [
-        "(create|build|add).*?(component|page|layout|view)",
-        "(how to|pattern).*?(react|hooks|state|routing)"
-      ]
-    },
-    "fileTriggers": {
-      "pathPatterns": ["src/components/**/*.tsx", "src/pages/**/*.tsx"],
-      "contentPatterns": ["import.*from ['\"]react", "export.*function.*Component"]
+      "contentPatterns": ["express\\.Router", "export.*Controller"]
     }
   },
   "test-driven-development": {
@@ -198,16 +160,15 @@ Define triggers for each skill:
     "enforcement": "suggest",
     "priority": "high",
     "promptTriggers": {
-      "keywords": ["test", "TDD", "testing", "spec"],
+      "keywords": ["test", "TDD", "testing"],
       "intentPatterns": [
         "(write|add|create).*?(test|spec)",
-        "test.*(first|before|TDD)",
-        "(bug|fix).*?reproduce"
+        "test.*(first|before|TDD)"
       ]
     },
     "fileTriggers": {
-      "pathPatterns": ["**/*.test.ts", "**/*.spec.ts", "**/__tests__/**"],
-      "contentPatterns": ["describe\\(", "it\\(", "test\\(", "expect\\("]
+      "pathPatterns": ["**/*.test.ts", "**/*.spec.ts"],
+      "contentPatterns": ["describe\\(", "it\\(", "test\\("]
     }
   }
 }
@@ -215,29 +176,12 @@ Define triggers for each skill:
 
 ### Trigger Types
 
-**1. Keyword Triggers**
-- Simple string matching in prompt
-- Case insensitive
-- Good for: obvious topics
+1. **Keyword Triggers** - Simple string matching (case insensitive)
+2. **Intent Pattern Triggers** - Regex for actions + objects
+3. **File Path Triggers** - Glob patterns for file paths
+4. **Content Pattern Triggers** - Regex in file content
 
-**2. Intent Pattern Triggers**
-- Regex matching for actions + objects
-- Catches variations: "create route", "add endpoint", "build API"
-- Good for: understanding what user wants to do
-
-**3. File Path Triggers**
-- Glob patterns for file paths
-- Activates when editing matching files
-- Good for: context-based activation
-
-**4. Content Pattern Triggers**
-- Regex matching in file content
-- Detects imports, exports, specific patterns
-- Good for: technical context (this file uses React, Prisma, etc.)
-
-### The Hook Implementation
-
-**High-level overview:**
+### Hook Implementation (High-Level)
 
 ```javascript
 #!/usr/bin/env node
@@ -247,9 +191,9 @@ const fs = require('fs');
 const path = require('path');
 
 // Load skill rules
-const rulesPath = process.env.SKILL_RULES ||
-    path.join(process.env.HOME, '.claude/skill-rules.json');
-const rules = JSON.parse(fs.readFileSync(rulesPath, 'utf8'));
+const rules = JSON.parse(fs.readFileSync(
+  path.join(process.env.HOME, '.claude/skill-rules.json'), 'utf8'
+));
 
 // Read prompt from stdin
 let promptData = '';
@@ -263,7 +207,14 @@ process.stdin.on('end', () => {
 
     if (activatedSkills.length > 0) {
         // Inject skill activation reminder
-        const context = generateActivationContext(activatedSkills);
+        const context = `
+🎯 SKILL ACTIVATION CHECK
+
+Relevant skills for this prompt:
+${activatedSkills.map(s => `- **${s.skill}** (${s.priority} priority)`).join('\n')}
+
+Check if these skills should be used before responding.
+`;
 
         console.log(JSON.stringify({
             decision: 'approve',
@@ -278,87 +229,37 @@ function analyzePrompt(text) {
     // Match against all skill rules
     // Return list of activated skills with priorities
 }
-
-function generateActivationContext(skills) {
-    // Generate formatted reminder for Claude
-    return `
-🎯 SKILL ACTIVATION CHECK
-
-Relevant skills for this prompt:
-${skills.map(s => `- **${s.skill}** (${s.priority} priority)`).join('\n')}
-
-Check if these skills should be used before responding.
-`;
-}
 ```
 
 **For complete working implementation:** See [resources/hook-implementation.md](resources/hook-implementation.md)
 
-## Progressive Enhancement
+### Progressive Enhancement
 
-### Phase 1: Start Simple (Observation)
-
-Begin with basic keyword matching:
-
+**Phase 1 (Week 1):** Basic keyword matching
 ```json
-{
-  "backend-dev-guidelines": {
-    "promptTriggers": {
-      "keywords": ["backend", "API", "controller"]
-    }
-  }
-}
+{"keywords": ["backend", "API", "controller"]}
 ```
 
-**Observe for a week:** Which prompts activate? Which miss?
-
-### Phase 2: Add Intent Patterns
-
-Add regex for common action patterns:
-
+**Phase 2 (Week 2):** Add intent patterns
 ```json
-{
-  "promptTriggers": {
-    "keywords": ["backend", "API"],
-    "intentPatterns": [
-      "(create|add).*?(route|endpoint)"
-    ]
-  }
-}
+{"intentPatterns": ["(create|add).*?(route|endpoint)"]}
 ```
 
-**Observe:** Catches more variations?
-
-### Phase 3: Add File Triggers
-
-Activate based on which files you're editing:
-
+**Phase 3 (Week 3):** Add file triggers
 ```json
-{
-  "fileTriggers": {
-    "pathPatterns": ["backend/**/*.ts"]
-  }
-}
+{"fileTriggers": {"pathPatterns": ["backend/**/*.ts"]}}
 ```
 
-**Observe:** Auto-activates when working in backend?
+**Phase 4 (Ongoing):** Refine based on observation
+</solution_levels>
 
-### Phase 4: Refine Patterns
-
-Based on observation, refine:
-- Add missed keywords
-- Improve intent patterns
-- Adjust file patterns
-- Set appropriate priorities
-
-## Results
-
+<results>
 ### Before Hook System
 
 - Skills sit unused despite perfect keywords
 - Manual "/use skill-name" every time
 - Inconsistent patterns across codebase
-- Spent time fixing "creative interpretations"
+- Time spent fixing "creative interpretations"
 
 ### After Hook System
 
@@ -367,18 +268,18 @@ Based on observation, refine:
 - Claude self-checks before showing code
 - "Night and day difference"
 
-**Real user report:** "Skills went from 'expensive decorations' to actually useful"
+**Real user:** "Skills went from 'expensive decorations' to actually useful"
+</results>
 
-## Limitations and Considerations
-
-### Limitations
+<limitations>
+## Hook System Limitations
 
 1. **Requires hook system** - Not built into Claude Code
 2. **Maintenance overhead** - skill-rules.json needs updates
-3. **May over-activate** - Too many skills can overwhelm context
+3. **May over-activate** - Too many skills overwhelm context
 4. **Not perfect** - Still relies on Claude using activated skills
 
-### Considerations
+## Considerations
 
 **Token usage:**
 - Activation reminder adds ~50-100 tokens per prompt
@@ -394,97 +295,105 @@ Based on observation, refine:
 - Update rules when adding new skills
 - Review activation logs monthly
 - Refine patterns based on misses
+</limitations>
 
-## Alternative Approaches
+<alternatives>
+## Approach 1: MCP Integration
 
-### Approach 1: MCP Integration
-
-Use Model Context Protocol to provide skills as context:
+Use Model Context Protocol to provide skills as context.
 
 **Pros:** Built into Claude system
 **Cons:** Still not deterministic, same activation issues
 
-### Approach 2: Custom System Prompt
+## Approach 2: Custom System Prompt
 
-Modify Claude's system prompt to always check certain skills:
+Modify Claude's system prompt to always check certain skills.
 
 **Pros:** Works without hooks
 **Cons:** Limited to Pro plan, can't customize per-project
 
-### Approach 3: Manual Discipline
+## Approach 3: Manual Discipline
 
-Always explicitly request skill usage:
+Always explicitly request skill usage.
 
 **Pros:** No setup required
 **Cons:** Tedious, easy to forget, doesn't scale
 
-### Approach 4: Skill Consolidation
+## Approach 4: Skill Consolidation
 
-Combine all guidelines into CLAUDE.md instead of separate skills:
+Combine all guidelines into CLAUDE.md.
 
 **Pros:** Always loaded
 **Cons:** Violates progressive disclosure, wastes tokens
 
-**Recommendation:** Use hook system (Level 3) if working on large projects with established patterns. Use official solutions (Level 1) for smaller projects or when starting out.
+**Recommendation:** Level 3 (hooks) for large projects, Level 1 for smaller projects
+</alternatives>
 
-## Common Rationalizations
+<critical_rules>
+## Rules That Have No Exceptions
 
-| Excuse | Reality |
-|--------|---------|
-| "Skills should just work automatically" | They should, but they don't reliably. Workaround needed. |
-| "This hook system is too complex" | Setup takes 2 hours, saves hundreds of hours of fixes. |
-| "I'll just manually specify skills" | You'll forget. It gets tedious. Hook automates what's tedious. |
-| "Improving descriptions will fix it" | Helps, but not deterministic. Hook makes it deterministic. |
-| "This is overkill for my project" | Maybe. Start with Level 1, upgrade if needed. |
+1. **Try Level 1 first** → Better descriptions and explicit requests before building hooks
+2. **Observe before building** → Watch which prompts should activate skills
+3. **Start with keywords** → Add complexity incrementally (keywords → intent → files)
+4. **Keep hook fast (<1 second)** → Don't block prompt processing
+5. **Maintain skill-rules.json** → Update when skills change
 
-## Red Flags
+## Common Excuses
 
-**Watch for these patterns:**
-- Building hook without testing Level 1 solutions first
-- Over-activating skills (too many rules)
-- Not maintaining skill-rules.json
-- Hook takes >1 second (too slow)
-- Activation text overwhelms prompt
+All of these mean: **Try Level 1 first, then decide.**
 
-## Integration with Other Skills
+- "Skills should just work automatically" (They should, but don't reliably - workaround needed)
+- "Hook system too complex" (Setup takes 2 hours, saves hundreds of hours)
+- "I'll manually specify skills" (You'll forget, it gets tedious)
+- "Improving descriptions will fix it" (Helps, but not deterministic)
+- "This is overkill" (Maybe - start Level 1, upgrade if needed)
+</critical_rules>
+
+<verification_checklist>
+Before building hook system:
+
+- [ ] Tried improving skill descriptions (Level 1)
+- [ ] Tried explicit skill requests (Level 1)
+- [ ] Checked all settings are enabled
+- [ ] Observed which prompts should activate skills
+- [ ] Identified patterns in failures
+- [ ] Project large enough to justify hook overhead
+- [ ] Have time for 2-hour setup + ongoing maintenance
+
+**If Level 1 works:** Don't build hook system
+
+**If Level 1 insufficient:** Build hook system (Level 3)
+</verification_checklist>
+
+<integration>
+**This skill covers:** Skill activation strategies
 
 **Related skills:**
-- **hyperpowers:building-hooks** - How to build the hook system
-- **hyperpowers:using-hyper** - When to use skills generally
-- **hyperpowers:writing-skills** - Creating skills that activate well
+- hyperpowers:building-hooks (how to build hook system)
+- hyperpowers:using-hyper (when to use skills generally)
+- hyperpowers:writing-skills (creating skills that activate well)
 
 **This skill enables:**
 - Consistent enforcement of patterns
 - Automatic guideline checking
 - Reliable skill usage across sessions
 
-## Quick Reference
+**Hyperpowers includes:** Auto-activation hook at `hooks/user-prompt-submit/10-skill-activator.js`
+</integration>
 
-| Level | Solution | Effort | Reliability |
-|-------|----------|--------|-------------|
-| 1 | Better descriptions | Low | Moderate |
-| 1 | Explicit requests | Low | High (tedious) |
-| 1 | Check settings | Low | Varies |
-| 2 | CLAUDE.md references | Low | Moderate |
-| 3 | Custom hook system | High | Very High |
-
-## Resources
-
-**For detailed implementation:**
-- [resources/hook-implementation.md](resources/hook-implementation.md) - Complete working code
-- [resources/skill-rules-examples.md](resources/skill-rules-examples.md) - Example configurations
-- [resources/troubleshooting.md](resources/troubleshooting.md) - Common issues
+<resources>
+**Detailed implementation:**
+- [Complete working hook code](resources/hook-implementation.md)
+- [skill-rules.json examples](resources/skill-rules-examples.md)
+- [Troubleshooting guide](resources/troubleshooting.md)
 
 **Official documentation:**
 - [Anthropic Skills Best Practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices)
 - [Claude Code Hooks Guide](https://docs.claude.com/en/docs/claude-code/hooks-guide)
 
-## Remember
-
-- **Start simple** - Try Level 1 solutions first
-- **Observe first** - Watch which prompts should activate skills
-- **Build incrementally** - Start with keywords, add complexity
-- **Maintain rules** - Update skill-rules.json as skills evolve
-- **Measure impact** - Are skills actually being used more?
-
-Skills are only valuable if they activate. Make them activate reliably.
+**When stuck:**
+- Skills still not activating → Check Settings > Capabilities
+- Hook not working → Check ~/.claude/logs/hooks.log
+- Over-activation → Reduce keywords, increase priority thresholds
+- Under-activation → Add more keywords, broaden intent patterns
+</resources>

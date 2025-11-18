@@ -1,160 +1,142 @@
 ---
 name: writing-plans
-description: Use to expand bd task implementation checklists into detailed step-by-step instructions - enhances bd tasks with exact file paths, complete code examples, and verification commands for engineers with zero codebase context. Can work on single tasks or multiple tasks.
+description: Use to expand bd tasks with detailed implementation steps - adds exact file paths, complete code, verification commands assuming zero context
 ---
 
-# Writing Plans
+<skill_overview>
+Enhance bd tasks with comprehensive implementation details for engineers with zero codebase context. Expand checklists into explicit steps: which files, complete code examples, exact commands, verification steps.
+</skill_overview>
 
-## Overview
+<rigidity_level>
+MEDIUM FREEDOM - Follow task-by-task validation pattern, use codebase-investigator for verification.
 
-Enhance bd tasks with comprehensive implementation details assuming the engineer has zero context for our codebase. Expand implementation checklists into explicit steps: which files to touch, complete code examples, exact test commands, verification steps. Everything stays in bd - no separate markdown files.
+Adapt implementation details to actual codebase state. Never use placeholders or meta-references.
+</rigidity_level>
 
-Assume they are a junior developer who knows almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
+<quick_reference>
 
-**Announce at start:** "I'm using the hyperpowers:writing-plans skill to expand bd task(s) with detailed implementation steps."
+| Step | Action | Critical Rule |
+|------|--------|---------------|
+| **Identify Scope** | Single task, range, or full epic | No artificial limits |
+| **Verify Codebase** | Use `codebase-investigator` agent | NEVER verify yourself, report discrepancies |
+| **Draft Steps** | Write bite-sized (2-5 min) actions | Follow TDD cycle for new features |
+| **Present to User** | Show COMPLETE expansion FIRST | Then ask for approval |
+| **Update bd** | `bd update bd-N --design "..."` | Only after user approves |
+| **Continue** | Move to next task automatically | NO asking permission between tasks |
 
-**Context:** This can run after hyperpowers:sre-task-refinement approves bd issues, or anytime you want to expand tasks with more detail.
+**FORBIDDEN:** Placeholders like `[Full implementation steps as detailed above]`
+**REQUIRED:** Actual content - complete code, exact paths, real commands
 
-**Input:** One or more bd task IDs (e.g., bd-2, or bd-2 through bd-5)
+</quick_reference>
 
-**Output:** Enhanced bd issues with detailed implementation steps
+<when_to_use>
+**Use after hyperpowers:sre-task-refinement or anytime tasks need more detail.**
 
-**CRITICAL:** NEVER read `.beads/issues.jsonl` directly. ALWAYS use `bd show`, `bd list`, and `bd edit` commands to interact with tasks. The bd CLI provides the correct interface.
+Symptoms:
+- bd tasks have implementation checklists but need expansion
+- Engineer needs step-by-step guide with zero context
+- Want explicit file paths, complete code examples
+- Need exact verification commands
 
-## Flexible Scope
+</when_to_use>
 
-**You can enhance:**
-- **Single task:** "Expand bd-2 with implementation steps"
-- **Multiple tasks:** "Expand bd-2 through bd-5"
-- **Entire epic:** "Expand all tasks in bd-1"
+<the_process>
 
-**No artificial limits.** Work on as many or as few tasks as makes sense for the situation.
+## 1. Identify Tasks to Expand
 
-## Before Starting
-
-**REQUIRED: Identify scope and verify codebase state**
-
-### 1. Identify Tasks to Expand
-
-**User specifies scope in one of these ways:**
-- Explicit task list: "Expand bd-2, bd-3, bd-5"
-- Range: "Expand bd-2 through bd-8"
-- Epic: "Expand all tasks in bd-1"
+**User specifies scope:**
 - Single: "Expand bd-2"
+- Range: "Expand bd-2 through bd-5"
+- Epic: "Expand all tasks in bd-1"
 
-**If user says "expand all tasks in bd-1":**
+**If epic:**
+```bash
+bd dep tree bd-1  # View complete dependency tree
+# Note all child task IDs
+```
+
+**Create TodoWrite tracker:**
+```
+- [ ] bd-2: [Task Title]
+- [ ] bd-3: [Task Title]
+...
+```
+
+## 2. For EACH Task (Loop Until All Done)
+
+### 2a. Mark In Progress and Read Current State
 
 ```bash
-# View complete dependency tree
-bd dep tree bd-1
-
-# This shows all child tasks/phases
+# Mark in TodoWrite: in_progress
+bd show bd-3  # Read current task design
 ```
 
-Make note of all task IDs to expand.
+### 2b. Verify Codebase State
 
-**If user provides range or explicit list:** Use those task IDs directly.
+**CRITICAL: Use codebase-investigator agent, NEVER verify yourself.**
 
-### 2. Codebase Verification
-
-**YOU MUST verify current codebase state before writing ANY task.**
-
-**DO NOT verify codebase yourself. Use hyperpowers:codebase-investigator agent.**
-
-**Provide the agent with bd issue assumptions so it can report discrepancies:**
-
-For each task in the epic, read the implementation checklist and file references, then dispatch hyperpowers:codebase-investigator agent with:
-- "bd-3 assumes these files exist: [list with expected paths from bd issue]"
-- "Verify each file exists and report any differences from these assumptions"
-- "bd-3 says [feature] is implemented in [location]. Verify this is accurate"
-- "bd-3 expects [dependency] version [X]. Check actual version installed"
-
-**Example query to agent:**
+**Provide agent with bd assumptions:**
 ```
-Assumptions from bd-3 (Phase 1: Setup Auth):
-- Auth service should be in src/services/auth.ts with login() and logout() functions
+Assumptions from bd-3:
+- Auth service should be in src/services/auth.ts with login() and logout()
 - User model in src/models/user.ts with email and password fields
 - Test file at tests/services/auth.test.ts
 - Uses bcrypt dependency for password hashing
 
 Verify these assumptions and report:
 1. What exists vs what bd-3 expects
-2. Any structural differences (different paths, functions, exports)
-3. Any missing or additional components
+2. Structural differences (different paths, functions, exports)
+3. Missing or additional components
 4. Current dependency versions
 ```
 
-Review investigator findings and note any differences from bd task assumptions.
+**Based on investigator report:**
+- ✓ Confirmed assumptions → Use in implementation
+- ✗ Incorrect assumptions → Adjust plan to match reality
+- + Found additional → Document and incorporate
 
-**Based on investigator report, NEVER write:**
-- "Update `index.js` if exists"
-- "Modify `config.py` (if present)"
-- "Create or update `types.ts`"
+**NEVER write conditional steps:**
+❌ "Update `index.js` if exists"
+❌ "Modify `config.py` (if present)"
 
-**Based on investigator report, ALWAYS write:**
-- "Create `src/auth.ts`" (investigator confirmed doesn't exist)
-- "Modify `src/index.ts:45-67`" (investigator confirmed exists, checked line numbers)
-- "No changes needed to `config.py`" (investigator confirmed already correct)
+**ALWAYS write definitive steps:**
+✅ "Create `src/auth.ts`" (investigator confirmed doesn't exist)
+✅ "Modify `src/index.ts:45-67`" (investigator confirmed exists)
 
-**If codebase state differs from bd task assumptions:** Document the difference and adjust the implementation plan accordingly. The bd issue may have been written before recent codebase changes.
+### 2c. Draft Expanded Implementation Steps
 
-## Bite-Sized Step Granularity
+**Bite-sized granularity (2-5 minutes per step):**
 
-**Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
+For new features (follow test-driven-development):
+1. Write the failing test (one step)
+2. Run it to verify it fails (one step)
+3. Implement minimal code to pass (one step)
+4. Run tests to verify they pass (one step)
+5. Commit (one step)
 
-**Note:** These steps follow the hyperpowers:test-driven-development skill's RED-GREEN-REFACTOR cycle. When writing implementation steps for new functionality, reference the TDD workflow.
+**Include in each step:**
+- Exact file path
+- Complete code example (not pseudo-code)
+- Exact command to run
+- Expected output
 
-These detailed steps will be added to each bd task's design.
+### 2d. Present COMPLETE Expansion to User
 
-## Task-by-Task User Validation
+**CRITICAL: Show the full expansion BEFORE asking for approval.**
 
-**CRITICAL: Validate EACH expanded task with user BEFORE updating bd issue.**
-
-**Step 0: Create TodoWrite tracker**
-
-After identifying scope, create a TodoWrite todo list with one item per bd task you'll expand:
-
-```markdown
-- [ ] bd-2: [Task Title]
-- [ ] bd-3: [Task Title]
-- [ ] bd-4: [Task Title]
-...
-```
-
-Mark each task as in_progress when working on it, completed when user approves expansion.
-
-**For single-task expansions:** Still use TodoWrite with one item for consistency.
-
-**Workflow for EACH task:**
-
-1. **Mark task as in_progress** in TodoWrite
-2. **Read current task design from bd** using `bd show bd-3`
-3. **Verify codebase state** for files mentioned in this task:
-   - Dispatch hyperpowers:codebase-investigator with bd task assumptions
-   - Review investigator findings for discrepancies
-4. **Draft expanded implementation steps** (in memory, not in bd yet) based on actual codebase state
-5. **Present expansion to user** - CRITICAL: Show the complete expanded design BEFORE asking for approval:
-
-**YOU MUST output the complete task expansion in your message text FIRST:**
-
+**Format:**
 ```markdown
 **bd-[N]: [Task Title]**
 
 **From bd issue:**
-- Goal: [From bd show bd-N]
+- Goal: [From bd show]
 - Effort estimate: [From bd issue]
 - Success criteria: [From bd issue]
 
 **Codebase verification findings:**
-- ✓ bd-[N] assumption confirmed: [what matched]
-- ✗ bd-[N] assumption incorrect: [what issue said] - ACTUALLY: [reality]
-- + Found additional: [unexpected things discovered]
-- ✓ Dependency confirmed: [library@version]
+- ✓ Confirmed: [what matched]
+- ✗ Incorrect: [what issue said] - ACTUALLY: [reality]
+- + Found: [unexpected discoveries]
 
 **Implementation steps based on actual codebase state:**
 
@@ -166,338 +148,331 @@ Mark each task as in_progress when working on it, completed when user approves e
 - Test: `tests/exact/path/to/test.py`
 
 **Step 1: Write the failing test**
-[Complete code example]
-
-**Step 2: Run test to verify it fails**
-[Exact command and expected output]
-
-**Step 3: Write minimal implementation**
-[Complete code example]
-
-**Step 4: Run test to verify it passes**
-[Exact command and expected output]
-
-**Step 5: Commit**
-[Exact git commands with reference to bd issue]
-
-[Continue for all step groups in this task...]
-```
-
-**THEN use AskUserQuestion with:**
-
-**Options:**
-- "Approved - proceed to next task"
-- "Needs revision - [describe changes]"
-- "Other"
-
-**DO NOT ask for approval without showing the complete task expansion first. The user needs to SEE the expanded design before approving it.**
-
-6. **If approved:**
-   - Update bd issue with expanded design using `bd update bd-3 --design "..."`
-   - Mark task as completed in TodoWrite
-   - **IMMEDIATELY continue to next task WITHOUT asking the user**
-7. **If needs revision:**
-   - Keep as in_progress
-   - Revise based on feedback
-   - Present again
-8. **After ALL tasks expanded and updated in bd:**
-   - All bd issues now contain detailed implementation steps
-   - Epic is ready for execution
-   - Offer execution choice (hyperpowers:executing-plans skill)
-
-**CRITICAL: DO NOT ask the user if you should continue to the next task. DO NOT ask "Should I continue?" or "What's your preference?" between tasks. The TodoWrite todo list is YOUR plan. Execute it completely. The ONLY time you ask the user anything is:**
-- When presenting each task expansion for validation (step 5 above)
-- At the VERY END after ALL tasks are done, to offer execution choice (step 8 above)
-
-**Between task validations: JUST CONTINUE. No permission needed.**
-
-**DO NOT update bd issues until each task expansion is user-validated.**
-
-This prevents going off track early and wasting effort on wrong implementation details.
-
-## CRITICAL: No Placeholder Text
-
-**NEVER EVER write meta-references in the design field. Examples of FORBIDDEN text:**
-
-❌ `[Full implementation steps as detailed above - includes all 6 step groups with complete code examples]`
-❌ `[Implementation steps as specified in the success criteria]`
-❌ `[Complete code examples will be added here]`
-❌ `[See above for detailed steps]`
-❌ `[As detailed in the implementation checklist]`
-
-**These are COMPLETELY UNACCEPTABLE because:**
-1. The bd task is the source of truth - there is no "above" to reference
-2. The executor (human or Claude) has zero context and needs ACTUAL steps
-3. Placeholders defeat the entire purpose of task refinement
-4. This violates the core principle of "exact instructions for zero-context engineer"
-
-**ALWAYS write actual content:**
-
-✅ Write the complete step-by-step instructions with actual code
-✅ Include all code examples in full
-✅ Specify exact file paths and commands
-✅ No shortcuts, no references to non-existent content
-
-**If you catch yourself writing a meta-reference: STOP. Delete it. Write the actual content.**
-
-## Expanded Task Structure (in bd issue after enhancement)
-
-The expanded design you add to bd issues should follow this structure:
-
-```markdown
-## Goal
-[Original goal from bd issue - keep this]
-
-## Effort Estimate
-[Original estimate - keep this]
-
-## Success Criteria
-[Original criteria - keep this]
-
-## Implementation Steps (ADDED BY writing-plans)
-
-### Step Group 1: [Component Name]
-
-**Files:**
-- Create: `exact/path/to/file.py`
-- Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test.py`
-
-**Step 1: Write the failing test**
-
 ```python
-def test_specific_behavior():
-    result = function(input)
-    assert result == expected
+# tests/auth/test_login.py
+def test_login_with_valid_credentials():
+    user = create_test_user(email="test@example.com", password="secure123")
+    result = login(email="test@example.com", password="secure123")
+    assert result.success is True
+    assert result.user_id == user.id
 ```
 
 **Step 2: Run test to verify it fails**
+```bash
+pytest tests/auth/test_login.py::test_login_with_valid_credentials
+# Expected: ModuleNotFoundError: No module named 'auth.login'
+```
 
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
+[... continue for all steps ...]
+```
 
-**Step 3: Write minimal implementation**
+**THEN ask for approval using AskUserQuestion:**
+- Question: "Is this expansion approved for bd-[N]?"
+- Options:
+  - "Approved - continue to next task"
+  - "Needs revision"
+  - "Other"
 
+### 2e. If Approved: Update bd and Continue
+
+```bash
+bd update bd-3 --design "[paste complete expansion]"
+# Mark completed in TodoWrite
+# IMMEDIATELY continue to next task (NO asking permission)
+```
+
+### 2f. If Needs Revision: Iterate
+
+- Keep as in_progress in TodoWrite
+- Revise based on feedback
+- Present again (step 2d)
+
+## 3. After ALL Tasks Done
+
+```
+All bd issues now contain detailed implementation steps.
+Epic ready for execution.
+```
+
+**Offer execution choice:**
+"Ready to execute? I can use hyperpowers:executing-plans to implement iteratively."
+
+</the_process>
+
+<examples>
+
+<example>
+<scenario>Developer writes placeholder text instead of actual implementation steps</scenario>
+
+<code>
+bd update bd-3 --design "## Goal
+Implement user authentication
+
+## Implementation
+[Full implementation steps as detailed above - includes all 6 step groups with complete code examples]
+
+## Tests
+[Complete code examples will be added here]"
+</code>
+
+<why_it_fails>
+**Placeholders defeat the purpose:**
+- Engineer executing bd-3 has zero context
+- There is no "above" to reference (bd issue is the source of truth)
+- Violates "exact instructions for zero-context engineer" principle
+- Makes task impossible to execute
+
+**Common placeholder patterns (ALL FORBIDDEN):**
+- `[Full implementation steps as detailed above]`
+- `[See above for detailed steps]`
+- `[As specified in success criteria]`
+- `[Complete code examples will be added here]`
+</why_it_fails>
+
+<correction>
+**Write actual content:**
+
+```bash
+bd update bd-3 --design "## Goal
+Implement user authentication
+
+## Implementation
+
+### Step 1: Write failing login test
 ```python
-def function(input):
-    return expected
+# tests/auth/test_login.py
+import pytest
+from auth.service import login
+
+def test_login_with_valid_credentials():
+    result = login(email='test@example.com', password='pass123')
+    assert result.success is True
 ```
 
-**Step 4: Run test to verify it passes**
+### Step 2: Run test (should fail)
+```bash
+pytest tests/auth/test_login.py::test_login_with_valid_credentials
+# Expected: ModuleNotFoundError: No module named 'auth.service'
+```
 
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS
+### Step 3: Create login function
+```python
+# src/auth/service.py
+from dataclasses import dataclass
 
-**Step 5: Commit (use hyperpowers:test-runner agent)**
+@dataclass
+class LoginResult:
+    success: bool
+    user_id: int | None = None
+
+def login(email: str, password: str) -> LoginResult:
+    # Minimal implementation
+    return LoginResult(success=True, user_id=1)
+```
+
+[... continue for all steps with complete code ...]
+
+## Tests
+All test code included in implementation steps above following TDD cycle."
+```
+
+**Result:** Engineer can execute without any context.
+</correction>
+</example>
+
+<example>
+<scenario>Developer verifies codebase state themselves instead of using codebase-investigator agent</scenario>
+
+<code>
+Developer reads files manually:
+- Reads src/services/auth.ts directly
+- Checks package.json manually
+- Assumes file structure based on quick look
+
+Writes expansion based on quick check:
+"Modify src/services/auth.ts (if exists)"
+</code>
+
+<why_it_fails>
+**Manual verification problems:**
+- Misses nuances (existing functions, imports, structure)
+- Creates conditional steps ("if exists")
+- Doesn't catch version mismatches
+- Doesn't report discrepancies from bd assumptions
+
+**Result:** Implementation plan may not match actual codebase state.
+</why_it_fails>
+
+<correction>
+**Use codebase-investigator agent:**
+
+```
+Dispatch agent with bd-3 assumptions:
+"bd-3 expects auth service in src/services/auth.ts with login() and logout() functions.
+Verify:
+1. Does src/services/auth.ts exist?
+2. What functions does it export?
+3. How do login() and logout() work currently?
+4. Any other relevant auth code?
+5. What's the bcrypt version?"
+```
+
+**Agent reports:**
+```
+✓ src/services/auth.ts exists
+✗ ONLY has login() function - NO logout() yet
++ Found: login() uses argon2 NOT bcrypt
++ Found: Session management in src/services/session.ts
+✓ argon2 version: 0.31.2
+```
+
+**Write definitive steps based on findings:**
+```
+Step 1: Add logout() function to EXISTING src/services/auth.ts:45-67
+(no "if exists" - investigator confirmed location)
+
+Step 2: Use argon2 (already installed 0.31.2) not bcrypt
+(no assumption - investigator confirmed actual dependency)
+```
+
+**Result:** Plan matches actual codebase state.
+</correction>
+</example>
+
+<example>
+<scenario>Developer asks permission between each task validation instead of continuing automatically</scenario>
+
+<code>
+After user approves bd-3 expansion:
+
+Developer: "bd-3 expansion approved and updated in bd.
+Should I continue to bd-4 now? What's your preference?"
+
+[Waits for user response]
+</code>
+
+<why_it_fails>
+**Breaks workflow momentum:**
+- Unnecessary interruption
+- User has to respond multiple times
+- Slows down batch processing
+- TodoWrite list IS the plan
+
+**Why it happens:** Over-asking for permission instead of executing the plan.
+</why_it_fails>
+
+<correction>
+**After user approves bd-3:**
 
 ```bash
-# Use test-runner agent to avoid pre-commit hook pollution
-Dispatch hyperpowers:test-runner agent: "Run: git add tests/path/test.py src/path/file.py && git commit -m 'feat(bd-[N]): add specific feature
-
-Implements step group 1 of bd-[N]
-'"
+bd update bd-3 --design "[expansion]"  # Update bd
+# Mark completed in TodoWrite
 ```
 
-### Step Group 2: [Next Component]
-
-[Continue with additional step groups...]
-
-## Key Considerations
-[Original considerations - keep these]
-
-## Anti-patterns
-[Original anti-patterns - keep these]
-```
-
-**Important:** Preserve all original sections from hyperpowers:sre-task-refinement, and add the detailed "Implementation Steps" section.
-
-## Working with bd
-
-### Reading Epic and Tasks
-
+**IMMEDIATELY continue to bd-4:**
 ```bash
-# Show epic details
-bd show bd-1
-
-# View complete dependency tree for epic
-bd dep tree bd-1
-
-# List all tasks in epic (alternative method)
-bd list --parent bd-1
-
-# Show individual task design
-bd show bd-3
+bd show bd-4  # Read next task
+# Dispatch codebase-investigator with bd-4 assumptions
+# Draft expansion
+# Present bd-4 expansion to user
 ```
 
-### Understanding Task Design Structure
+**NO asking:** "Should I continue?" or "What's your preference?"
 
-Each bd task contains:
-- **Goal**: 1-2 sentence objective
-- **Effort Estimate**: Expected hours
-- **Success Criteria**: Testable checkboxes
-- **Implementation Checklist**: Files, functions, tests
-- **Key Considerations**: Edge cases, error handling
-- **Anti-patterns**: Things to avoid
+**ONLY ask user:**
+1. When presenting each task expansion for validation
+2. At the VERY END after ALL tasks done to offer execution choice
 
-Your job is to expand the **Implementation Checklist** into detailed step-by-step code and commands.
+**Between validations: JUST CONTINUE.**
 
-### Updating bd Issues with Expanded Steps
+**Result:** Efficient batch processing of all tasks.
+</correction>
+</example>
 
-After user approves an expansion, update the bd issue:
+</examples>
 
-```bash
-bd update bd-3 --design "$(cat <<'EOF'
-## Goal
-Implement user authentication with JWT tokens
+<critical_rules>
 
-## Effort Estimate
-6-8 hours
+## Rules That Have No Exceptions
 
-## Success Criteria
-- [ ] JWT tokens generated with proper claims
-- [ ] Tokens verified with signature validation
-- [ ] All tests passing
-- [ ] No unsafe error handling
+1. **No placeholders or meta-references** → Write actual content
+   - ❌ FORBIDDEN: `[Full implementation steps as detailed above]`
+   - ✅ REQUIRED: Complete code, exact paths, real commands
 
-## Implementation Steps (ADDED BY writing-plans)
+2. **Use codebase-investigator agent** → Never verify yourself
+   - Agent gets bd assumptions
+   - Agent reports discrepancies
+   - You adjust plan to match reality
 
-### Step Group 1: JWT Token Generation
+3. **Present COMPLETE expansion before asking** → User must SEE before approving
+   - Show full expansion in message text
+   - Then use AskUserQuestion for approval
+   - Never ask without showing first
 
-**Files:**
-- Create: src/auth/jwt.ts
-- Test: tests/auth/jwt.test.ts
+4. **Continue automatically between validations** → Don't ask permission
+   - TodoWrite list IS your plan
+   - Execute it completely
+   - Only ask: (a) task validation, (b) final execution choice
 
-**Step 1: Write the failing test**
+5. **Write definitive steps** → Never conditional
+   - ❌ "Update `index.js` if exists"
+   - ✅ "Create `src/auth.ts`" (investigator confirmed)
 
-\`\`\`typescript
-import { generateToken } from '../src/auth/jwt';
+## Common Excuses
 
-test('generates valid JWT token', () => {
-  const token = generateToken({ userId: '123', email: 'test@example.com' });
-  expect(token).toBeDefined();
-  expect(typeof token).toBe('string');
-});
-\`\`\`
+All of these mean: Stop, write actual content:
+- "I'll add the details later"
+- "The implementation is obvious from the goal"
+- "See above for the steps"
+- "User can figure out the code"
 
-**Step 2: Run test to verify it fails**
+</critical_rules>
 
-Run: `npm test tests/auth/jwt.test.ts`
-Expected: FAIL with "generateToken is not defined"
+<verification_checklist>
 
-**Step 3: Write minimal implementation**
+Before marking each task complete in TodoWrite:
+- [ ] Used codebase-investigator agent (not manual verification)
+- [ ] Presented COMPLETE expansion to user (showed full text)
+- [ ] User approved expansion (via AskUserQuestion)
+- [ ] Updated bd with actual content (no placeholders)
+- [ ] No meta-references in design field
 
-\`\`\`typescript
-import jwt from 'jsonwebtoken';
+Before finishing all tasks:
+- [ ] All tasks in TodoWrite marked completed
+- [ ] All bd issues updated with expansions
+- [ ] No conditional steps ("if exists")
+- [ ] Complete code examples in all steps
+- [ ] Exact file paths and commands throughout
 
-export function generateToken(payload: Record<string, any>): string {
-  return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '24h' });
-}
-\`\`\`
+</verification_checklist>
 
-**Step 4: Run test to verify it passes**
+<integration>
 
-Run: `npm test tests/auth/jwt.test.ts`
-Expected: PASS
+**This skill calls:**
+- sre-task-refinement (optional, can run before this)
+- codebase-investigator (REQUIRED for each task verification)
+- executing-plans (offered after all tasks expanded)
 
-**Step 5: Commit (use hyperpowers:test-runner agent)**
+**This skill is called by:**
+- User (via /hyperpowers:write-plan command)
+- After brainstorming creates epic
 
-\`\`\`bash
-# Use test-runner agent to avoid pre-commit hook pollution
-Dispatch hyperpowers:test-runner agent: "Run: git add src/auth/jwt.ts tests/auth/jwt.test.ts && git commit -m 'feat(bd-3): add JWT token generation
+**Agents used:**
+- hyperpowers:codebase-investigator (verify assumptions, report discrepancies)
 
-Implements step group 1 of bd-3: User Authentication
-'"
-\`\`\`
+</integration>
 
-[Continue with step groups for verifyToken, middleware...]
+<resources>
 
-## Key Considerations
-[Original from hyperpowers:sre-task-refinement]
+**Detailed guidance:**
+- [bd command reference](../common-patterns/bd-commands.md)
+- [Task structure examples](resources/task-examples.md) (if exists)
 
-## Anti-patterns
-[Original from hyperpowers:sre-task-refinement]
-EOF
-)"
-```
+**When stuck:**
+- Unsure about file structure → Use codebase-investigator
+- Don't know version → Use codebase-investigator
+- Tempted to write "if exists" → Use codebase-investigator first
+- About to write placeholder → Stop, write actual content
+- Want to ask permission → Check: Is this task validation or final choice? If neither, don't ask
 
-## Common Rationalizations
-
-These are violations of the skill requirements:
-
-| Excuse | Reality |
-|--------|---------|
-| "File probably exists, I'll say 'update if exists'" | Use hyperpowers:codebase-investigator. Write definitive instruction. |
-| "bd issue mentioned this file, must be there" | Codebase changes. Use investigator to verify current state. |
-| "I can quickly verify files myself" | Use hyperpowers:codebase-investigator. Saves context and prevents hallucination. |
-| "User can figure out if file exists during execution" | Your job is exact instructions. No ambiguity. |
-| "Task validation slows me down" | Going off track wastes far more time. Validate each task. |
-| "I'll batch all tasks then validate at end" | Early mistake cascades to all later tasks. Validate incrementally. |
-| "I'll just ask for approval, user can see the plan" | Output complete task expansion in message BEFORE AskUserQuestion. User must see it. |
-| "Plan looks complete enough to ask" | Show ALL step groups with ALL steps and code. Then ask. |
-| "Too many tasks, should suggest splitting" | No artificial limits. Work on as many tasks as user specifies. |
-| "Single task is too small for this skill" | Single task expansion is valid. Use the skill. |
-| "Should I continue to the next task?" | YES. You have a TodoWrite todo list. Execute it. Don't ask. |
-| "Let me ask user's preference for remaining tasks" | NO. Continue automatically. Only ask at the VERY END about execution. |
-| "Should I stop here or continue?" | Continue. Your todo list tells you what to do. |
-| "**CRITICAL: I'll use placeholder text and fill in later**" | **NO. Write actual implementation steps NOW. NEVER use "[detailed above]", "[as specified]", or similar meta-references.** |
-| "Design field is too long, use placeholder" | Length doesn't matter. Write complete content. Placeholder defeats entire purpose of task refinement. |
-
-**All of these mean: STOP. Follow the requirements exactly.**
-
-## Requirements Checklist
-
-**Before starting:**
-- [ ] Identify scope from user (single task, range, epic, or explicit list)
-- [ ] If epic: Get all tasks (`bd dep tree bd-1`)
-- [ ] Create TodoWrite with all task IDs to expand
-
-**For each task:**
-- [ ] Mark task as in_progress in TodoWrite
-- [ ] Read task design (`bd show bd-N`)
-- [ ] Dispatch hyperpowers:codebase-investigator with bd task assumptions
-- [ ] Write complete step groups with exact paths and code based on investigator findings
-- [ ] Output complete task expansion in message text (verification findings + all step groups with all steps)
-- [ ] THEN use AskUserQuestion to get approval
-- [ ] Mark task as completed in TodoWrite
-
-**For each step:**
-- [ ] Exact file paths with line numbers for modifications
-- [ ] Complete code (never "add validation" without code)
-- [ ] Exact commands with expected output
-- [ ] No conditional instructions ("if exists", "if needed")
-- [ ] Commit messages reference bd task ID
-
-**After updating each bd task (MANDATORY VERIFICATION):**
-- [ ] Run `bd show bd-N` to read back the design field
-- [ ] Verify NO placeholder text like "[detailed above]", "[as specified]", "[will be added]"
-- [ ] Verify ALL step groups are fully written with actual code examples
-- [ ] Verify ALL steps have complete commands and expected output
-- [ ] If ANY placeholder found: STOP, rewrite with actual content, update bd again
-
-**After all tasks approved:**
-- [ ] All bd issues updated with detailed implementation steps
-- [ ] Verify updates with `bd show bd-N` for each task
-- [ ] Offer execution choice
-
-## Execution Handoff
-
-After all bd issues are enhanced with detailed steps, offer execution choice:
-
-**"All bd tasks enhanced with detailed implementation steps. Ready for execution. Two options:**
-
-**1. Execute in this session** - Use hyperpowers:executing-plans to work through enhanced bd tasks
-
-**2. Execute in separate session** - Open new session, use hyperpowers:executing-plans there
-
-**Which approach?"**
-
-**If Execute in this session:**
-- **REQUIRED: Use Skill tool to invoke:** `hyperpowers:executing-plans`
-- Read tasks from bd
-- Follow detailed implementation steps
-- Update task status as work progresses
-
-**If Execute in separate session:**
-- Guide them to open new session
-- **REQUIRED: New session uses Skill tool to invoke:** `hyperpowers:executing-plans`
-- bd issues contain everything needed for execution
+</resources>
