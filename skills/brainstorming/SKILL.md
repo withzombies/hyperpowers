@@ -73,6 +73,12 @@ HIGH FREEDOM - Adapt Socratic questioning to context, but always create immutabl
 - New integration → dispatch internet-researcher
 - Review findings before proposing
 
+**IMPORTANT: Capture research findings for Design Rationale**
+As you research, note down:
+- Codebase findings: file paths, patterns discovered, relevant code
+- External findings: API capabilities, library constraints, doc URLs
+- These will populate the "Research Findings" section of the epic
+
 **Propose 2-3 approaches with trade-offs:**
 
 ```
@@ -133,9 +139,8 @@ bd create "Feature: [Feature Name]" \
 - [ ] Pre-commit hooks passing
 
 ## Anti-Patterns (FORBIDDEN)
-- ❌ [Specific shortcut that violates requirements]
-- ❌ [Rationalization to prevent - e.g., 'NO mocking core behavior']
-- ❌ [Pattern to avoid - e.g., 'NO localStorage for tokens']
+- ❌ [Pattern] ([reasoning] - e.g., 'NO localStorage tokens (security: httpOnly prevents XSS token theft)')
+- ❌ [Pattern] ([reasoning] - e.g., 'NO mocking OAuth in integration tests (validation: defeats purpose)')
 
 ## Approach
 [2-3 paragraph summary of chosen approach]
@@ -143,19 +148,54 @@ bd create "Feature: [Feature Name]" \
 ## Architecture
 [Key components, data flow, integration points]
 
-## Context
-[Links to similar implementations: file.ts:123]
-[External docs consulted]
-[Agent research findings]"
+## Design Rationale
+### Problem
+[1-2 sentences: what problem this solves, why status quo insufficient]
+
+### Research Findings
+**Codebase:**
+- [file.ts:line] - [what it does, why relevant]
+- [pattern discovered, implications]
+
+**External:**
+- [API/library] - [key capability, constraint discovered]
+- [doc URL] - [relevant guidance found]
+
+### Approaches Considered
+1. **[Chosen Approach]** ✓
+   - Pros: [benefits]
+   - Cons: [drawbacks]
+   - **Chosen because:** [specific reasoning, especially codebase consistency]
+
+2. **[Rejected Approach A]**
+   - Pros: [benefits]
+   - Cons: [drawbacks]
+   - **Rejected because:** [specific reasoning]
+
+3. **[Rejected Approach B]** (if applicable)
+   - Pros: [benefits]
+   - Cons: [drawbacks]
+   - **Rejected because:** [specific reasoning]
+
+### Scope Boundaries
+**In scope:**
+- [explicit inclusions]
+
+**Out of scope (deferred/never):**
+- [explicit exclusions with reasoning]
+
+### Open Questions
+- [uncertainties to resolve during implementation]
+- [decisions deferred to execution phase]"
 ```
 
-**Critical:** Anti-patterns section prevents watering down requirements when blockers occur.
+**Critical:** Anti-patterns section prevents watering down requirements when blockers occur. Always include reasoning.
 
 **Example anti-patterns:**
-- ❌ NO localStorage tokens (violates httpOnly security requirement)
-- ❌ NO new user model (must integrate with existing db/models/user.ts)
-- ❌ NO mocking OAuth in integration tests (defeats validation)
-- ❌ NO TODO stubs for core authentication flow
+- ❌ NO localStorage tokens (security: httpOnly prevents XSS token theft)
+- ❌ NO new user model (consistency: must integrate with existing db/models/user.ts)
+- ❌ NO mocking OAuth in integration tests (validation: defeats purpose of testing real flow)
+- ❌ NO TODO stubs for core authentication flow (completeness: core flow must be implemented)
 
 ---
 
@@ -378,7 +418,7 @@ bd create "Epic: OAuth Authentication" --design "
 </why_it_fails>
 
 <correction>
-**Correct approach with anti-patterns:**
+**Correct approach with anti-patterns and design rationale:**
 
 ```bash
 bd create "Epic: OAuth Authentication" --design "
@@ -396,19 +436,77 @@ bd create "Epic: OAuth Authentication" --design "
 - [ ] All tests passing
 
 ## Anti-Patterns (FORBIDDEN)
-- ❌ NO localStorage tokens (violates httpOnly requirement)
-- ❌ NO new user model (must use existing)
-- ❌ NO mocking OAuth in integration tests (defeats validation)
-- ❌ NO skipping token refresh (explicit requirement)
+- ❌ NO localStorage tokens (security: httpOnly prevents XSS token theft)
+- ❌ NO new user model (consistency: must use existing db/models/user.ts)
+- ❌ NO mocking OAuth in integration tests (validation: defeats purpose of testing real flow)
+- ❌ NO skipping token refresh (completeness: explicit requirement from user)
+
+## Approach
+Extend existing passport.js setup at auth/passport-config.ts with Google OAuth2 strategy.
+Use passport-google-oauth20 library. Store tokens in httpOnly cookies via express-session.
+Integrate with existing User model for profile storage.
+
+## Architecture
+- auth/strategies/google.ts - New OAuth strategy
+- auth/passport-config.ts - Register strategy (existing)
+- db/models/user.ts - Add googleId field (existing)
+- routes/auth.ts - OAuth callback routes
+
+## Design Rationale
+### Problem
+Users currently have no SSO option - must create accounts manually.
+Manual signup has 40% abandonment rate. Google OAuth reduces friction.
+
+### Research Findings
+**Codebase:**
+- auth/passport-config.ts:1-50 - Existing passport setup, uses session-based auth
+- auth/strategies/local.ts:1-30 - Pattern for adding strategies
+- db/models/user.ts:1-80 - User model, already has email field
+
+**External:**
+- passport-google-oauth20 - Official Google strategy, 2M weekly downloads
+- Google OAuth2 docs - Requires client ID, callback URL, scopes
+
+### Approaches Considered
+1. **Extend passport.js with google-oauth20** ✓
+   - Pros: Matches existing pattern, well-documented, session reuse
+   - Cons: Adds dependency
+   - **Chosen because:** Consistent with auth/strategies/local.ts pattern
+
+2. **Custom JWT-based OAuth**
+   - Pros: No new dependencies, full control
+   - Cons: Security complexity, breaks existing session pattern
+   - **Rejected because:** Inconsistent with codebase, security risk
+
+3. **Auth0 integration**
+   - Pros: Managed service, multiple providers
+   - Cons: External dependency, cost, different auth model
+   - **Rejected because:** Overkill for single provider, introduces new pattern
+
+### Scope Boundaries
+**In scope:**
+- Google OAuth login/signup
+- Token storage in httpOnly cookies
+- Profile sync with User model
+
+**Out of scope (deferred/never):**
+- Other OAuth providers (GitHub, Facebook) - deferred to future epic
+- Account linking (connect Google to existing account) - deferred
+- Custom OAuth scopes beyond profile/email - not needed
+
+### Open Questions
+- Should failed OAuth create partial user record? (decide during implementation)
+- Token refresh: silent vs prompt? (default to silent, user can configure)
 "
 ```
 
 **What you gain:**
 - Requirements concrete and specific (testable)
-- Forbidden patterns explicit (prevents shortcuts)
+- Forbidden patterns explicit with reasoning (prevents shortcuts)
 - Agent can't rationalize away requirements (contract enforced)
-- Success criteria unambiguous (clear done state)
-- Anti-patterns prevent "letter not spirit" compliance
+- Design rationale preserves context for future tasks
+- Approaches considered show why alternatives were rejected
+- Open questions explicitly tracked for implementation decisions
 </correction>
 </example>
 </examples>
@@ -479,9 +577,10 @@ Before handing off to executing-plans:
 - [ ] Researched external docs/libraries (if applicable)
 - [ ] Proposed 2-3 approaches with trade-offs
 - [ ] Presented design in sections, validated each
-- [ ] Created bd epic with all sections (requirements, success criteria, anti-patterns, approach, architecture)
+- [ ] Created bd epic with all sections (requirements, success criteria, anti-patterns, approach, architecture, design rationale)
 - [ ] Requirements are IMMUTABLE and specific
-- [ ] Anti-patterns section prevents shortcuts
+- [ ] Anti-patterns include reasoning (not just "NO X" but "NO X (reason: Y)")
+- [ ] Design Rationale complete: problem, research findings, approaches considered, scope boundaries, open questions
 - [ ] Created ONLY first task (not full tree)
 - [ ] First task has detailed implementation checklist
 - [ ] Ran SRE refinement on first task (hyperpowers:sre-task-refinement)
