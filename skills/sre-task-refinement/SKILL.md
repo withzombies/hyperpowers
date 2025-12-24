@@ -8,7 +8,7 @@ Review bd task plans with Google Fellow SRE perspective to ensure junior enginee
 </skill_overview>
 
 <rigidity_level>
-LOW FREEDOM - Follow the 7-category checklist exactly. Apply all categories to every task. No skipping red flag checks. Always verify no placeholder text after updates. Reject plans with critical gaps.
+LOW FREEDOM - Follow the 8-category checklist exactly. Apply all categories to every task. No skipping red flag checks. Always verify no placeholder text after updates. Reject plans with critical gaps.
 </rigidity_level>
 
 <quick_reference>
@@ -21,6 +21,7 @@ LOW FREEDOM - Follow the 7-category checklist exactly. Apply all categories to e
 | 5. Safety Standards | Anti-patterns specified? Error handling? | No anti-patterns section |
 | 6. Edge Cases | Empty input? Unicode? Concurrency? Failures? | No edge case consideration |
 | 7. Red Flags | Placeholder text? Vague instructions? | "[detailed above]", "TODO" |
+| 8. Test Meaningfulness | Tests catch real bugs? Not tautological? | Tests only verify syntax/existence |
 
 **Perspective**: Google Fellow SRE with 20+ years experience reviewing junior engineer designs.
 
@@ -169,6 +170,54 @@ bd dep tree bd-1  # Show full dependency tree
 
 ---
 
+### 8. Test Meaningfulness (Fellow SRE Perspective)
+
+**Tests must catch real bugs, not inflate coverage.** For every test specification:
+
+**Ask these questions:**
+- [ ] What specific bug would this test catch?
+- [ ] Could production code break while this test still passes?
+- [ ] Does this test exercise a real user scenario or failure mode?
+- [ ] Is the assertion meaningful? (`result == expected` vs `result != nil`)
+
+**Red flags (AUTO-REJECT):**
+- ❌ Tests that only verify syntax/existence ("enum has cases", "struct has fields")
+- ❌ Tautological tests (pass by definition: `expect(builder.build() != nil)` when build() can't return nil)
+- ❌ Tests that duplicate implementation (testing 1+1==2 by checking 1+1==2)
+- ❌ Tests without meaningful assertions (call code but don't verify outcomes)
+- ❌ Tests that verify mocks instead of production code
+- ❌ Round-trip tests that only use happy path (Codable without edge cases)
+- ❌ Tests named generically ("test_basic", "test_it_works")
+
+**Good test specifications:**
+- ✅ "test_empty_payload_returns_validation_error" - catches missing validation
+- ✅ "test_concurrent_writes_dont_corrupt_data" - catches race condition
+- ✅ "test_malformed_json_returns_400_not_500" - catches error handling bug
+- ✅ "test_unicode_name_preserved_after_roundtrip" - catches encoding bugs
+
+**Bad test specifications (reject or strengthen):**
+- ❌ "test_user_model_exists" - tautological, compiler catches this
+- ❌ "test_builder_returns_value" - tautological if return type non-optional
+- ❌ "test_basic_functionality" - vague, what specific bug does it catch?
+- ❌ "test_encode_decode" - only happy path, no edge cases specified
+
+**When reviewing test specifications:**
+```markdown
+For each test in success criteria, verify:
+
+Test: "test_vin_validation"
+- What bug does it catch? ⚠️ Unclear - need specific scenarios
+- Could code break while test passes? ⚠️ Unknown without specifics
+
+STRENGTHEN TO:
+- test_valid_vin_checksum_accepted
+- test_invalid_vin_checksum_rejected (catches missing checksum validation)
+- test_lowercase_vin_normalized (catches case handling bug)
+- test_vin_with_invalid_chars_rejected (catches input validation bug)
+```
+
+---
+
 ## Review Process
 
 For each task in the plan:
@@ -178,7 +227,7 @@ For each task in the plan:
 bd show bd-3
 ```
 
-**Step 2: Apply all 7 checklist categories**
+**Step 2: Apply all 8 checklist categories**
 - Task Granularity
 - Implementability
 - Success Criteria Quality
@@ -186,6 +235,7 @@ bd show bd-3
 - Safety & Quality Standards
 - Edge Cases & Failure Modes
 - Red Flags
+- Test Meaningfulness
 
 **Step 3: Document findings**
 Take notes:
@@ -730,13 +780,14 @@ EOF
 <critical_rules>
 ## Rules That Have No Exceptions
 
-1. **Apply all 7 categories to every task** → No skipping any category for any task
+1. **Apply all 8 categories to every task** → No skipping any category for any task
 2. **Reject plans with placeholder text** → "[detailed above]", "[as specified]" = instant reject
 3. **Verify no placeholder after updates** → Read back with `bd show` and confirm actual content
 4. **Break tasks >16 hours** → Create subtasks, don't accept large tasks
 5. **Strengthen vague criteria** → "Works correctly" → measurable verification commands
 6. **Add edge cases to every task** → Empty? Unicode? Concurrency? Failures?
 7. **Never skip Category 6** → Edge case analysis prevents production issues
+8. **Reject tautological tests** → Tests must catch bugs, not verify compiler-checked facts
 
 ## Common Excuses
 
@@ -749,13 +800,16 @@ All of these mean: **STOP. Apply the full process.**
 - "Junior will figure it out" (Junior should NOT need to figure out - we specify)
 - "Too detailed, feels like micromanaging" (Detail prevents questions and rework)
 - "Taking too long to review" (One gap caught saves hours of rework)
+- "Any tests are better than none" (Tautological tests are worse - give false confidence)
+- "Tests are specified, don't need to review them" (Test quality matters more than quantity)
+- "Coverage metrics will catch missing tests" (Coverage gaming = meaningless tests)
 </critical_rules>
 
 <verification_checklist>
 Before completing SRE review:
 
 **Per task reviewed:**
-- [ ] Applied all 7 categories (Granularity, Implementability, Criteria, Dependencies, Safety, Edge Cases, Red Flags)
+- [ ] Applied all 8 categories (Granularity, Implementability, Criteria, Dependencies, Safety, Edge Cases, Red Flags, Test Meaningfulness)
 - [ ] Checked for placeholder text in design field
 - [ ] Updated task with missing information via `bd update --design`
 - [ ] Verified updated task with `bd show` (no placeholders remain)
@@ -763,6 +817,7 @@ Before completing SRE review:
 - [ ] Strengthened vague success criteria to measurable
 - [ ] Added edge case analysis to Key Considerations
 - [ ] Strengthened anti-patterns based on failure modes
+- [ ] Verified test specifications catch real bugs (not tautological)
 
 **Overall plan:**
 - [ ] Reviewed ALL tasks/phases/subtasks (no exceptions)
@@ -799,7 +854,7 @@ hyperpowers:executing-plans → creates new task → hyperpowers:sre-task-refine
 **This skill uses:**
 - bd commands (show, update, create, dep add, dep tree)
 - Google Fellow SRE perspective (20+ years distributed systems)
-- 7-category checklist (mandatory for every task)
+- 8-category checklist (mandatory for every task)
 
 **Time expectations:**
 - Small epic (3-5 tasks): 15-20 minutes
@@ -815,12 +870,20 @@ hyperpowers:executing-plans → creates new task → hyperpowers:sre-task-refine
 - Vague criteria ("works correctly") → Measurable commands/checks
 - Missing edge cases → Add to Key Considerations with mitigations
 - Placeholder text → Rewrite with actual content
+- Tautological tests → Strengthen to catch specific bugs
+
+**Test meaningfulness questions:**
+- "What bug would this catch?" → If you can't name one, test is pointless
+- "Could code break while test passes?" → If yes, test is too weak
+- "Is this testing the mock or production code?" → Mock-testing is useless
+- "Is the assertion meaningful?" → `!= nil` is weaker than `== expectedValue`
 
 **When stuck:**
 - Unsure if task too large → Ask: Can junior complete in one day?
 - Unsure if criteria measurable → Ask: Can I verify with command/code review?
 - Unsure if edge case matters → Ask: Could this fail in production?
 - Unsure if placeholder → Ask: Does this reference other content instead of providing content?
+- Unsure if test meaningful → Ask: What specific production bug does this prevent?
 
-**Key principle:** Junior engineer should be able to execute task without asking questions. If they would need to ask, specification is incomplete.
+**Key principle:** Junior engineer should be able to execute task without asking questions. If they would need to ask, specification is incomplete. Tests must catch bugs, not inflate metrics.
 </resources>

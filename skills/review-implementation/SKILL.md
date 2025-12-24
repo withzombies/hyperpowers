@@ -15,11 +15,13 @@ LOW FREEDOM - Follow the 4-step review process exactly. Review with Google Fello
 | Step | Action | Deliverable |
 |------|--------|-------------|
 | 1 | Load bd epic + all tasks | TodoWrite with tasks to review |
-| 2 | Review each task (automated checks, quality gates, read code, verify criteria) | Findings per task |
+| 2 | Review each task (automated checks, quality gates, read code, **audit tests**, verify criteria) | Findings per task |
 | 3 | Report findings (approved / gaps found) | Review decision |
 | 4 | Gate: If approved → finishing-a-development-branch, If gaps → STOP | Next action |
 
 **Review Perspective:** Google Fellow-level SRE with 20+ years experience reviewing junior engineer code.
+
+**Test Quality Gate:** Every new test must catch a real bug. Tautological tests (pass by definition, test mocks, verify compiler-checked facts) = GAPS FOUND.
 </quick_reference>
 
 <when_to_use>
@@ -155,18 +157,133 @@ Read tool: src/auth/jwt.ts
 - Complex logic explained?
 - No clever tricks - obvious and boring?
 
-**Testing:**
+**Testing (CRITICAL - Apply strict scrutiny):**
 - Edge cases covered (empty, max, Unicode)?
-- Tests meaningful, not just coverage?
-- Test names describe what verified?
+- Tests catch real bugs, not just inflate coverage?
+- Test names describe specific bug prevented?
 - Tests test behavior, not implementation?
 - Failure scenarios tested?
+- No tautological tests (see Test Quality Audit below)?
 
 **Production Readiness:**
 - Comfortable deploying to production?
 - Could cause outage or data loss?
 - Performance acceptable under load?
 - Logging sufficient for debugging?
+
+---
+
+### E2. Test Quality Audit (Mandatory for All New Tests)
+
+**CRITICAL:** Review every new/modified test for meaningfulness. Tautological tests are WORSE than no tests - they give false confidence.
+
+**For each test, ask:**
+1. **What bug would this catch?** → If you can't name a specific failure mode, test is pointless
+2. **Could production code break while this test passes?** → If yes, test is too weak
+3. **Does this test a real user scenario?** → Or just implementation details?
+4. **Is the assertion meaningful?** → `expect(result != nil)` is weaker than `expect(result == expectedValue)`
+
+**Red flags (REJECT implementation until fixed):**
+- ❌ Tests that only verify syntax/existence ("enum has cases", "struct has fields")
+- ❌ Tautological tests (pass by definition: `expect(builder.build() != nil)` when build() can't return nil)
+- ❌ Tests that duplicate implementation (testing 1+1==2 by asserting 1+1==2)
+- ❌ Tests without meaningful assertions (call code but don't verify outcomes matter)
+- ❌ Tests that verify mock behavior instead of production code
+- ❌ Codable/Equatable round-trip tests with only happy path data
+- ❌ Generic test names ("test_basic", "test_it_works", "test_model")
+
+**Examples of meaningless tests to reject:**
+
+```swift
+// ❌ REJECT: Tautological - compiler ensures enum has cases
+func testEnumHasCases() {
+    _ = MyEnum.caseOne  // This proves nothing
+    _ = MyEnum.caseTwo
+}
+
+// ❌ REJECT: Tautological - build() returns non-optional, can't be nil
+func testBuilderReturnsValue() {
+    let result = Builder().build()
+    #expect(result != nil)  // Always passes by type system
+}
+
+// ❌ REJECT: Tests mock, not production code
+func testServiceCallsAPI() {
+    let mock = MockAPI()
+    let service = Service(api: mock)
+    service.fetchData()
+    #expect(mock.fetchCalled)  // Tests mock behavior, not real logic
+}
+
+// ❌ REJECT: Happy path only, no edge cases
+func testCodable() {
+    let original = User(name: "John", age: 30)
+    let data = try! encoder.encode(original)
+    let decoded = try! decoder.decode(User.self, from: data)
+    #expect(decoded == original)  // What about empty name? Max age? Unicode?
+}
+```
+
+**Examples of meaningful tests to approve:**
+
+```swift
+// ✅ APPROVE: Catches missing validation bug
+func testEmptyPayloadReturnsValidationError() {
+    let result = validator.validate(payload: "")
+    #expect(result == .error(.emptyPayload))
+}
+
+// ✅ APPROVE: Catches race condition bug
+func testConcurrentWritesDontCorruptData() {
+    let store = ThreadSafeStore()
+    DispatchQueue.concurrentPerform(iterations: 1000) { i in
+        store.write(key: "k\(i)", value: i)
+    }
+    #expect(store.count == 1000)  // Would fail if race condition exists
+}
+
+// ✅ APPROVE: Catches error handling bug
+func testMalformedJSONReturns400Not500() {
+    let response = api.parse(json: "{invalid")
+    #expect(response.status == 400)  // Not 500 which would indicate unhandled exception
+}
+
+// ✅ APPROVE: Catches encoding bug with edge case
+func testUnicodeNamePreservedAfterRoundtrip() {
+    let original = User(name: "日本語テスト 🎉")
+    let decoded = roundtrip(original)
+    #expect(decoded.name == original.name)
+}
+```
+
+**Audit process:**
+```bash
+# Find all new/modified test files
+git diff main...HEAD --name-only | grep -E "(test|spec)"
+
+# Read each test file
+Read tool: tests/new_feature_test.swift
+
+# For EACH test function, document:
+# - Test name
+# - What bug it catches (or "TAUTOLOGICAL" if none)
+# - Verdict: ✅ Keep / ⚠️ Strengthen / ❌ Remove/Replace
+```
+
+**If tautological tests found:**
+```markdown
+## Test Quality Audit: GAPS FOUND ❌
+
+### Tautological/Meaningless Tests
+| Test | Problem | Action |
+|------|---------|--------|
+| testEnumHasCases | Compiler already ensures this | ❌ Remove |
+| testBuilderReturns | Non-optional return, can't be nil | ❌ Remove |
+| testCodable | Happy path only, no edge cases | ⚠️ Add: empty, unicode, max values |
+| testServiceCalls | Tests mock, not production | ❌ Replace with integration test |
+
+**Cannot approve until tests are meaningful.**
+```
 
 ---
 
@@ -245,7 +362,18 @@ Read code to confirm edge cases handled:
 - Error Handling: ⚠️ Uses unwrap instead of proper error propagation
 - Safety: ✅ Good
 - Clarity: ✅ Good
-- Testing: ✅ Good
+- Testing: See Test Quality Audit below
+
+#### Test Quality Audit (New/Modified Tests)
+| Test | Bug It Catches | Verdict |
+|------|----------------|---------|
+| test_valid_token_accepted | Missing validation | ✅ Keep |
+| test_expired_token_rejected | Expiration bypass | ✅ Keep |
+| test_jwt_struct_exists | Nothing (tautological) | ❌ Remove |
+| test_encode_decode | Encoding bug (but happy path only) | ⚠️ Add edge cases |
+
+**Tautological tests found:** 1 (test_jwt_struct_exists)
+**Weak tests found:** 1 (test_encode_decode needs edge cases)
 
 #### Success Criteria
 1. "All tests pass": ✅ Met - Evidence: 127 tests passed
@@ -258,9 +386,11 @@ Read code to confirm edge cases handled:
 #### Issues
 **Critical:**
 1. unwrap() at jwt.ts:45 - violates anti-pattern, must use proper error handling
+2. Tautological test: test_jwt_struct_exists must be removed
 
 **Important:**
-2. 3 clippy warnings block pre-commit hook
+3. 3 clippy warnings block pre-commit hook
+4. test_encode_decode needs edge cases (empty, unicode, max length)
 ```
 
 ---
@@ -559,6 +689,96 @@ rg "test.*log" tests/
 - All criteria must be met, no exceptions
 </correction>
 </example>
+
+<example>
+<scenario>Developer approves implementation with high test coverage but tautological tests</scenario>
+
+<code>
+# Test results show good coverage
+cargo test
+# 45 tests passed ✅
+# Coverage: 92% ✅
+
+# Developer approves based on numbers
+"Tests pass with 92% coverage, implementation complete ✅"
+
+# Proceeds to finishing-a-development-branch
+
+# Later in production:
+# - Validation bypassed because test only checked "validator exists"
+# - Race condition because test only checked "lock was acquired"
+# - Encoding corruption because test only checked "encode != nil"
+</code>
+
+<why_it_fails>
+- High coverage doesn't mean meaningful tests
+- Tests verified existence/syntax, not behavior
+- Tautological tests passed by definition:
+  - `expect(validator != nil)` - always passes, doesn't test validation logic
+  - `expect(lock.acquire())` - tests mock, not thread safety
+  - `expect(encoded.count > 0)` - tests non-empty, not correctness
+- Production bugs occurred despite "good" test coverage
+- Coverage metrics were gamed with meaningless tests
+</why_it_fails>
+
+<correction>
+**Audit each test for meaningfulness:**
+
+```bash
+# Find new tests
+git diff main...HEAD --name-only | grep test
+
+# Read and audit each test
+Read tool: tests/validator_test.swift
+```
+
+**For each test, document:**
+
+```markdown
+#### Test Quality Audit
+
+| Test | Assertion | Bug Caught? | Verdict |
+|------|-----------|-------------|---------|
+| testValidatorExists | `!= nil` | ❌ None (compiler checks) | ❌ Remove |
+| testValidInput | `isValid == true` | ⚠️ Happy path only | ⚠️ Add edge cases |
+| testEmptyInputFails | `isValid == false` | ✅ Missing validation | ✅ Keep |
+| testLockAcquired | mock.acquireCalled | ❌ Tests mock | ❌ Replace |
+| testConcurrentAccess | count == expected | ✅ Race condition | ✅ Keep |
+| testEncodeNotNil | `!= nil` | ❌ Type guarantees this | ❌ Remove |
+| testUnicodeRoundtrip | decoded == original | ✅ Encoding corruption | ✅ Keep |
+
+**Tautological tests:** 3 (must remove)
+**Weak tests:** 1 (must strengthen)
+**Meaningful tests:** 3 (keep)
+```
+
+**Decision: GAPS FOUND ❌**
+
+```markdown
+## Test Quality Audit: GAPS FOUND
+
+### Tautological Tests (Must Remove)
+- testValidatorExists: Compiler ensures non-nil, test proves nothing
+- testLockAcquired: Tests mock behavior, not actual thread safety
+- testEncodeNotNil: Return type is non-optional, can never be nil
+
+### Weak Tests (Must Strengthen)
+- testValidInput: Only happy path, add:
+  - testEmptyStringRejected
+  - testMaxLengthRejected
+  - testUnicodeNormalized
+
+### Action Required
+Remove 3 tautological tests, add 3 edge case tests, then re-review.
+```
+
+**What you gain:**
+- Real test quality, not coverage theater
+- Bugs caught before production
+- Tests that actually verify behavior
+- Confidence in test suite
+</correction>
+</example>
 </examples>
 
 <critical_rules>
@@ -570,7 +790,8 @@ rg "test.*log" tests/
 4. **Verify every success criterion** → With evidence, not assumptions
 5. **Check all anti-patterns** → Search for prohibited patterns
 6. **Apply Google Fellow scrutiny** → Production-grade code review
-7. **If gaps found → STOP** → Don't proceed to finishing-a-development-branch
+7. **Audit all new tests for meaningfulness** → Tautological tests = gaps, not coverage
+8. **If gaps found → STOP** → Don't proceed to finishing-a-development-branch
 
 ## Common Excuses
 
@@ -585,6 +806,10 @@ All of these mean: **STOP. Follow full review process.**
 - "Can check diff instead of files" (Diff shows changes, not context)
 - "Automated checks cover it" (Checks + code review both required)
 - "Success criteria passing means done" (Also check anti-patterns, quality, edge cases)
+- "Tests exist, so testing is complete" (Tautological tests = false confidence)
+- "Coverage looks good" (Coverage can be gamed with meaningless tests)
+- "Tests are boilerplate, don't need review" (Every test must catch a real bug)
+- "It's just a simple existence check" (Compiler already checks existence)
 
 </critical_rules>
 
@@ -597,6 +822,7 @@ Before approving implementation:
 - [ ] Ran all quality gates via test-runner agent (tests, format, lint, pre-commit)
 - [ ] Read actual implementation files with Read tool (not just diff)
 - [ ] Reviewed code quality with Google Fellow perspective
+- [ ] **Audited all new tests for meaningfulness (not tautological)**
 - [ ] Verified every success criterion with evidence
 - [ ] Checked every anti-pattern (searched for prohibited patterns)
 - [ ] Verified every key consideration addressed in code
