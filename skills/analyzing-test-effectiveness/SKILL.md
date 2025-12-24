@@ -1,10 +1,10 @@
 ---
 name: analyzing-test-effectiveness
-description: Use to audit test quality with Google Fellow SRE scrutiny - identifies tautological tests, coverage gaming, weak assertions, missing corner cases, and creates prioritized improvement plan
+description: Use to audit test quality with Google Fellow SRE scrutiny - identifies tautological tests, coverage gaming, weak assertions, missing corner cases. Creates bd epic with tasks for improvements, then runs SRE task refinement on each.
 ---
 
 <skill_overview>
-Audit test suites for real effectiveness, not vanity metrics. Identify tests that provide false confidence (tautological, mock-testing, line hitters) and missing corner cases. Produce actionable plan to remove bad tests, strengthen weak ones, and add meaningful coverage.
+Audit test suites for real effectiveness, not vanity metrics. Identify tests that provide false confidence (tautological, mock-testing, line hitters) and missing corner cases. Create bd epic with tracked tasks for improvements. Run SRE task refinement on each task before execution.
 </skill_overview>
 
 <rigidity_level>
@@ -18,7 +18,7 @@ MEDIUM FREEDOM - Follow the 5-phase analysis process exactly. Categorization cri
 | 2. Categorize | Apply RED/YELLOW/GREEN criteria to each test | Categorized tests |
 | 3. Corner Cases | Identify missing edge cases per module | Gap analysis |
 | 4. Prioritize | Rank by business criticality | Priority matrix |
-| 5. Plan | Create phased improvement plan | Actionable roadmap |
+| 5. bd Issues | Create epic + tasks, run SRE refinement | Tracked improvement plan |
 
 **Core Questions for Each Test:**
 1. What bug would this catch? (If none → RED)
@@ -26,7 +26,13 @@ MEDIUM FREEDOM - Follow the 5-phase analysis process exactly. Categorization cri
 3. Real scenario or implementation detail? (Detail → fragile)
 4. Meaningful assertion? (`!= nil` → weak)
 
-**Mutation Testing Integration:**
+**bd Integration (MANDATORY):**
+- Create bd epic for test quality improvement
+- Create bd tasks for: remove RED, strengthen YELLOW, add corner cases
+- Run hyperpowers:sre-task-refinement on all tasks
+- Link tasks to epic with dependencies
+
+**Mutation Testing Validation:**
 - Java: Pitest (`mvn org.pitest:pitest-maven:mutationCoverage`)
 - JS/TS: Stryker (`npx stryker run`)
 - Python: mutmut (`mutmut run`)
@@ -351,47 +357,175 @@ For each module, identify missing corner case tests:
 
 ---
 
-## Phase 5: Create Improvement Plan
+## Phase 5: Create bd Issues and Improvement Plan
 
-### Immediate Actions (This Week)
+**CRITICAL:** All findings MUST be tracked in bd and go through SRE task refinement.
 
-**Remove tautological tests:**
-- These provide false confidence
-- Removing them reduces maintenance burden
-- List specific tests to delete
+### Step 5.1: Create bd Epic for Test Quality Improvement
 
-**Fix evergreen tests:**
-- Tests that always pass hide bugs
-- Either fix or delete
+```bash
+bd create "Test Quality Improvement: [Module/Project]" \
+  --type epic \
+  --priority 1 \
+  --design "$(cat <<'EOF'
+## Goal
+Improve test effectiveness by removing tautological tests, strengthening weak tests, and adding missing corner case coverage.
 
-### Short-term Actions (This Sprint)
+## Success Criteria
+- [ ] All RED tests removed or replaced with meaningful tests
+- [ ] All YELLOW tests strengthened with proper assertions
+- [ ] All P0 missing corner cases covered
+- [ ] Mutation score ≥80% for P0 modules
 
-**Strengthen weak assertions:**
-- Replace `!= nil` with exact value checks
-- Replace `> 0` with exact count checks
-- Add specific error type/message checks
+## Scope
+[Summary of modules analyzed and findings]
 
-**Add edge cases to happy-path tests:**
-- Empty input
-- Boundary values
-- Unicode handling
+## Anti-patterns
+- ❌ Adding tests that only check `!= nil`
+- ❌ Adding tests that verify mock behavior
+- ❌ Adding happy-path-only tests
+- ❌ Leaving tautological tests "for coverage"
+EOF
+)"
+```
 
-### Medium-term Actions (Next Sprint)
+### Step 5.2: Create bd Tasks for Each Category
 
-**Add missing corner cases:**
-- Prioritized by P0 → P1 → P2
-- Focus on auth, payments, data integrity first
-- Add concurrency tests for shared state
+**Task 1: Remove Tautological Tests (Immediate)**
 
-**Add integration corner cases:**
-- Network failure handling
-- Partial response handling
-- Rate limit handling
+```bash
+bd create "Remove tautological tests from [module]" \
+  --type task \
+  --priority 0 \
+  --design "$(cat <<'EOF'
+## Goal
+Remove tests that provide false confidence by passing regardless of code correctness.
 
-### Validation
+## Tests to Remove
+[List each RED test with file:line]
+- tests/auth.test.ts:45 - testUserExists (tautological: verifies non-optional != nil)
+- tests/auth.test.ts:67 - testEnumHasCases (tautological: compiler checks this)
 
-**Run mutation testing to validate improvements:**
+## Success Criteria
+- [ ] All listed tests deleted
+- [ ] No new tautological tests introduced
+- [ ] Test suite still passes
+- [ ] Coverage may decrease (this is expected and good)
 
+## Anti-patterns
+- ❌ Keeping tests "just in case"
+- ❌ Replacing with equally meaningless tests
+- ❌ Adding coverage-only tests to compensate
+EOF
+)"
+```
+
+**Task 2: Strengthen Weak Tests (This Sprint)**
+
+```bash
+bd create "Strengthen weak assertions in [module]" \
+  --type task \
+  --priority 1 \
+  --design "$(cat <<'EOF'
+## Goal
+Replace weak assertions with meaningful ones that catch real bugs.
+
+## Tests to Strengthen
+[List each YELLOW test with current vs recommended assertion]
+- tests/parser.test.ts:34 - testParse
+  - Current: `expect(result).not.toBeNull()`
+  - Strengthen: `expect(result).toEqual(expectedAST)`
+
+- tests/validator.test.ts:56 - testValidate
+  - Current: `expect(isValid).toBe(true)` (happy path only)
+  - Add edge cases: empty input, unicode, max length
+
+## Success Criteria
+- [ ] All weak assertions replaced with exact value checks
+- [ ] Edge cases added to happy-path-only tests
+- [ ] Each test documents what bug it catches
+
+## Anti-patterns
+- ❌ Replacing `!= nil` with `!= undefined` (still weak)
+- ❌ Adding edge cases without meaningful assertions
+EOF
+)"
+```
+
+**Task 3: Add Missing Corner Cases (Per Module)**
+
+```bash
+bd create "Add missing corner case tests for [module]" \
+  --type task \
+  --priority 1 \
+  --design "$(cat <<'EOF'
+## Goal
+Add tests for corner cases that could cause production bugs.
+
+## Corner Cases to Add
+[List each with the bug it prevents]
+- test_empty_password_rejected - prevents auth bypass
+- test_unicode_username_preserved - prevents encoding corruption
+- test_concurrent_login_safe - prevents session corruption
+
+## Implementation Checklist
+- [ ] Write failing test first (RED)
+- [ ] Verify test fails for the right reason
+- [ ] Test catches the specific bug listed
+- [ ] Test has meaningful assertion (not just `!= nil`)
+
+## Success Criteria
+- [ ] All corner case tests written and passing
+- [ ] Each test documents the bug it catches in test name/comment
+- [ ] No tautological tests added
+
+## Anti-patterns
+- ❌ Writing test that passes immediately (didn't test anything)
+- ❌ Testing mock behavior instead of production code
+- ❌ Happy path only (defeats the purpose)
+EOF
+)"
+```
+
+### Step 5.3: Run SRE Task Refinement
+
+**MANDATORY:** After creating bd tasks, run SRE task refinement:
+
+```
+Announce: "I'm using hyperpowers:sre-task-refinement to review these test improvement tasks."
+
+Use Skill tool: hyperpowers:sre-task-refinement
+```
+
+Apply all 8 categories to each task, especially:
+- **Category 8 (Test Meaningfulness)**: Verify the proposed tests actually catch bugs
+- **Category 6 (Edge Cases)**: Ensure corner cases are comprehensive
+- **Category 3 (Success Criteria)**: Ensure criteria are measurable
+
+### Step 5.4: Link Tasks to Epic
+
+```bash
+# Link all tasks as children of epic
+bd dep add bd-2 bd-1 --type parent-child
+bd dep add bd-3 bd-1 --type parent-child
+bd dep add bd-4 bd-1 --type parent-child
+
+# Set dependencies (remove before strengthen before add)
+bd dep add bd-3 bd-2  # strengthen depends on remove
+bd dep add bd-4 bd-3  # add depends on strengthen
+```
+
+### Step 5.5: Validation Task
+
+```bash
+bd create "Validate test improvements with mutation testing" \
+  --type task \
+  --priority 1 \
+  --design "$(cat <<'EOF'
+## Goal
+Verify test improvements actually catch more bugs using mutation testing.
+
+## Validation Commands
 ```bash
 # Java
 mvn org.pitest:pitest-maven:mutationCoverage
@@ -406,10 +540,18 @@ mutmut run
 dotnet stryker
 ```
 
-**Target scores:**
-- P0 modules: 80%+ mutation score
-- P1 modules: 70%+ mutation score
-- P2 modules: 60%+ mutation score
+## Success Criteria
+- [ ] P0 modules: ≥80% mutation score
+- [ ] P1 modules: ≥70% mutation score
+- [ ] No surviving mutants in critical paths (auth, payments)
+
+## If Score Below Target
+- Identify surviving mutants
+- Create additional tasks to add tests that kill them
+- Re-run validation
+EOF
+)"
+```
 
 ---
 
@@ -472,23 +614,40 @@ dotnet stryker
 
 [Repeat for each module]
 
-## Improvement Plan
+## bd Issues Created
 
-### Phase 1: Immediate (This Week)
-- [ ] Remove N tautological tests
-- [ ] Fix N evergreen tests
+### Epic
+- **bd-N**: Test Quality Improvement: [Project Name]
 
-### Phase 2: Short-term (This Sprint)
-- [ ] Strengthen N weak assertions
-- [ ] Add edge cases to N tests
+### Tasks
+| bd ID | Task | Priority | Status |
+|-------|------|----------|--------|
+| bd-N | Remove tautological tests from [module] | P0 | Created |
+| bd-N | Strengthen weak assertions in [module] | P1 | Created |
+| bd-N | Add missing corner case tests for [module] | P1 | Created |
+| bd-N | Validate with mutation testing | P1 | Created |
 
-### Phase 3: Medium-term (Next Sprint)
-- [ ] Add N missing corner case tests
-- [ ] Add integration failure tests
+### Dependency Tree
+```
+bd-1 (Epic: Test Quality Improvement)
+├── bd-2 (Remove tautological tests)
+├── bd-3 (Strengthen weak assertions) ← depends on bd-2
+├── bd-4 (Add corner case tests) ← depends on bd-3
+└── bd-5 (Validate with mutation testing) ← depends on bd-4
+```
 
-### Validation
-- [ ] Run mutation testing on P0 modules
-- [ ] Achieve 80%+ mutation score
+## SRE Task Refinement Status
+
+- [ ] All tasks reviewed with hyperpowers:sre-task-refinement
+- [ ] Category 8 (Test Meaningfulness) applied to each task
+- [ ] Success criteria are measurable
+- [ ] Anti-patterns specified
+
+## Next Steps
+
+1. Run `bd ready` to see tasks ready for implementation
+2. Implement tasks using hyperpowers:executing-plans
+3. Run validation task to verify improvements
 ```
 </the_process>
 
@@ -644,6 +803,8 @@ test('service accepts valid data', () => {
 4. **Corner cases must be identified** → Empty, unicode, concurrent, error paths
 5. **Business-critical modules are P0** → Auth, payments, data integrity first
 6. **Mutation testing validates improvements** → Coverage alone is vanity metric
+7. **All findings tracked in bd** → Create epic + tasks for every issue found
+8. **SRE refinement on all tasks** → Run hyperpowers:sre-task-refinement before execution
 
 ## Common Excuses
 
@@ -656,6 +817,9 @@ All of these mean: **STOP. The test is probably RED or YELLOW.**
 - "Edge cases are rare" (Rare bugs in auth/payments are critical)
 - "We'll add assertions later" (Tests without assertions aren't tests)
 - "It's testing the happy path" (Happy path only = half a test)
+- "I'll just fix these without bd" (Untracked work = forgotten work)
+- "SRE refinement is overkill for test fixes" (Test tasks need same rigor as feature tasks)
+- "Can skip bd for small fixes" (Small fixes become large when untracked)
 </critical_rules>
 
 <verification_checklist>
@@ -672,8 +836,20 @@ Before completing analysis:
 - [ ] Executive summary with counts and percentages
 - [ ] Detailed findings table for each category
 - [ ] Missing corner cases documented per module
-- [ ] Phased improvement plan (immediate, short-term, medium-term)
-- [ ] Mutation testing recommended for P0 modules
+
+**bd Integration (MANDATORY):**
+- [ ] Created bd epic for test quality improvement
+- [ ] Created bd tasks for each category (remove, strengthen, add)
+- [ ] Linked tasks to epic with parent-child relationships
+- [ ] Set task dependencies (remove → strengthen → add → validate)
+- [ ] Ran hyperpowers:sre-task-refinement on ALL tasks
+- [ ] Created validation task with mutation testing
+
+**SRE Refinement Verification:**
+- [ ] Category 8 (Test Meaningfulness) applied to each task
+- [ ] Success criteria are measurable (not "tests work")
+- [ ] Anti-patterns specified for each task
+- [ ] No placeholder text in task designs
 
 **Validation:**
 - [ ] Would removing RED tests lose any bug-catching ability? (No = correct)
@@ -687,9 +863,26 @@ Before completing analysis:
 - User request to audit test quality
 - Before major refactoring efforts
 
-**This skill calls:**
+**This skill calls (MANDATORY):**
+- hyperpowers:sre-task-refinement (for ALL bd tasks created)
 - hyperpowers:test-runner agent (to run tests during analysis)
 - hyperpowers:test-effectiveness-analyst agent (for detailed analysis)
+
+**This skill creates:**
+- bd epic for test quality improvement
+- bd tasks for removing, strengthening, and adding tests
+- bd validation task with mutation testing
+
+**Workflow chain:**
+```
+analyzing-test-effectiveness
+    ↓ (creates bd issues)
+sre-task-refinement (on each task)
+    ↓ (refines tasks)
+executing-plans (implements tasks)
+    ↓ (runs validation)
+review-implementation (verifies quality)
+```
 
 **This skill informs:**
 - hyperpowers:sre-task-refinement (test specifications in plans)
