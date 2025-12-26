@@ -5,6 +5,8 @@ description: Use to audit test quality with Google Fellow SRE scrutiny - identif
 
 <skill_overview>
 Audit test suites for real effectiveness, not vanity metrics. Identify tests that provide false confidence (tautological, mock-testing, line hitters) and missing corner cases. Create bd epic with tracked tasks for improvements. Run SRE task refinement on each task before execution.
+
+**CRITICAL MINDSET: Assume tests were written by junior engineers optimizing for coverage metrics.** Default to skeptical—a test is RED or YELLOW until proven GREEN. You MUST read production code before categorizing tests. GREEN is the exception, not the rule.
 </skill_overview>
 
 <rigidity_level>
@@ -15,16 +17,21 @@ MEDIUM FREEDOM - Follow the 5-phase analysis process exactly. Categorization cri
 | Phase | Action | Output |
 |-------|--------|--------|
 | 1. Inventory | List all test files and functions | Test catalog |
-| 2. Categorize | Apply RED/YELLOW/GREEN criteria to each test | Categorized tests |
-| 3. Corner Cases | Identify missing edge cases per module | Gap analysis |
-| 4. Prioritize | Rank by business criticality | Priority matrix |
-| 5. bd Issues | Create epic + tasks, run SRE refinement | Tracked improvement plan |
+| 2. Read Production Code | Read the actual code each test claims to test | Context for analysis |
+| 3. Trace Call Paths | Verify tests exercise production, not mocks/utilities | Call path verification |
+| 4. Categorize (Skeptical) | Apply RED/YELLOW/GREEN - default to harsher rating | Categorized tests |
+| 5. Self-Review | Challenge every GREEN - would a senior SRE agree? | Validated categories |
+| 6. Corner Cases | Identify missing edge cases per module | Gap analysis |
+| 7. Prioritize | Rank by business criticality | Priority matrix |
+| 8. bd Issues | Create epic + tasks, run SRE refinement | Tracked improvement plan |
+
+**MANDATORY: Read production code BEFORE categorizing tests. You cannot assess a test without understanding what it claims to test.**
 
 **Core Questions for Each Test:**
-1. What bug would this catch? (If none → RED)
-2. Could code break while test passes? (If yes → YELLOW or RED)
-3. Real scenario or implementation detail? (Detail → fragile)
-4. Meaningful assertion? (`!= nil` → weak)
+1. What bug would this catch? (If you can't name one → RED)
+2. Does it exercise PRODUCTION code or a mock/test utility? (Mock → RED or YELLOW)
+3. Could code break while test passes? (If yes → YELLOW or RED)
+4. Meaningful assertion on PRODUCTION output? (`!= nil` or testing fixtures → weak)
 
 **bd Integration (MANDATORY):**
 - Create bd epic for test quality improvement
@@ -88,7 +95,27 @@ done
 
 ---
 
-## Phase 2: Categorize Each Test
+## Phase 2: Read Production Code First
+
+**MANDATORY: Before categorizing ANY test, you MUST:**
+
+1. **Read the production code** the test claims to exercise
+2. **Understand what the production code actually does**
+3. **Trace the test's call path** to verify it reaches production code
+
+**Why this matters:** Junior engineers commonly:
+- Create test utilities and test THOSE instead of production code
+- Set up mocks that determine the test outcome (mock-testing-mock)
+- Write assertions on values defined IN THE TEST, not from production
+- Copy patterns from examples without understanding the actual code
+
+**If you haven't read production code, you WILL miscategorize tests as GREEN when they're YELLOW or RED.**
+
+---
+
+## Phase 3: Categorize Each Test (Skeptical Default)
+
+**Assume every test is RED or YELLOW until you have concrete evidence it's GREEN.**
 
 For each test, apply these criteria:
 
@@ -236,46 +263,182 @@ test('create user succeeds', () => {
 // Missing: duplicate email, invalid email, missing fields, database error
 ```
 
-### GREEN FLAGS - Keep and Expand
+### GREEN FLAGS - Exceptional Quality Required
 
-**2.8 Behavior Verification**
+**GREEN is the EXCEPTION, not the rule.** A test is GREEN only if ALL of the following are true:
+
+1. **Exercises actual PRODUCTION code** - Not a mock, not a test utility, not a copy of logic
+2. **Has precise assertions** - Exact values, not `!= nil` or `> 0`
+3. **Would fail if production breaks** - You can name the specific bug it catches
+4. **Tests behavior, not implementation** - Won't break on valid refactoring
+
+**Before marking ANY test GREEN, you MUST state:**
+- "This test exercises [specific production code path]"
+- "It would catch [specific bug] because [reason]"
+- "The assertion verifies [exact production behavior], not a test fixture"
+
+**If you cannot fill in those blanks, the test is YELLOW at best.**
+
+**3.1 Behavior Verification (Must exercise PRODUCTION code)**
 
 ```typescript
-// ✅ GREEN: Verifies specific behavior with exact values
+// ✅ GREEN: Verifies specific behavior with exact values FROM PRODUCTION
 test('calculateTotal applies discount correctly', () => {
-  const cart = new Cart([{ price: 100, quantity: 2 }]);
-  cart.applyDiscount('SAVE20');
+  const cart = new Cart([{ price: 100, quantity: 2 }]); // Real Cart class
+  cart.applyDiscount('SAVE20'); // Real discount logic
   expect(cart.total).toBe(160); // 200 - 20% = 160
 });
+// GREEN because: Exercises Cart.applyDiscount production code
+// Would catch: Discount calculation bugs, rounding errors
+// Assertion: Verifies exact computed value from production
 ```
 
-**2.9 Edge Case Coverage**
+**3.2 Edge Case Coverage (Must test PRODUCTION paths)**
 
 ```typescript
-// ✅ GREEN: Tests boundary conditions
+// ✅ GREEN: Tests boundary conditions IN PRODUCTION CODE
 test('username rejects empty string', () => {
   expect(() => new User({ username: '' })).toThrow(ValidationError);
 });
+// GREEN because: Exercises User constructor validation (production)
+// Would catch: Missing empty string validation
+// Assertion: Exact error type from production code
 
 test('username handles unicode', () => {
   const user = new User({ username: '日本語ユーザー' });
   expect(user.username).toBe('日本語ユーザー');
 });
+// GREEN because: Exercises User constructor and storage (production)
+// Would catch: Unicode corruption, encoding bugs
+// Assertion: Exact value preserved through production code
 ```
 
-**2.10 Error Path Testing**
+**3.3 Error Path Testing (Must verify PRODUCTION errors)**
 
 ```typescript
-// ✅ GREEN: Verifies error handling
+// ✅ GREEN: Verifies error handling IN PRODUCTION CODE
 test('fetch returns specific error on 404', () => {
-  mockServer.get('/api/user/999').reply(404);
+  mockServer.get('/api/user/999').reply(404); // External mock OK
   await expect(fetchUser(999)).rejects.toThrow(UserNotFoundError);
 });
+// GREEN because: Exercises fetchUser error handling (production)
+// Would catch: Wrong error type, swallowed errors
+// Assertion: Exact error type from production code
 ```
+
+**CAUTION:** A test that uses mocks for EXTERNAL dependencies (APIs, databases) can still be GREEN if it exercises PRODUCTION logic. A test that mocks the code under test is RED.
 
 ---
 
-## Phase 3: Corner Case Discovery
+## Phase 4: Mandatory Self-Review
+
+**Before finalizing ANY categorization, complete this checklist:**
+
+### For each GREEN test:
+- [ ] Did I read the PRODUCTION code this test exercises?
+- [ ] Does the test call PRODUCTION code or a test utility/mock?
+- [ ] Can I name the SPECIFIC BUG this test would catch?
+- [ ] If production code broke, would this test DEFINITELY fail?
+- [ ] Am I being too generous because the test "looks reasonable"?
+
+### For each YELLOW test:
+- [ ] Should this actually be RED? Is there ANY bug-catching value here?
+- [ ] Is the weakness fundamental (tests a mock) or fixable (weak assertion)?
+- [ ] If I changed this to RED, would I lose any bug-catching ability?
+
+### Self-Challenge Questions:
+- "If a junior engineer showed me this test, would I accept it as GREEN?"
+- "Am I marking this GREEN because I want to be done, or because it's genuinely good?"
+- "Could I defend this GREEN classification to a Google SRE?"
+
+**If you have ANY doubt about a GREEN, downgrade to YELLOW.**
+**If you have ANY doubt about a YELLOW, consider RED.**
+
+**Common mistakes that cause false GREENs:**
+- Assuming a well-named test tests what its name says (verify the code!)
+- Trusting test comments (comments lie, code doesn't)
+- Not tracing mock/utility usage to see what's actually exercised
+- Giving benefit of the doubt (junior engineers don't deserve it)
+
+---
+
+## Phase 4b: Line-by-Line Justification for RED/YELLOW
+
+**MANDATORY: For every RED or YELLOW classification, provide detailed justification.**
+
+This forces you to verify your classification is correct by explaining exactly WHY the test is problematic.
+
+### Required Format for RED/YELLOW Tests:
+
+```markdown
+### [Test Name] - RED/YELLOW
+
+**Test code (file:lines):**
+- Line X: `code` - [what this line does]
+- Line Y: `code` - [what this line does]
+- Line Z: `assertion` - [what this asserts]
+
+**Production code it claims to test (file:lines):**
+- [Brief description of what production code does]
+
+**Why RED/YELLOW:**
+- [Specific reason with line references]
+- [What bug could slip through despite this test passing]
+```
+
+### Example RED Justification:
+
+```markdown
+### testAuthWorks - RED (Tautological)
+
+**Test code (auth_test.ts:45-52):**
+- Line 46: `const auth = new AuthService()` - Creates auth instance
+- Line 47: `const result = auth.login('user', 'pass')` - Calls login
+- Line 48: `expect(result).not.toBeNull()` - Asserts result exists
+
+**Production code (auth.ts:78-95):**
+- login() returns AuthResult object (never null by TypeScript types)
+
+**Why RED:**
+- Line 48 asserts `!= null` but TypeScript guarantees non-null return
+- If login returned {success: false, error: "invalid"}, test still passes
+- Bug example: Wrong password accepted → returns {success: true} → test passes
+```
+
+### Example YELLOW Justification:
+
+```markdown
+### testParseJson - YELLOW (Weak Assertion)
+
+**Test code (parser_test.ts:23-30):**
+- Line 24: `const input = '{"name": "test"}'` - Valid JSON input
+- Line 25: `const result = parse(input)` - Calls production parser
+- Line 26: `expect(result).toBeDefined()` - Asserts result exists
+- Line 27: `expect(result.name).toBe('test')` - Verifies one field
+
+**Production code (parser.ts:12-45):**
+- parse() handles JSON parsing with error handling and validation
+
+**Why YELLOW:**
+- Line 26-27 only test happy path with valid input
+- Missing: malformed JSON, empty string, deeply nested, unicode
+- Bug example: parse('') throws unhandled exception → not caught by test
+- Upgrade path: Add edge case inputs with specific error assertions
+```
+
+### Why This Matters:
+
+Writing the justification FORCES you to:
+1. Actually read the test code line by line
+2. Actually read the production code
+3. Articulate the specific gap
+4. Consider what bugs could slip through
+
+**If you cannot write this justification, you haven't done the analysis properly.**
+
+---
+
+## Phase 5: Corner Case Discovery
 
 For each module, identify missing corner case tests:
 
@@ -336,7 +499,7 @@ For each module, identify missing corner case tests:
 
 ---
 
-## Phase 4: Prioritize by Business Impact
+## Phase 6: Prioritize by Business Impact
 
 ### Priority Matrix
 
@@ -357,7 +520,7 @@ For each module, identify missing corner case tests:
 
 ---
 
-## Phase 5: Create bd Issues and Improvement Plan
+## Phase 7: Create bd Issues and Improvement Plan
 
 **CRITICAL:** All findings MUST be tracked in bd and go through SRE task refinement.
 
@@ -797,14 +960,27 @@ test('service accepts valid data', () => {
 <critical_rules>
 ## Rules That Have No Exceptions
 
-1. **Every test must answer: "What bug does this catch?"** → If no answer, it's RED
-2. **Tautological tests must be removed** → They provide false confidence
-3. **Mock-testing tests must be replaced** → Test production code, not mocks
-4. **Corner cases must be identified** → Empty, unicode, concurrent, error paths
-5. **Business-critical modules are P0** → Auth, payments, data integrity first
-6. **Mutation testing validates improvements** → Coverage alone is vanity metric
-7. **All findings tracked in bd** → Create epic + tasks for every issue found
-8. **SRE refinement on all tasks** → Run hyperpowers:sre-task-refinement before execution
+1. **Assume junior engineer quality** → Tests are LOW QUALITY until proven otherwise
+2. **Read production code BEFORE categorizing** → You cannot assess without context
+3. **GREEN is the exception** → Most tests are RED or YELLOW; GREEN requires proof
+4. **Every test must answer: "What bug does this catch?"** → If no answer, it's RED
+5. **Tautological tests must be removed** → They provide false confidence
+6. **Mock-testing tests must be replaced** → Test production code, not mocks
+7. **Self-review before finalizing** → Challenge every GREEN classification
+8. **Mutation testing validates improvements** → Coverage alone is vanity metric
+9. **All findings tracked in bd** → Create epic + tasks for every issue found
+10. **SRE refinement on all tasks** → Run hyperpowers:sre-task-refinement before execution
+
+## Common Analysis Failures
+
+**You WILL be tempted to:**
+- Mark tests GREEN because they "look reasonable" → VERIFY call paths first
+- Trust test names and comments → CODE doesn't lie, comments DO
+- Give benefit of the doubt → Junior engineers don't deserve it
+- Rush categorization → Read production code FIRST
+- Mark YELLOW when it's actually RED → If mock determines outcome, it's RED
+
+**A false GREEN is worse than a false YELLOW.** When in doubt, be harsher.
 
 ## Common Excuses
 
@@ -817,13 +993,24 @@ All of these mean: **STOP. The test is probably RED or YELLOW.**
 - "Edge cases are rare" (Rare bugs in auth/payments are critical)
 - "We'll add assertions later" (Tests without assertions aren't tests)
 - "It's testing the happy path" (Happy path only = half a test)
+- "The test looks reasonable" (Junior engineers write plausible-looking garbage)
+- "The test name says it tests X" (Names lie, trace the actual code)
+- "It exercises the function" (Calling != testing; assertions matter)
 - "I'll just fix these without bd" (Untracked work = forgotten work)
 - "SRE refinement is overkill for test fixes" (Test tasks need same rigor as feature tasks)
-- "Can skip bd for small fixes" (Small fixes become large when untracked)
 </critical_rules>
 
 <verification_checklist>
 Before completing analysis:
+
+**Analysis Quality (MANDATORY):**
+- [ ] Read production code for EVERY test before categorizing
+- [ ] Traced call paths to verify tests exercise production, not mocks/utilities
+- [ ] Applied skeptical default (assumed RED/YELLOW, required proof for GREEN)
+- [ ] Completed self-review checklist for ALL GREEN tests
+- [ ] Each GREEN test has explicit justification (what production path, what bug it catches)
+- [ ] Each RED test has line-by-line justification with production code context
+- [ ] Each YELLOW test has line-by-line justification with upgrade path
 
 **Per module:**
 - [ ] All tests categorized (RED/YELLOW/GREEN)
@@ -834,6 +1021,7 @@ Before completing analysis:
 
 **Overall:**
 - [ ] Executive summary with counts and percentages
+- [ ] GREEN count is MINORITY (if >40% GREEN, re-review with more skepticism)
 - [ ] Detailed findings table for each category
 - [ ] Missing corner cases documented per module
 
