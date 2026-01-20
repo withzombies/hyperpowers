@@ -106,9 +106,77 @@ Task("Run tests", "Run pytest tests/")
 
 ## Installation
 
+### OpenCode
+
+Hyperpowers includes first-class OpenCode integration (commands, agents, skills, and a safety plugin).
+
+**Option A: Use Hyperpowers in this repo (recommended for contributors)**
+
+1. Install OpenCode.
+2. Run OpenCode from the repo root (so it discovers `opencode.json` and `.opencode/`):
+
+```bash
+opencode
+```
+
+This enables:
+- Commands from `.opencode/commands/*.md` (invoked as `/<command>`, e.g. `/brainstorm`)
+- Agents from `.opencode/agents/*.md` (e.g. `@code-reviewer`, `@test-runner`)
+- Skills via local skill discovery from `.opencode/skills/`
+- Safety guardrails plugin from `.opencode/plugins/hyperpowers-safety.ts`
+
+**Verify in OpenCode:**
+- Type `/brainstorm` and confirm OpenCode expands the prompt from `.opencode/commands/brainstorm.md`
+- Invoke an agent like `@code-reviewer` and confirm it runs in subagent mode
+- Verify skills tools exist by running any Hyperpowers command (they reference tools like `skills_hyperpowers_brainstorming`)
+- Optional safety check: try reading `.env` (it should be blocked by the safety plugin)
+
+**Option B: Install locally (no OpenCode plugin installs)**
+
+This is the fully local path: no `"plugin": [...]` in `opencode.json`.
+
+1. Copy `opencode.json` and the `.opencode/` directory into your project.
+2. Install plugin dependencies locally:
+
+```bash
+cd .opencode
+bun install
+cd ..
+```
+
+3. Start OpenCode from the project root:
+
+```bash
+opencode
+```
+
+Notes:
+- Skill tools are provided by the local skills loader plugin: `.opencode/plugins/hyperpowers-skills.ts`.
+- Safety guardrails are provided by: `.opencode/plugins/hyperpowers-safety.ts`.
+- `bun install` downloads dependencies (e.g. `@opencode-ai/plugin`, `gray-matter`, `zod`) but does not require installing any OpenCode plugins via npm.
+
+**Portability:** `.opencode/plugins/hyperpowers-safety.ts` and `.opencode/plugins/hyperpowers-skills.ts` are self-contained, so copying `.opencode/` to another repo works.
+
+**Option C: Install the safety plugin into any OpenCode project (npm)**
+
+If you prefer a config-only install, add the plugin to your project's `opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "@dpolishuk/hyperpowers-opencode"
+  ]
+}
+```
+
+Then restart OpenCode.
+
+### Claude Code
+
 Install from the Claude Code plugin marketplace:
 
-```
+```text
 /plugin marketplace add withzombies/hyperpowers
 /plugin install hyperpowers@hyperpowers
 ```
@@ -117,7 +185,7 @@ Verify installation by running `/help` - you should see the hyperpowers slash co
 
 To update the plugin later:
 
-```
+```text
 /plugin update hyperpowers
 ```
 
