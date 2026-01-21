@@ -49,20 +49,52 @@ HIGH FREEDOM - Adapt Socratic questioning to context, but always create immutabl
 - Dispatch `hyperpowers:codebase-investigator` for existing patterns
 - Dispatch `hyperpowers:internet-researcher` for external APIs/libraries
 
-**REQUIRED: Use AskUserQuestion tool for all questions**
-- One question at a time (don't batch multiple questions)
-- Prefer multiple choice options (easier to answer)
-- Wait for response before asking next question
-- Focus on: purpose, constraints, success criteria
-- Gather enough context to propose approaches
+**REQUIRED: Use AskUserQuestion tool with scannable format**
+
+**Question Format Guidelines:**
+
+1. **1-5 questions maximum** per round (don't overwhelm)
+2. **Multiple choice preferred** with clear options
+3. **Include suggested default** marked with "(Recommended)"
+4. **Numbered for easy reference**
+5. **Separate critical from nice-to-have**
+
+**Question Structure:**
+```
+Question: [Clear question ending with ?]
+Options:
+  A. [Option] (Recommended) - [Why this is default]
+  B. [Option] - [Trade-off]
+  C. [Option] - [Trade-off]
+  D. Other (please specify)
+
+Priority: [CRITICAL | IMPORTANT | NICE_TO_HAVE]
+```
+
+**Priority Definitions:**
+- **CRITICAL**: Must answer before proceeding (security, core functionality)
+- **IMPORTANT**: Affects design significantly but has reasonable default
+- **NICE_TO_HAVE**: Can defer to implementation phase
+
+**Example using AskUserQuestion:**
+```
+AskUserQuestion:
+  question: "Where should OAuth tokens be stored?"
+  header: "Token storage"
+  options:
+    - label: "httpOnly cookies (Recommended)"
+      description: "Prevents XSS token theft, industry standard"
+    - label: "sessionStorage"
+      description: "Cleared on tab close, less persistent"
+    - label: "localStorage"
+      description: "Persists across sessions, XSS vulnerable"
+```
+
+**Fast-Path Option:**
+For IMPORTANT/NICE_TO_HAVE questions with good defaults, offer:
+"Reply 'defaults' to accept all recommended options"
 
 **Do NOT just print questions and wait for "yes"** - use the AskUserQuestion tool.
-
-**Example questions:**
-- "What problem does this solve for users?"
-- "Are there existing implementations we should follow?"
-- "What's the most important success criterion?"
-- "Token storage: cookies, localStorage, or sessionStorage?"
 
 **CAPTURE for Design Discovery:**
 As each question is answered, record in "Key Decisions Made" table:

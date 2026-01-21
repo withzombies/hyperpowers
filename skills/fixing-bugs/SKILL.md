@@ -22,12 +22,31 @@ Never skip tracking or regression test. Use debugging-with-tools for investigati
 | **3. Test (RED)** | Write failing test reproducing bug | Use `test-driven-development` skill |
 | **4. Fix (GREEN)** | Implement fix | Minimal code to pass test |
 | **5. Verify** | Run full test suite | Use `verification-before-completion` skill |
-| **6. Close** | Update and close bd issue | `bd close bd-123` |
+| **6. Classify** | Classify status and close | `bd close bd-123` |
 
 **FORBIDDEN:** Fix without bd issue, fix without regression test
 **REQUIRED:** Every bug gets tracked, tested, verified before closing
 
 </quick_reference>
+
+<fix_status_values>
+## Fix Status Classification
+
+After implementing a fix, classify its status:
+
+| Status | Definition | Next Action |
+|--------|------------|-------------|
+| **FIXED** | Root cause addressed, regression test passes, full suite passes | Close bd issue |
+| **PARTIALLY_FIXED** | Some aspects addressed, others remain | Document what's left, keep issue open |
+| **NOT_ADDRESSED** | Fix doesn't address the actual bug | Return to debugging phase |
+| **CANNOT_DETERMINE** | Insufficient info to verify fix | Gather more reproduction data |
+
+**Evidence required for each status:**
+- FIXED: Regression test output showing pass, full test suite output, root cause explanation
+- PARTIALLY_FIXED: List of addressed aspects with evidence, list of remaining aspects
+- NOT_ADDRESSED: Explanation of why fix missed the bug, comparison to root cause
+- CANNOT_DETERMINE: What information is missing, how to obtain it
+</fix_status_values>
 
 <when_to_use>
 **Use when you discover a bug:**
@@ -160,24 +179,34 @@ pytest tests/test_user.py::test_rejects_empty_email
 - No new warnings or errors
 - Pre-commit hooks pass
 
-## 6. Close bd Issue
+## 6. Classify and Close
 
-**Update with fix details:**
+**REQUIRED: Classify fix status before closing:**
+
 ```bash
 bd edit bd-123 --design "[previous content]
+
+## Fix Status: FIXED
+**Evidence:**
+- Root cause: [explanation of what caused the bug]
+- Regression test: tests/test_user.py::test_rejects_empty_email PASSES
+- Full suite: 145/145 tests pass
+- Fix verified: [specific verification that bug is resolved]
 
 ## Fix Implemented
 [Description of fix]
 [File changed: src/auth/user.py:23]
 
 ## Regression Test
-[Test added: tests/test_user.py::test_rejects_empty_email]
-
-## Verification
-[All tests pass: 145/145]"
+[Test added: tests/test_user.py::test_rejects_empty_email]"
 
 bd close bd-123
 ```
+
+**If status is not FIXED:**
+- **PARTIALLY_FIXED** → Document remaining work, create follow-up bd issue, keep original open
+- **NOT_ADDRESSED** → Return to Step 2 (debugging), do not close
+- **CANNOT_DETERMINE** → Gather more reproduction info before closing
 
 **Commit with bd reference:**
 ```bash

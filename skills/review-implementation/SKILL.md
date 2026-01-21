@@ -11,6 +11,38 @@ Review completed implementation against bd epic to catch gaps before claiming co
 LOW FREEDOM - Follow the 4-step review process exactly. Review with Google Fellow-level scrutiny. Never skip automated checks, quality gates, or code reading. No approval without evidence for every criterion.
 </rigidity_level>
 
+<evidence_requirements>
+## Evidence-Based Review (Zero Speculation Principle)
+
+**Every claim requires evidence:**
+
+| Claim Type | Required Evidence |
+|------------|-------------------|
+| "Code implements X" | File path:line number showing implementation |
+| "Test covers Y" | Test name + specific assertion |
+| "Criterion met" | Command output proving criterion |
+| "No anti-pattern" | Search command showing no matches |
+
+**Confidence Scores:**
+
+Rate each finding 0.0-1.0:
+- **1.0** - Verified with direct evidence (ran command, read code)
+- **0.8** - Strong indirect evidence (multiple consistent signals)
+- **0.5** - Uncertain (partial evidence, assumptions made)
+- **0.3** - Weak (limited investigation, needs more verification)
+
+**Findings below 0.8 confidence must be investigated until ≥0.8 or marked UNCERTAIN.**
+
+**Example evidence format:**
+```markdown
+| Criterion | Status | Confidence | Evidence |
+|-----------|--------|------------|----------|
+| All tests pass | ✅ Met | 1.0 | `cargo test`: 127 passed, 0 failed |
+| No unwrap in production | ❌ Not met | 1.0 | `rg "\.unwrap\(\)" src/`: Found at jwt.ts:45 |
+| Error handling proper | ⚠️ Uncertain | 0.5 | Read jwt.ts, unclear if all paths covered |
+```
+</evidence_requirements>
+
 <quick_reference>
 | Step | Action | Deliverable |
 |------|--------|-------------|
@@ -415,6 +447,22 @@ Read code to confirm edge cases handled:
 ```markdown
 ### Task: bd-3 - Implement JWT authentication
 
+#### Evidence-Based Findings
+
+| Criterion | Status | Confidence | Evidence |
+|-----------|--------|------------|----------|
+| All tests pass | ✅ Met | 1.0 | `cargo test`: 127 passed |
+| Pre-commit passes | ❌ Not met | 1.0 | `cargo clippy`: 3 warnings |
+| No unwrap in production | ❌ Not met | 1.0 | `rg "\.unwrap()"`: src/auth/jwt.ts:45 |
+
+#### File Evidence
+| File | Line | What Verified | Confidence |
+|------|------|---------------|------------|
+| src/auth/jwt.ts | 45 | unwrap violation | 1.0 |
+| src/auth/jwt.ts | 12-30 | token generation logic | 0.9 |
+
+**Findings below 0.8:** None (all verified)
+
 #### Automated Checks
 - TODOs: ✅ None
 - Stubs: ✅ None
@@ -447,11 +495,6 @@ Read code to confirm edge cases handled:
 
 **Tautological tests found:** 1 (test_jwt_struct_exists)
 **Weak tests found:** 1 (test_encode_decode needs edge cases)
-
-#### Success Criteria
-1. "All tests pass": ✅ Met - Evidence: 127 tests passed
-2. "Pre-commit passes": ❌ Not met - Evidence: clippy warnings
-3. "No unwrap in production": ❌ Not met - Evidence: Found at jwt.ts:45
 
 #### Anti-Patterns
 - "NO unwrap in production": ❌ Violated at src/auth/jwt.ts:45
