@@ -114,6 +114,47 @@ Anti-patterns that apply across multiple skills. Reference this to avoid duplica
    Ask if breaking changes are acceptable
 ```
 
+## Refactoring Anti-Patterns
+
+After refactoring, old code is dead code. Delete it.
+
+```
+❌ No fallback code after refactoring
+   Old implementation should be DELETED, not kept as fallback
+   - If new code works, old code is unnecessary
+   - If new code doesn't work, fix it - don't keep old code "just in case"
+
+❌ No "use old/legacy" conditionals
+   Feature flags for old implementations = incomplete refactoring
+   - USE_LEGACY_*, ENABLE_OLD_*, FALLBACK_TO_*
+   - if (useLegacy) { oldImplementation() }
+   - These should trigger immediate deletion of old code
+
+❌ No backwards compatibility shims (unless external API)
+   Internal code doesn't need backwards compatibility
+   - Shims for internal callers = incomplete migration
+   - Fix all callers, then delete the shim
+   - Only external APIs may need temporary backwards compat
+
+❌ No orphaned tests
+   Tests must test current functionality, not removed code
+   - Tests for deleted functions = orphaned tests
+   - Tests importing removed modules = orphaned tests
+   - Delete or update these tests
+
+❌ No deprecation markers without timeline
+   Either remove now or create bd issue with removal date
+   - @deprecated without action = "keep forever"
+   - Every @deprecated needs: bd issue + removal date
+   - If no external consumers, just delete it now
+
+❌ No "V2" without removing V1
+   Version suffixes = incomplete migration
+   - authenticateV2() means authenticate() is dead
+   - Rename V2 to the canonical name after migration
+   - Delete all Vn-1 variants
+```
+
 ## Project-Specific Additions
 
 Each project may have additional anti-patterns. Check CLAUDE.md for:
