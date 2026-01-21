@@ -120,6 +120,58 @@ Tasks contain 4-8 implementation steps. Create TodoWrite todos for each to preve
 bd close bd-2  # After ALL substeps done
 ```
 
+## 2a. When Hitting Obstacles
+
+**CRITICAL: Check Design Discovery before switching approaches**
+
+When you hit a blocker or obstacle during implementation, do NOT automatically try alternative approaches. First check the epic's "Approaches Considered" section.
+
+**BEFORE switching approaches:**
+1. Re-read epic: `bd show bd-1`
+2. Find "Approaches Considered" section
+3. Check if the alternative you're considering was already rejected
+4. Read the "⚠️ REJECTED BECAUSE" reasoning
+5. Check "🚫 DO NOT REVISIT UNLESS" conditions
+
+**If rejected approach seems needed:**
+
+Before switching to a previously rejected approach, you MUST:
+- Document why the rejection reason no longer applies
+- Or explain why this obstacle changes the calculus
+- Get user confirmation before switching
+
+```markdown
+## Obstacle Encountered
+
+**Current approach:** [Chosen Approach from epic]
+**Obstacle:** [What blocker was hit]
+
+**Considering:** [Rejected Approach from epic]
+
+**Original rejection reason:** [Copy from epic]
+**DO NOT REVISIT UNLESS:** [Copy from epic]
+
+**Why reconsidering:**
+- [ ] Rejection reason no longer applies because: [specific reason]
+- [ ] DO NOT REVISIT condition is now met: [specific evidence]
+
+**Recommendation:** [Stay course / Switch with user approval]
+```
+
+**Anti-pattern:** Automatically trying rejected alternatives when hitting obstacles
+
+**Why this matters:**
+- Rejected approaches were rejected for good reasons
+- Those reasons often still apply when obstacles arise
+- Example: Chose passport.js, hit session complexity, considered switching to custom JWT
+  - But custom JWT was rejected because it requires rewriting 15 files
+  - The obstacle doesn't change that - switching makes the problem worse
+
+**Reference Design Discovery:**
+- Check "Dead-End Paths" for approaches already abandoned during research
+- Check "Key Decisions Made" for user requirements that constrain options
+- Check "Open Concerns Raised" for context on prior discussions
+
 ## 3. Review Against Epic and Create Next Task
 
 **CRITICAL:** After each task, adapt plan based on reality.
@@ -478,16 +530,22 @@ Run `/hyperpowers:execute-plan` to execute the next task.
    - If blocked: Research solution or ask user
    - Never violate anti-patterns to "make it easier"
 
-4. **All substeps must be completed** → Never close task with pending substeps
+4. **Check Design Discovery before switching approaches** → Never auto-try rejected alternatives
+   - Read "Approaches Considered" section when hitting obstacles
+   - Check "⚠️ REJECTED BECAUSE" and "🚫 DO NOT REVISIT UNLESS"
+   - Rejected approaches were rejected for good reasons that usually still apply
+   - Get user confirmation before switching to previously rejected approach
+
+5. **All substeps must be completed** → Never close task with pending substeps
    - Check TodoWrite before closing
    - "Mostly done" = incomplete = will cause issues
 
-5. **Plan invalidation is allowed** → Delete redundant tasks
+6. **Plan invalidation is allowed** → Delete redundant tasks
    - If discovered existing functionality: Delete duplicate task
    - If discovered blocker: Update or delete invalid task
    - Document what you found and why
 
-6. **Review before closing epic** → Use review-implementation skill
+7. **Review before closing epic** → Use review-implementation skill
    - Tasks done ≠ success criteria met
    - All criteria must be verified before closing
 
@@ -503,6 +561,8 @@ All of these mean: Re-read epic, STOP as required, ask for help:
 - "Let me fake this to make tests pass" → Never, defeats purpose
 - "Existing task is wasteful, but it's planned" → Delete it, plan adapts to reality
 - "All tasks done, epic must be complete" → Verify with review-implementation
+- "Hit obstacle, let me try the other approach" → Check Design Discovery first, rejection reasons often still apply
+- "The rejected approach would be easier now" → Check "DO NOT REVISIT UNLESS" conditions, get user approval
 
 </critical_rules>
 

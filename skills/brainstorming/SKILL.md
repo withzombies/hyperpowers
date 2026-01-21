@@ -64,6 +64,14 @@ HIGH FREEDOM - Adapt Socratic questioning to context, but always create immutabl
 - "What's the most important success criterion?"
 - "Token storage: cookies, localStorage, or sessionStorage?"
 
+**CAPTURE for Design Discovery:**
+As each question is answered, record in "Key Decisions Made" table:
+- Question asked
+- User's answer
+- Implication for requirements/anti-patterns
+
+This preserves the Socratic Q&A for future reference during task creation and obstacle handling.
+
 ---
 
 ## 2. Exploring Approaches
@@ -73,11 +81,23 @@ HIGH FREEDOM - Adapt Socratic questioning to context, but always create immutabl
 - New integration → dispatch internet-researcher
 - Review findings before proposing
 
-**IMPORTANT: Capture research findings for Design Rationale**
+**IMPORTANT: Capture research findings for Design Discovery**
 As you research, note down:
 - Codebase findings: file paths, patterns discovered, relevant code
 - External findings: API capabilities, library constraints, doc URLs
 - These will populate the "Research Findings" section of the epic
+
+**CAPTURE for Design Discovery:**
+- **Research Deep-Dives**: For each major research topic, document:
+  - Question explored
+  - Sources consulted with key findings
+  - Conclusion and how it informed the design
+- **Dead-End Paths**: When you abandon an approach during research:
+  - Why you explored it (what made it seem viable)
+  - What investigation revealed
+  - Why abandoned (specific reason linking to requirements/constraints)
+
+Dead-end documentation prevents wasted re-investigation when obstacles arise later.
 
 **Propose 2-3 approaches with trade-offs:**
 
@@ -115,6 +135,14 @@ I recommend option 1 because [specific reason, especially codebase consistency].
 - "Based on codebase investigation: auth/ uses passport.js..."
 - "API docs show OAuth flow requires..."
 - Demonstrate how design builds on existing code
+
+**CAPTURE for Design Discovery:**
+When user raises concerns, hesitations, or "what if" questions:
+- Record in "Open Concerns Raised" section
+- Document how each was addressed or deferred
+- Example: "What if Google OAuth is down?" → "Graceful degradation to error message"
+
+These concerns often resurface during implementation - having the resolution documented prevents re-debating.
 
 ---
 
@@ -162,20 +190,62 @@ bd create "Feature: [Feature Name]" \
 - [doc URL] - [relevant guidance found]
 
 ### Approaches Considered
-1. **[Chosen Approach]** ✓
-   - Pros: [benefits]
-   - Cons: [drawbacks]
-   - **Chosen because:** [specific reasoning, especially codebase consistency]
 
-2. **[Rejected Approach A]**
-   - Pros: [benefits]
-   - Cons: [drawbacks]
-   - **Rejected because:** [specific reasoning]
+#### 1. [Chosen Approach] ✓
 
-3. **[Rejected Approach B]** (if applicable)
-   - Pros: [benefits]
-   - Cons: [drawbacks]
-   - **Rejected because:** [specific reasoning]
+**What it is:** [2-3 sentence description]
+
+**Investigation:**
+- Researched [X] - found [Y]
+- Tested [pattern] - worked because [Z]
+- Referenced [file:line] - shows [pattern]
+
+**Pros:**
+- [benefit with evidence]
+
+**Cons:**
+- [drawback and mitigation]
+
+**Chosen because:** [specific reasoning linking to requirements and codebase patterns]
+
+#### 2. [Rejected Approach A] ❌
+
+**What it is:** [2-3 sentence description]
+
+**Why we looked at this:** [what made this seem viable initially]
+
+**Investigation:**
+- Researched [X] - found [Y]
+- [dead-end discovered]
+
+**Pros:**
+- [benefits it would have had]
+
+**Cons:**
+- [fatal flaw or significant drawback]
+
+**⚠️ REJECTED BECAUSE:** [specific reasoning, linking to anti-patterns or requirements]
+
+**🚫 DO NOT REVISIT UNLESS:** [specific condition that would change this decision]
+
+#### 3. [Rejected Approach B] ❌ (if applicable)
+
+**What it is:** [2-3 sentence description]
+
+**Why we looked at this:** [what made this seem viable initially]
+
+**Investigation:**
+- [what was researched]
+
+**Pros:**
+- [benefits it would have had]
+
+**Cons:**
+- [fatal flaw or significant drawback]
+
+**⚠️ REJECTED BECAUSE:** [specific reasoning]
+
+**🚫 DO NOT REVISIT UNLESS:** [specific condition that would change this decision]
 
 ### Scope Boundaries
 **In scope:**
@@ -186,7 +256,46 @@ bd create "Feature: [Feature Name]" \
 
 ### Open Questions
 - [uncertainties to resolve during implementation]
-- [decisions deferred to execution phase]"
+- [decisions deferred to execution phase]
+
+## Design Discovery (Reference Context)
+
+> This section preserves detailed context from brainstorming for use during task creation.
+> Reference this when defining tasks, handling obstacles, or validating implementation decisions.
+
+### Key Decisions Made
+
+| Question | User Answer | Implication |
+|----------|-------------|-------------|
+| [Socratic question asked] | [User's response] | [How this shapes requirements/anti-patterns] |
+
+### Research Deep-Dives
+
+#### [Topic 1: e.g., OAuth Library Selection]
+**Question explored:** [What question drove this research?]
+**Sources consulted:**
+- [Source 1] - [key finding]
+- [Source 2] - [key finding]
+
+**Findings:**
+- [Detailed finding 1]
+- [Detailed finding 2]
+
+**Conclusion:** [How this informed the design]
+
+### Dead-End Paths
+
+#### [Path: e.g., Custom JWT Implementation]
+**Why explored:** [What made this seem worth investigating]
+**Investigation:**
+- [What was researched/tried]
+
+**Why abandoned:** [Specific reason - links to requirements/anti-patterns]
+
+### Open Concerns Raised
+
+- [User concern 1] → [How it was addressed or deferred]
+- [User concern 2] → [How it was addressed or deferred]"
 ```
 
 **Critical:** Anti-patterns section prevents watering down requirements when blockers occur. Always include reasoning.
@@ -468,20 +577,73 @@ Manual signup has 40% abandonment rate. Google OAuth reduces friction.
 - Google OAuth2 docs - Requires client ID, callback URL, scopes
 
 ### Approaches Considered
-1. **Extend passport.js with google-oauth20** ✓
-   - Pros: Matches existing pattern, well-documented, session reuse
-   - Cons: Adds dependency
-   - **Chosen because:** Consistent with auth/strategies/local.ts pattern
 
-2. **Custom JWT-based OAuth**
-   - Pros: No new dependencies, full control
-   - Cons: Security complexity, breaks existing session pattern
-   - **Rejected because:** Inconsistent with codebase, security risk
+#### 1. Extend passport.js with google-oauth20 ✓
 
-3. **Auth0 integration**
-   - Pros: Managed service, multiple providers
-   - Cons: External dependency, cost, different auth model
-   - **Rejected because:** Overkill for single provider, introduces new pattern
+**What it is:** Add passport-google-oauth20 strategy to existing passport.js setup. Reuses session-based auth, follows existing pattern in auth/strategies/.
+
+**Investigation:**
+- Reviewed auth/passport-config.ts - existing passport setup with session serialization
+- Checked auth/strategies/local.ts:1-30 - pattern for adding strategies
+- passport-google-oauth20 npm - 2M weekly downloads, actively maintained
+
+**Pros:**
+- Matches existing codebase pattern (auth/strategies/)
+- Session handling already works (express-session configured)
+- Well-documented, large community
+
+**Cons:**
+- Adds npm dependency
+
+**Chosen because:** Consistent with auth/strategies/local.ts pattern, minimal changes to existing code
+
+#### 2. Custom JWT-based OAuth ❌
+
+**What it is:** Implement OAuth flow from scratch using JWTs instead of sessions. Would replace existing session-based auth with stateless tokens.
+
+**Why we looked at this:** User mentioned 'maybe we should use JWTs' - seemed potentially simpler
+
+**Investigation:**
+- Counted files using req.session - 15 files would need rewriting
+- Reviewed existing session middleware - deeply integrated
+- Researched JWT security best practices - significant complexity
+
+**Pros:**
+- No new dependencies
+- Stateless (scalability benefit)
+
+**Cons:**
+- Would require rewriting 15 files using req.session
+- Security complexity (token invalidation, refresh logic)
+- Breaks existing session pattern
+
+**⚠️ REJECTED BECAUSE:** Scope creep - OAuth feature shouldn't require rewriting existing auth system. 15 files affected is too much risk.
+
+**🚫 DO NOT REVISIT UNLESS:** We're already rewriting the entire auth system in a separate epic.
+
+#### 3. Auth0 integration ❌
+
+**What it is:** Use Auth0 managed service for OAuth. Would handle tokens, sessions, and multiple providers.
+
+**Why we looked at this:** Third-party service might reduce implementation complexity
+
+**Investigation:**
+- Evaluated Auth0 free tier - 7000 MAU limit
+- Reviewed Auth0 SDK - different auth model than current codebase
+- Estimated migration effort - significant test rewriting
+
+**Pros:**
+- Managed service (less code to maintain)
+- Supports multiple providers out of box
+
+**Cons:**
+- External dependency, cost at scale
+- Different auth model than existing code
+- Test suite would need significant changes
+
+**⚠️ REJECTED BECAUSE:** Overkill for single OAuth provider. Introduces new pattern inconsistent with codebase.
+
+**🚫 DO NOT REVISIT UNLESS:** We need 3+ OAuth providers AND are okay with vendor dependency.
 
 ### Scope Boundaries
 **In scope:**
@@ -497,6 +659,75 @@ Manual signup has 40% abandonment rate. Google OAuth reduces friction.
 ### Open Questions
 - Should failed OAuth create partial user record? (decide during implementation)
 - Token refresh: silent vs prompt? (default to silent, user can configure)
+
+## Design Discovery (Reference Context)
+
+> Detailed context from brainstorming for task creation and obstacle handling.
+
+### Key Decisions Made
+
+| Question | User Answer | Implication |
+|----------|-------------|-------------|
+| Token storage preference? | httpOnly cookies for security | Anti-pattern: NO localStorage |
+| New user model or extend existing? | Use existing at db/models/user.ts | Must add googleId field, not new table |
+| Session duration? | 24h inactive timeout | Need refresh token logic |
+| What if Google OAuth is down? | Graceful error message | No fallback auth required |
+
+### Research Deep-Dives
+
+#### OAuth Library Selection
+**Question explored:** Which OAuth library to use?
+**Sources consulted:**
+- passport-google-oauth20 npm - 2M weekly downloads, well-maintained
+- google-auth-library npm - official but lower-level
+- Stack Overflow threads on passport vs alternatives
+
+**Findings:**
+- passport-google-oauth20 matches existing passport setup at auth/passport-config.ts
+- google-auth-library would require rewriting session handling
+- Passport has built-in session serialization
+
+**Conclusion:** Use passport-google-oauth20 for consistency with existing auth/strategies/ pattern
+
+#### Token Storage Strategy
+**Question explored:** Where to store OAuth tokens?
+**Sources consulted:**
+- OWASP token storage guidelines
+- Auth0 best practices article
+- Existing codebase pattern at auth/session.ts
+
+**Findings:**
+- localStorage vulnerable to XSS (OWASP warns against)
+- httpOnly cookies prevent JS access
+- Existing session uses express-session with cookies
+
+**Conclusion:** httpOnly cookies, documented as anti-pattern to use localStorage
+
+### Dead-End Paths
+
+#### Custom JWT Implementation
+**Why explored:** User mentioned 'maybe we should use JWTs'
+**Investigation:**
+- Counted 15 files using req.session pattern
+- Estimated 2 weeks migration effort
+- Identified security complexity with token refresh
+
+**Why abandoned:** Scope creep - OAuth feature shouldn't rewrite auth system
+
+#### Auth0 Integration
+**Why explored:** Third-party service might be simpler
+**Investigation:**
+- Evaluated Auth0 free tier limits
+- Reviewed SDK integration requirements
+- Estimated test rewriting effort
+
+**Why abandoned:** Overkill for single provider, introduces vendor dependency
+
+### Open Concerns Raised
+
+- 'What if Google OAuth is down?' → Graceful degradation to error message, no fallback auth
+- 'Should we support account linking later?' → Deferred to future epic, out of scope for now
+- 'Token refresh - silent or prompt?' → Default silent, can configure later
 "
 ```
 
@@ -505,7 +736,8 @@ Manual signup has 40% abandonment rate. Google OAuth reduces friction.
 - Forbidden patterns explicit with reasoning (prevents shortcuts)
 - Agent can't rationalize away requirements (contract enforced)
 - Design rationale preserves context for future tasks
-- Approaches considered show why alternatives were rejected
+- Approaches considered show why alternatives were rejected with DO NOT REVISIT conditions
+- Design Discovery preserves full Q&A, research, and dead-ends for obstacle handling
 - Open questions explicitly tracked for implementation decisions
 </correction>
 </example>
