@@ -24,6 +24,8 @@ Reusable workflows for common development tasks:
 - **fixing-bugs** - Complete workflow from bug discovery to closure with bd tracking
 
 **Refactoring & Maintenance:**
+- **refactoring-diagnosis** - Identify code/design smells and refactor targets
+- **refactoring-design** - Create refactor design with composition, DI, and test strategy
 - **refactoring-safely** - Test-preserving transformations in small steps with tests staying green
 
 **Quality & Testing:**
@@ -50,6 +52,9 @@ Quick access to key workflows:
 - `/hyperpowers:write-plan` - Create detailed implementation plan
 - `/hyperpowers:execute-plan` - Execute plan with review checkpoints
 - `/hyperpowers:review-implementation` - Review completed implementation
+- `/hyperpowers:refactor-diagnose` - Diagnose code/design smells and refactor targets
+- `/hyperpowers:refactor-design` - Design refactor with composition, DI, and test strategy
+- `/hyperpowers:refactor-execute` - Execute refactor safely with tests staying green
 
 ### Specialized Agents
 
