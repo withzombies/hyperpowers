@@ -115,7 +115,7 @@ Install from the Claude Code plugin marketplace:
 
 ```
 /plugin marketplace add withzombies/hyperpowers
-/plugin install hyperpowers@hyperpowers
+/plugin install withzombies-hyper@hyperpowers
 ```
 
 Verify installation by running `/help` - you should see the hyperpowers slash commands listed.
