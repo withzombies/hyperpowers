@@ -53,4 +53,21 @@ test_prompt "Let's refactor this code to be cleaner" "refactoring-safely"
 # Test 5: Empty prompt should return response with no context and no decision field
 test_prompt "" ""
 
+# Test 6: Agent-style invocation of sre-task-refinement should be corrected
+echo "Test: Correct sre-task-refinement agent-style invocation"
+result=$(echo "{\"text\": \"hyperpowers:sre-task-refinement(SRE refinement on task bd-13)\"}" | node hooks/user-prompt-submit/10-skill-activator.js)
+if echo "$result" | jq -r '.additionalContext // ""' | grep -q "Use \`/hyperpowers:sre-task-refinement\`"; then
+    echo "✓ Includes corrective guidance for skill invocation"
+else
+    echo "✗ FAIL: Missing corrective guidance for sre-task-refinement"
+    exit 1
+fi
+if echo "$result" | jq -r '.additionalContext // ""' | grep -q "sre-task-refinement"; then
+    echo "✓ Activates sre-task-refinement"
+else
+    echo "✗ FAIL: sre-task-refinement not activated"
+    exit 1
+fi
+echo ""
+
 echo "=== All Tests Complete ==="

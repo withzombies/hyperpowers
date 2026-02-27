@@ -166,7 +166,7 @@ Skills reference these rather than duplicating content.
 Complete workflow from idea to PR:
 
 1. **Brainstorming** (`/hyperpowers:brainstorm`) - Socratic questioning to refine requirements
-2. **SRE Task Refinement** (optional) - Uses Opus 4.1 to identify corner cases
+2. **SRE Task Refinement** (optional, `/hyperpowers:sre-task-refinement`) - Uses Opus 4.1 to identify corner cases
 3. **Writing Plans** (`/hyperpowers:write-plan`) - Creates detailed bd epic with tasks
 4. **Executing Plans** (`/hyperpowers:execute-plan`) - Implements tasks continuously, updating bd
 5. **Review Implementation** (`/hyperpowers:review-implementation`) - Verifies against spec
@@ -231,7 +231,7 @@ The plugin is published to the Claude Code marketplace:
 
 ```bash
 # In the marketplace system (not in this repo)
-claude-code plugins install withzombies-hyper/hyperpowers
+claude plugin install hyperpowers@withzombies-hyper
 ```
 
 Version is tracked in `.claude-plugin/plugin.json`.
@@ -300,6 +300,8 @@ Priority: Continue adding collaboration workflows (code review response, inciden
 - Skills are documentation that Claude reads at runtime, not executable code
 - Changes to skill files take effect immediately in new conversations
 - The test-runner agent uses Haiku model for cost efficiency
+- `sre-task-refinement` is a skill, not a subagent type
+- If you see `Agent type 'hyperpowers:sre-task-refinement' not found`, use `/hyperpowers:sre-task-refinement` or invoke the skill directly
 - The sre-task-refinement skill uses Opus 4.1 for deep analysis
 - Most other operations use the default model (Sonnet)
 

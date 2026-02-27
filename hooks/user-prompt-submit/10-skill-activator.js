@@ -110,9 +110,33 @@ function analyzePrompt(promptText, rules) {
     return activated.slice(0, CONFIG.maxSkills);
 }
 
+// Detect known invocation mistakes and provide corrective guidance.
+function detectInvocationCorrections(promptText) {
+    const corrections = [];
+
+    const sreAsAgentPatterns = [
+        /hyperpowers:sre-task-refinement\s*\(/i,
+        /agent type ['"]?hyperpowers:sre-task-refinement['"]?\s+not found/i,
+        /sre\s+refinement\s+on\s+(task\s+)?bd-\d+/i
+    ];
+
+    const matchedSreAsAgent = sreAsAgentPatterns.some((pattern) => pattern.test(promptText));
+    if (matchedSreAsAgent) {
+        corrections.push({
+            skill: 'sre-task-refinement',
+            priority: 'high',
+            type: 'workflow',
+            reason: 'corrective match: sre-task-refinement used as an agent',
+            message: 'Use `/hyperpowers:sre-task-refinement` or Skill tool invocation. Do not call it as a Task subagent type.'
+        });
+    }
+
+    return corrections;
+}
+
 // Generate activation context message
-function generateContext(skills) {
-    if (skills.length === 0) {
+function generateContext(skills, corrections = []) {
+    if (skills.length === 0 && corrections.length === 0) {
         return null;
     }
 
@@ -126,6 +150,19 @@ function generateContext(skills) {
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
         ''
     ];
+
+    if (corrections.length > 0) {
+        lines.push('⚠️ Invocation corrections:');
+        lines.push('');
+        for (const correction of corrections) {
+            lines.push(`- ${correction.message}`);
+
+            if (CONFIG.debugMode) {
+                lines.push(`  Matched: ${correction.reason}`);
+            }
+        }
+        lines.push('');
+    }
 
     // Display skills
     const skillItems = skills.filter(s => s.type !== 'agent');
@@ -201,10 +238,23 @@ async function main() {
 
         // Analyze prompt
         const activatedSkills = analyzePrompt(prompt.text, rules);
+        const invocationCorrections = detectInvocationCorrections(prompt.text);
+
+        for (const correction of invocationCorrections) {
+            const alreadyIncluded = activatedSkills.some(skill => skill.skill === correction.skill);
+            if (!alreadyIncluded) {
+                activatedSkills.unshift({
+                    skill: correction.skill,
+                    priority: correction.priority,
+                    reason: correction.reason,
+                    type: correction.type
+                });
+            }
+        }
 
         // Generate response
-        if (activatedSkills.length > 0) {
-            const context = generateContext(activatedSkills);
+        if (activatedSkills.length > 0 || invocationCorrections.length > 0) {
+            const context = generateContext(activatedSkills, invocationCorrections);
 
             if (CONFIG.debugMode) {
                 console.error('Activated skills:', activatedSkills.map(s => s.skill).join(', '));

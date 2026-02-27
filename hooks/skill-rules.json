@@ -155,11 +155,25 @@
   "sre-task-refinement": {
     "type": "workflow",
     "enforcement": "suggest",
-    "priority": "low",
+    "priority": "high",
     "promptTriggers": {
-      "keywords": ["refine task", "corner cases", "requirements", "edge cases"],
+      "keywords": [
+        "sre refinement",
+        "sre task refinement",
+        "sre-task-refinement",
+        "refine task",
+        "refine bd task",
+        "corner cases",
+        "requirements",
+        "edge cases"
+      ],
       "intentPatterns": [
+        "hyperpowers:sre-task-refinement\\s*\\(",
+        "sre\\s+refinement\\s+on\\s+task\\s+bd-\\d+",
+        "sre\\s+refinement\\s+on\\s+bd-\\d+",
         "refine.*?(task|subtask|requirements)",
+        "refine.*?bd-\\d+",
+        "(review|scrutinize).*?bd-\\d+.*?(sre|edge|corner)",
         "(corner|edge).*(cases|scenarios)",
         "requirements.*?(clear|complete|understood)"
       ]

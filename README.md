@@ -50,6 +50,7 @@ Quick access to key workflows:
 
 - `/hyperpowers:brainstorm` - Start interactive design refinement
 - `/hyperpowers:write-plan` - Create detailed implementation plan
+- `/hyperpowers:sre-task-refinement` - Refine bd tasks with SRE edge-case analysis
 - `/hyperpowers:execute-plan` - Execute plan with review checkpoints
 - `/hyperpowers:review-implementation` - Review completed implementation
 - `/hyperpowers:refactor-diagnose` - Diagnose code/design smells and refactor targets
@@ -115,7 +116,7 @@ Install from the Claude Code plugin marketplace:
 
 ```
 /plugin marketplace add withzombies/hyperpowers
-/plugin install hyperpowers@hyperpowers
+/plugin install hyperpowers@withzombies-hyper
 ```
 
 Verify installation by running `/help` - you should see the hyperpowers slash commands listed.
@@ -125,6 +126,12 @@ To update the plugin later:
 ```
 /plugin update hyperpowers
 ```
+
+## Troubleshooting
+
+- If you see `Agent type 'hyperpowers:sre-task-refinement' not found`, invoke SRE refinement as a skill/command, not an agent:
+  - Use `/hyperpowers:sre-task-refinement`, or
+  - Ask to use `hyperpowers:sre-task-refinement` skill explicitly.
 
 ## Usage
 
